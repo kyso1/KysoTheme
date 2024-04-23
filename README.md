@@ -8,8 +8,8 @@ Works on any version > 0.5.0.
 
 # Installation
 To install the theme, all you have to do is paste the kysoTheme.js file on plugins folder.
+&nbsp;
 root/
 |__plugins/
-    |__KysoTheme.js
-      |__index.js  
-
+&nbsp;&nbsp;&nbsp;&nbsp;|__KysoTheme.js
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__index.js  
