@@ -727,26 +727,36 @@ lol-social-chat-input .chat-input{
   filter: hue-rotate(0deg) !important;
 }
 
-.right-nav-vertical-rule {
-  visibility: hidden;
-}
 
 :host .lol-uikit-flyout-frame-wrapper.bottom .border{
   filter: hue-rotate(0deg) !important;
 }
-/*----------------------------------------------------------------
+
+
+/* Ocultar elementos com a classe .navigation-status-ticker que também têm a classe .has-incidents */
 .navigation-status-ticker.has-incidents {
   display: flex;
   visibility: hidden;
 }
-:host .main-navigation-menu-item menu_item_navbar_event_hub ember-view{
+
+/* Mover elementos com a classe .main-navigation-menu-item e as classes .menu_item_navbar_event_hub e .ember-view para a esquerda */
+.main-navigation-menu-item .menu_item_navbar_event_hub .ember-view {
   left: -338px;
 }
-:host .main-navigation-menu-item menu_item_navbar_competitive ember-view{
-  left:-448px;
+
+/* Mover elementos com a classe .main-navigation-menu-item e as classes .menu_item_navbar_competitive e .ember-view para a esquerda */
+.main-navigation-menu-item .menu_item_navbar_competitive .ember-view {
+  left: -448px;
 }
-some tests to find the correct path to clash and event icons.
-----------------------------------------------------------------*/
+
+/* Ocultar elementos com a classe .right-nav-vertical-rule */
+.right-nav-vertical-rule {
+  visibility: hidden;
+}
+
+/*----------------------------------------------------------------
+some tests to find the correct path to clash and event buttons.
+
 html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > div:nth-child(4) > lol-uikit-navigation-bar > div:nth-child(3) > lol-uikit-navigation-item:nth-child(1) {
   left:-338px;
 }
@@ -759,7 +769,7 @@ html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > di
 html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > div:nth-child(4) > div {
   visibility: hidden;
 }
-
+----------------------------------------------------------------*/
 
 .lol-uikit-dialog-frame-sub-border::before{
   filter: hue-rotate(0deg) !important;
