@@ -2,14 +2,14 @@
 Simple, clean, and customizable league theme, without losing the "classical league experience".
 
 # Requirements
-To use the theme you need to install and activate Pengu Loader 
-<a href="https://github.com/PenguLoader/PenguLoader">Link Here.</a>
-Works on any version > 0.5.0.
+<p>To use the theme you need to install and activate Pengu Loader.<br> 
+<a href="https://github.com/PenguLoader/PenguLoader">Link Here.</a><br>
+Works on any version > 0.5.0.<p>
 
 # Installation
-To install the theme, all you have to do is paste the kysoTheme.js file on plugins folder.
+<p>To install the theme, all you have to do is paste the kysoTheme.js file on plugins folder.<br>
 &nbsp;
-root/
-|__plugins/
-&nbsp;&nbsp;&nbsp;&nbsp;|__KysoTheme.js
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__index.js  
+<strong>root/<br>
+|__plugins/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;|__KysoTheme.js<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__index.js<p></strong>  
