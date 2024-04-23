@@ -726,35 +726,27 @@ lol-social-chat-input .chat-input{
 :host .lol-uikit-flyout-frame-wrapper.top .sub-border::before, :host .lol-uikit-flyout-frame-wrapper.bottom .sub-border::before{
   filter: hue-rotate(0deg) !important;
 }
-/*:host-context(lol-uikit-navigation-bar[type=nav-bar]) .section, :host-context(lol-uikit-navigation-bar[type=nav-bar-secondary]) .section{
-  height: 79px;
-  left: -392px;
-}
-:host-context(lol-uikit-navigation-bar[type=nav-bar]), :host-context(lol-uikit-navigation-bar[type=nav-bar-secondary]){
-  left:-450px
-}*/
-#ember821 > div > svg > g{
-  filter: hue-rotate(0deg) !important;
-  height: 79px;
-  left: 2px;
-}
-#ember5458 > div > svg > g{
-  left:-448px;
-}
 
-#ember5385 > div.right-nav-menu > div:nth-child(2){
+.right-nav-vertical-rule {
   visibility: hidden;
 }
 
 :host .lol-uikit-flyout-frame-wrapper.bottom .border{
   filter: hue-rotate(0deg) !important;
 }
-
-
+.navigation-status-ticker.has-incidents {
+  display: flex;
+  visibility: hidden;
+}
+:host .main-navigation-menu-item menu_item_navbar_event_hub ember-view{
+  left: -338px;
+}
 lol-uikit-flat-button-secondary{
   filter: hue-rotate(0deg) !important;
 }
-
+:host .main-navigation-menu-item menu_item_navbar_competitive ember-view{
+  left:-448px;
+}
 .lol-uikit-dialog-frame-sub-border::before{
   filter: hue-rotate(0deg) !important;
 }
