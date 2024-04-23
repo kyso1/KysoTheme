@@ -3,7 +3,7 @@ Simple, clean, and customizable league theme, without losing the "classical leag
 
 # Requirements
 <p>To use the theme you need to install and activate Pengu Loader.<br> 
-<a href="https://github.com/PenguLoader/PenguLoader">Link Here.</a><br>
+<a href="https://pengu.lol">Link Here.</a><br>
 Works on any version > 0.5.0.<p>
 
 # Installation
