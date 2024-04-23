@@ -735,25 +735,23 @@ lol-social-chat-input .chat-input{
 
 /* Ocultar elementos com a classe .navigation-status-ticker que também têm a classe .has-incidents */
 .navigation-status-ticker.has-incidents {
-  display: flex;
-  visibility: hidden;
+  visibility: hidden !important;
 }
 
 /* Mover elementos com a classe .main-navigation-menu-item e as classes .menu_item_navbar_event_hub e .ember-view para a esquerda */
 .main-navigation-menu-item .menu_item_navbar_event_hub .ember-view {
-  left: -338px;
+  left: -338px !important;
 }
 
 /* Mover elementos com a classe .main-navigation-menu-item e as classes .menu_item_navbar_competitive e .ember-view para a esquerda */
 .main-navigation-menu-item .menu_item_navbar_competitive .ember-view {
-  left: -448px;
+  left: -448px !important;
 }
 
 /* Ocultar elementos com a classe .right-nav-vertical-rule */
 .right-nav-vertical-rule {
-  visibility: hidden;
+  visibility: hidden !important;
 }
-
 /*----------------------------------------------------------------
 some tests to find the correct path to clash and event buttons.
 
