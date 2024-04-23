@@ -734,6 +734,7 @@ lol-social-chat-input .chat-input{
 :host .lol-uikit-flyout-frame-wrapper.bottom .border{
   filter: hue-rotate(0deg) !important;
 }
+/*----------------------------------------------------------------
 .navigation-status-ticker.has-incidents {
   display: flex;
   visibility: hidden;
@@ -741,12 +742,25 @@ lol-social-chat-input .chat-input{
 :host .main-navigation-menu-item menu_item_navbar_event_hub ember-view{
   left: -338px;
 }
-lol-uikit-flat-button-secondary{
-  filter: hue-rotate(0deg) !important;
-}
 :host .main-navigation-menu-item menu_item_navbar_competitive ember-view{
   left:-448px;
 }
+some tests to find the correct path to clash and event icons.
+----------------------------------------------------------------*/
+html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > div:nth-child(4) > lol-uikit-navigation-bar > div:nth-child(3) > lol-uikit-navigation-item:nth-child(1) {
+  left:-338px;
+}
+html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > div:nth-child(4) > lol-uikit-navigation-bar > div:nth-child(3) > div:nth-child(1) {
+  visibility: hidden;
+}
+html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > div:nth-child(4) > lol-uikit-navigation-bar > div:nth-child(3) > lol-uikit-navigation-item:nth-child(2) {
+  left:-448px;
+}
+html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > div:nth-child(4) > div {
+  visibility: hidden;
+}
+
+
 .lol-uikit-dialog-frame-sub-border::before{
   filter: hue-rotate(0deg) !important;
 }
