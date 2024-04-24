@@ -2,8 +2,6 @@
   Original theme by floyare
   Branch and remaster by Kyso
   version 0.1
-
-  testing.....
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300&family=Orbitron&display=swap');
@@ -227,7 +225,7 @@ lol-uikit-full-page-backdrop {
 
 
 .lol-loading-screen-lol-icon{
-  background-image: url('https://w7.pngwing.com/pngs/865/978/png-transparent-itachi-uchiha-sasuke-uchiha-naruto-uzumaki-sakura-haruno-madara-uchiha-naruto-face-black-hair-head.png') !important;
+  background-image: url('https://i.pinimg.com/736x/4f/76/da/4f76dae1105570469f5a22854490ef45.jpg') !important;
   width: 200px !important;
   height: 200px !important;
 }
@@ -264,7 +262,7 @@ lol-uikit-full-page-backdrop {
 }
 
 .play-button-text:after{
-    content:'\25B6  PLAY'; 
+    content:'\\\\'; 
   visibility: visible;
   display: block;
   position: absolute;
