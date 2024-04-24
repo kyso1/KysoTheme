@@ -1,7 +1,8 @@
 # KysoTheme
 Simple, clean, and customizable (soon!) league theme, without losing the "classical league experience".
 
-![image](https://github.com/kyso1/KysoTheme/assets/128049220/6413f57c-50ec-4d4e-8d41-9c261513c179)
+![image](https://github.com/kyso1/KysoTheme/assets/128049220/ff290bc9-5dd5-4a80-8d30-9d3907c3ec2a)
+
 
 # Requirements
 <p>To use the theme you need to install and activate Pengu Loader.<br> 
