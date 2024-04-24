@@ -266,7 +266,7 @@ lol-uikit-full-page-backdrop {
   visibility: visible;
   display: block;
   position: absolute;
-  right: 11px;
+  right: 6px;
 }
 
 #rcp-fe-viewport-root > .rcp-fe-viewport-overlay > .screen-root[style*="visibility: hidden;"] ~ .play-button-text:after {
@@ -372,89 +372,15 @@ lol-social-status .status-message.dnd{
   width: auto !important;
 }
 
-.action-bar-button{
-  filter: hue-rotate(0deg);
-}
-
-.alpha-version-panel{
-  filter: hue-rotate(0deg);
-}
-
-.summoner-level-ring{
-  filter: hue-rotate(0deg);
-}
-
-.summoner-level{
-  filter: hue-rotate(0deg);
-
-}
-
-.navigation-bar{
-  filter: hue-rotate(0deg);
-}
-
 .dropdown-container{
   filter: hue-rotate(0deg);
   position: relative;
   z-index: 3;
 }
 
-.cdp-backdrop-component .cdp-backdrop.progression:after{
-  filter: hue-rotate(0deg);
-}
-
-.parties-game-type-card-categories{
-  filter: hue-rotate(0deg);
-}
-
-lol-uikit-flat-input{
-  filter: hue-rotate(0deg);
-}
-
-lol-uikit-close-button{
-  filter: hue-rotate(0deg);
-}
-
 lol-social-avatar:not([disabled]):hover .summoner-level-ring{
   -webkit-filter: none !important;
   filter: none !important;
-}
-
-.lol-uikit-dialog-frame {
-  filter: hue-rotate(0deg);
-}
-
-/* lol-uikit-navigation-bar{
-  filter: hue-rotate(0deg);
-} */
-
-.navigation-bar.left{
-  filter: hue-rotate(0deg);
-}
-
-lol-uikit-close-button{
-  filter: hue-rotate(0deg);
-}
-
-lol-regalia-banner-v2-element{
-  filter: hue-rotate(0deg);
-}
-
-.style-profile-emblem-header-title{
-  filter: hue-rotate(0deg) !important;
-}
-
-/* lol-uikit-dialog-frame::part(.lol-uikit-dialog-frame){
-  border: 2px solid transparent !important;
-  border-image: linear-gradient(to top, red 0, green 5px, blue 100%) 1 stretch !important;
-} */
-
-:host .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::before, :host .lol-uikit-dialog-frame.bottom .lol-uikit-dialog-frame-sub-border::before{
-  filter: hue-rotate(0deg) !important;
-}
-
-:host .lol-uikit-dialog-frame.top .lol-uikit-dialog-frame-sub-border::after, :host .lol-uikit-dialog-frame.bottom .lol-uikit-dialog-frame-sub-border::after{
-  filter: hue-rotate(0deg) !important;
 }
 
 /* COLLECTION */
@@ -535,205 +461,18 @@ lol-regalia-banner-v2-element{
   z-index: 1;
 }
 
-.offer-card-unrevealed-loop-video{
-  filter: hue-rotate(0deg) !important;
-}
-
-.loot-display-category-tab .loot-category-tab.selected::after{
-  filter: hue-rotate(0deg) !important;
-}
-
-hr{
-  filter: hue-rotate(0deg) !important;
-}
-
-
 ::-webkit-scrollbar-thumb{
   background-color: #0030b5 !important;
-}
-
-.recipe-help-button{
-  filter: hue-rotate(0deg) !important;
-}
-
-.border{
-  filter: hue-rotate(0deg) !important;
-}
-
-.loot-tray::before{
-  filter: hue-rotate(0deg) !important;
-}
-
-.loot-to-store-button {
-  filter: hue-rotate(0deg) !important;
-}
-
-lol-uikit-tooltip-root{
-  filter: hue-rotate(0deg) !important;
-}
-
-#lol-uikit-tooltip-root > div{
-  filter: hue-rotate(0deg) !important;
-}
-
-.style-profile-sub-nav{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-close-button{
-  filter: hue-rotate(0deg) !important;
-}
-
-.style-profile-skin-picker-button {
-  filter: hue-rotate(0deg) !important;
-}
-
-.collection-details{
-  filter: hue-rotate(0deg) !important;
-}
-
-.collection-ownership-filter {
-  filter: hue-rotate(0deg) !important;
-}
-
-.collection-grouping-options{
-  filter: hue-rotate(0deg) !important;
-}
-
-.collection-sort-options{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lock-icon{
-  filter: hue-rotate(0deg) !important;
-}
-
-.champion-mastery-badge{
-  filter: hue-rotate(0deg) !important;
-}
-
-.yourshop-header-riot {
-  filter: hue-rotate(0deg) !important;
-}
-
-.yourshop-footer-riot-expiration{
-  filter: hue-rotate(0deg) !important;
-}
-
-.yourshop-footer-riot-notice{
-  filter: hue-rotate(0deg) !important;
-}
-
-.yourshop-footer-riot-notice{
-  filter: hue-rotate(0deg) !important;
-}
-
-.nav-tab{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-flat-button-normal{
-  filter: hue-rotate(0deg) !important;
-}
-
-.nav-btn-gifting{
-  filter: hue-rotate(0deg) !important;
-}
-
-.nav-btn-accounts{
-  filter: hue-rotate(0deg) !important;
-}
-
-/* lol-uikit-navigation-item{
-  filter: hue-rotate(0deg) !important;
-} */
-
-.button-type-secondary{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-flyout-frame-wrapper{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-flat-button-inner{
-  filter: hue-rotate(0deg) !important;
-}
-
-.loot-recipe-help-container::before{
-  filter: hue-rotate(0deg) !important;
-}
-
-.loading-spinner{
-  filter: hue-rotate(0deg) !important;
-}
-
-#ember821 > div > svg > g{
-  filter: hue-rotate(0deg) !important;
-}
-
-.hextech-loading-animation{
-  filter: hue-rotate(0deg) !important;
-}
-
-.icon-ring{
-  filter: hue-rotate(0deg) !important;
-}
-
-.conversation-close-button{
-  filter: hue-rotate(0deg) !important;
 }
 
 .chat-header{
   border-bottom: thin solid #124cec !important;
 }
 
-lol-social-chat-input .chat-input{
-  filter: hue-rotate(0deg) !important;
-}
-
 /* LOADING */
-.lol-loading-screen-status-text{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-loading-screen-spinner{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-loading-screen-progress-bar-frame{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-loading-screen-progress-bar-progress{
-  filter: hue-rotate(0deg) !important;
-}
-
-.email{
-  filter: hue-rotate(0deg) !important;
-}
-
 .heading{
   border-bottom: thin solid #1547c4 !important;
 }
-
-.dialog-frame{
-  filter: hue-rotate(0deg) !important;
-}
-
-.dialog-content{
-  filter: hue-rotate(0deg) !important;
-} 
-
-:host .lol-uikit-flyout-frame-wrapper.top .sub-border::before, :host .lol-uikit-flyout-frame-wrapper.bottom .sub-border::before{
-  filter: hue-rotate(0deg) !important;
-}
-
-
-:host .lol-uikit-flyout-frame-wrapper.bottom .border{
-  filter: hue-rotate(0deg) !important;
-}
-
 
 /* Ocultar elementos com a classe .navigation-status-ticker que também têm a classe .has-incidents */
 .navigation-status-ticker.has-incidents {
@@ -772,81 +511,15 @@ html > body > section > section:nth-child(6) > div:nth-child(1) > div > div > di
 }
 ----------------------------------------------------------------*/
 
-.lol-uikit-dialog-frame-sub-border::before{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-dialog-frame-sub-border::after{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-dialog-frame-close-button::before{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-dialog-frame-sub-border{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-uikit-dialog-frame{
-  filter: hue-rotate(0deg) !important;
-}
-
-.mission-tooltip{
-  filter: hue-rotate(0deg) !important;
-}
-
-.flyout{
-  filter: hue-rotate(0deg) !important;
-}
-
-.mission-icon, .mission-reward  {
-  filter: hue-rotate(0deg) !important;
-}
-
 /* .mission-tracker-component{
   filter: hue-rotate(0deg) !important;
 } */
 
 /* NAVIGATION */
-
-.rcp-fe-lol-collections-collection-details {
-  filter: hue-rotate(0deg) !important;
-}
-
-.collection-tier-information{
-  filter: hue-rotate(0deg) !important;
-}
-
-.collection-tier-information{
-  filter: hue-rotate(0deg) !important;
-}
-
-.collection-bottom-info{
-  filter: hue-rotate(0deg) !important;
-}
-
 .collections-sub-nav-container{
   z-index: 10 !important;
   filter: hue-rotate(0deg) !important;
 }
-
-
-/*.parties-background lol-uikit-background-switcher{
-  content: url(http://mmmx22.ct8.pl/bc.jpg) !important;
-  width: auto !important;
-}*/
-
-/*.uikit-background-switcher .lol-uikit-background-switcher-image{
-    content: url(http://mmmx22.ct8.pl/bc.jpg) !important;
-  width: auto !important;
-}*/
-
-/*.uikit-background-switcher .lol-uikit-background-switcher-image{
-    content: url(http://mmmx22.ct8.pl/bc.jpg) !important;
-  width: auto !important;
-}*/
-
 
 .basic-button{
   left: 32vw !important;
@@ -876,13 +549,6 @@ lol-uikit-video-state-machine{
   display: none !important;
 }
 
-.currency-be-icon-container {
-    filter: hue-rotate(80deg);
-}
-
-.currency-rp {
-    filter: hue-rotate(-10deg);
-}
 .availability-icon.chat.remote{
   /*filter: hue-rotate(0deg);*/
   background-color: none !important;
@@ -895,55 +561,8 @@ lol-uikit-video-state-machine{
 .play-button-content{
   left: 30px !important;
 }
-.right-nav-vertical-rule{
-    
-}
 :host .parties-status-card.open {
     filter: hue-rotate(140deg) !important;
-}
-
-.player-notifications-button{
-  filter: hue-rotate(-140deg) !important;
-}
-
-.parties-player-positions lol-parties-player-position.primary{
-  filter: hue-rotate(-290deg) !important;
-}
-
-.parties-player-positions lol-parties-player-position.secondary{
-  filter: hue-rotate(-290deg) !important;
-}
-
-.parties-position-selector-hextech-dashed-ring{
-  filter: hue-rotate(-290deg) !important;
-}
-
-.confirm-button-container button.confirm{
-  filter: hue-rotate(-290deg) !important;
-}
-
-.parties-footer-notifications .parties-footer-warning{
-  filter: hue-rotate(-290deg) !important;
-}
-
-:host .regalia-parties-root[data-type="current-player"] .regalia-parties-banner-backdrop{
-  filter: hue-rotate(-290deg) !important;
-}
-
-.open-party-toggle-wrapper .toggle-container .open{
-  filter: hue-rotate(0deg) !important;
-}
-
-lol-social-panel{
-  filter: hue-rotate(0deg) !important;
-}
-
-.lol-social-identity .notifications-button{
-  filter: hue-rotate(0deg) !important;
-}
-
-.placeholder-invited-container .placeholder-invited-image {
-  filter: hue-rotate(0deg) !important;
 }
 
 lol-social-availability-hitbox .availability-icon.open-party{
@@ -995,15 +614,6 @@ lol-social-availability-hitbox .availability-icon.open-party{
 
 .mission-button .count-badge{
   background-color: #86efff !important;
-}
-
-
-.in-matchmaking-search .parties-placeholder-banner{
-  filter: hue-rotate(60deg) !important;
-}
-
-.open-party-toggle-wrapper.right .toggle-button{
-  filter: hue-rotate(220deg) !important;
 }
 
 .loot-item-visual .shard-overlay{
