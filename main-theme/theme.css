@@ -262,11 +262,10 @@ lol-uikit-full-page-backdrop {
 }
 
 .play-button-text:after{
-    content:'\\\\'; 
+    content:'▶'; 
   visibility: visible;
   display: block;
   position: absolute;
-  right: 11px !important;
 }
 
 #rcp-fe-viewport-root > .rcp-fe-viewport-overlay > .screen-root[style*="visibility: hidden;"] ~ .play-button-text:after {
