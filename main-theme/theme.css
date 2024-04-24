@@ -3,7 +3,7 @@
   Branch and remaster by Kyso
   version 0.1
 
-  testing..
+  testing.....
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300&family=Orbitron&display=swap');
@@ -193,9 +193,9 @@ lol-uikit-full-page-backdrop {
 }
 
 .availability-icon{
-    background-color: #6523CF !important;
-    border-color: #7D5FFF !important;
-    filter: drop-shadow(0px 0px 4px #7C2BFF);
+    background-color: #0062ad !important;
+    border-color: #004f6c !important;
+    filter: drop-shadow(0px 0px 4px #69deff);
     border-radius: 10px;
 }
 
@@ -209,19 +209,19 @@ lol-uikit-full-page-backdrop {
 }
 
 .status-message.offline{
-  color: #3D157D !important;
+  color: #930000d4 !important;
 }
 
 .status-message-wrapper{
-  color: #AB4AFF !important;
+  color: #75a7f2 !important;
 }
 
 .status-message.chat{
-  color: #AB4AFF !important;
+  color: #75e1f1 !important;
 }
 
 .status-message.game-status.chat{
-  color: #873AC9 !important;
+  color: #6a6af5 !important;
 }
 
 
@@ -240,14 +240,14 @@ lol-uikit-full-page-backdrop {
   background-image: none !important; /*url('http://mmmx22.ct8.pl/play-button-violet.png') !important;*/
   background: linear-gradient(-90deg, #382B7A, #241666) !important;
   border-radius: 50px !important;
-  border: 2px solid #9100FF!important;
-  filter: drop-shadow(1px 1px 8px #9100FF) !important;
+  border: 2px solid #0e07ca!important;
+  filter: drop-shadow(1px 1px 8px #4f8bed) !important;
   transition: 0.2s !important;
   cursor: pointer;
 }
 
 .play-button-container:hover{
-  filter: drop-shadow(1px 1px 15px #9100FF) !important;
+  filter: drop-shadow(1px 1px 15px #0e07ca) !important;
   transition: 0.2s !important;
 }
 
@@ -258,7 +258,7 @@ lol-uikit-full-page-backdrop {
 .play-button-text{
   color: #fff !important;
   font-family: 'Open Sans', sans-serif !important;
-  content: '▶ PLAY' !important;
+  content: '▶' !important;
   visibility: hidden;
   z-index: 0 !important;
 }
