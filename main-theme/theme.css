@@ -1,11 +1,11 @@
 /*
   Original theme by floyare
-  Branch and remaster by Kyso
+  Branch and remastered by Kyso
   version 0.1
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300&family=Orbitron&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mulish+Condensed:wght@300&family=Orbitron&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@800&display=swap');
 @-webkit-keyframes fadeIn {
   0% {
     opacity: 0;
@@ -49,14 +49,14 @@ div[data-screen-name='rcp-fe-lol-navigation-screen'] {
     width: 1280px;
     height: 720px;
     position: relative;
-    border-right: 2px solid #9100ff!important;
-    border-left: 2px solid #9100ff!important;
-    border-bottom: 2px solid #9100ff!important;
-    border-top: 2px solid #9100ff!important;
+    border-right: 2px solid #1500ff!important;
+    border-left: 2px solid #1500ff!important;
+    border-bottom: 2px solid #1500ff!important;
+    border-top: 2px solid #1500ff!important;
     box-sizing: border-box;
     overflow: hidden;
     background: #000;
-    filter: drop-shadow(1px 1px 10px #9100ff) !important; 
+    filter: drop-shadow(1px 1px 10px #1500ff) !important; 
 }
 
 #rcp-fe-viewport-root #rcp-fe-lol-navigation-app {
@@ -194,7 +194,7 @@ lol-uikit-full-page-backdrop {
     background-color: #0062ad !important;
     border-color: #004f6c !important;
     filter: drop-shadow(0px 0px 2px #69deff);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 .availability-icon.mobile{
@@ -236,9 +236,9 @@ lol-uikit-full-page-backdrop {
 
 .play-button-container{
   background-image: none !important; /*url('http://mmmx22.ct8.pl/play-button-violet.png') !important;*/
-  background: linear-gradient(-90deg, #4934b3, #3814d7) !important;
+  background: linear-gradient(177deg, #00a1bb, #7863d0) !important;
   border-radius: 50px !important;
-  border: 2px solid #0e07ca!important;
+  border: 2px solid #ffff!important;
   filter: drop-shadow(1px 1px 8px #4f8bed) !important;
   transition: 0.2s !important;
   cursor: pointer;
@@ -266,7 +266,7 @@ lol-uikit-full-page-backdrop {
   visibility: visible;
   display: block;
   position: absolute;
-  right: 6px;
+  left: 28px;
 }
 
 #rcp-fe-viewport-root > .rcp-fe-viewport-overlay > .screen-root[style*="visibility: hidden;"] ~ .play-button-text:after {
@@ -341,7 +341,7 @@ lol-social-roster-member .open-party-indicator{
 }
 
 .filled.xp-ring{
-  background-color: #abb400 !important;
+  background-color: #140085b7 !important;
 }
 
 lol-social-status .status-message.dnd{
@@ -469,27 +469,22 @@ lol-social-avatar:not([disabled]):hover .summoner-level-ring{
   border-bottom: thin solid #124cec !important;
 }
 
-/* LOADING */
 .heading{
   border-bottom: thin solid #1547c4 !important;
 }
 
-/* Ocultar elementos com a classe .navigation-status-ticker que também têm a classe .has-incidents */
 .navigation-status-ticker.has-incidents {
   visibility: hidden !important;
 }
 
-/* Mover elementos com a classe .main-navigation-menu-item e as classes .menu_item_navbar_event_hub e .ember-view para a esquerda */
 .main-navigation-menu-item .menu_item_navbar_event_hub .ember-view {
   left: -338px !important;
 }
 
-/* Mover elementos com a classe .main-navigation-menu-item e as classes .menu_item_navbar_competitive e .ember-view para a esquerda */
 .main-navigation-menu-item .menu_item_navbar_competitive .ember-view {
   left: -448px !important;
 }
 
-/* Ocultar elementos com a classe .right-nav-vertical-rule */
 .right-nav-vertical-rule {
   visibility: hidden !important;
 }
