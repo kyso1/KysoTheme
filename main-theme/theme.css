@@ -104,12 +104,12 @@ div[data-screen-name='rcp-fe-lol-navigation-screen'] {
     left: 0;
     top: 20px;
     margin: 0;
-    background: linear-gradient(to left, transparent, #9e6dff, transparent)!important;
+    background: linear-gradient(to left, transparent, #6dd3ff, transparent)!important;
 }
 
 .section.active, :host-context(lol-uikit-navigation-bar[type=nav-bar-secondary]) .section.active {
     color: #6eaff9;
-    text-shadow: 0px 0px 21px #8500ff!important;
+    text-shadow: 0px 0px 21px #2f00ff!important;
     /* opacity: 1; */
 }
 
@@ -128,7 +128,7 @@ div[data-screen-name='rcp-fe-lol-navigation-screen'] {
     align-items: center;
     justify-content: center;
     position: relative;
-    color: #facfffc2!important;
+    color: #cfffffc2!important;
     border: none;
     margin: 0;
     text-decoration: none;
@@ -225,7 +225,7 @@ lol-uikit-full-page-backdrop {
 
 
 .lol-loading-screen-lol-icon{
-  background-image: url('https://i.pinimg.com/736x/4f/76/da/4f76dae1105570469f5a22854490ef45.jpg') !important;
+  background-image: url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/b2a83ea4-c034-4b95-9138-0d8f6d9b342c/d31dfbb-f8e7f9c6-e0e5-4e37-b510-d228880659d1.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2IyYTgzZWE0LWMwMzQtNGI5NS05MTM4LTBkOGY2ZDliMzQyY1wvZDMxZGZiYi1mOGU3ZjljNi1lMGU1LTRlMzctYjUxMC1kMjI4ODgwNjU5ZDEuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.X5xv4mTq3lS456-x4wrf3T3xdc3jtUsLFXucXoUQS2Q') !important;
   width: 200px !important;
   height: 200px !important;
 }
@@ -236,7 +236,7 @@ lol-uikit-full-page-backdrop {
 
 .play-button-container{
   background-image: none !important; /*url('http://mmmx22.ct8.pl/play-button-violet.png') !important;*/
-  background: linear-gradient(-90deg, #382B7A, #241666) !important;
+  background: linear-gradient(-90deg, #4934b3, #3814d7) !important;
   border-radius: 50px !important;
   border: 2px solid #0e07ca!important;
   filter: drop-shadow(1px 1px 8px #4f8bed) !important;
