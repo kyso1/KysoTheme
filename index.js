@@ -9,6 +9,6 @@ function addCss(filename) {
 window.onload = () => {
   // External CDN for css hosting.
   
-  addCss("https://rawcdn.githack.com/kyso1/KysoTheme/main/main-theme/theme.css");
+  addCss("https://rawcdn.githack.com/kyso1/KysoTheme/83a4332c28468a45130904e478849a9deb51714a/main-theme/theme.css");
   console.log("Theme loaded successfully! Enjoy ;)");
 }
