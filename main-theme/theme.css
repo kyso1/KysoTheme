@@ -6,6 +6,13 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Mulish+Condensed:wght@300&family=Orbitron&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Mulish:wght@800&display=swap');
+
+:root{
+  /* override default League font */
+  --font-display: 'Mulish', sans-serif !important;
+  --font-body: 'Mulish', sans-serif !important;
+}
+
 @-webkit-keyframes fadeIn {
   0% {
     opacity: 0;
