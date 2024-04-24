@@ -63,7 +63,7 @@ div[data-screen-name='rcp-fe-lol-navigation-screen'] {
     pointer-events: none;
     position: relative;
     z-index: 10;
-    background: #7a00ff24!important;
+    background: #77abf08f!important;
 }
 
 .lol-social-sidebar {
@@ -108,13 +108,13 @@ div[data-screen-name='rcp-fe-lol-navigation-screen'] {
 }
 
 .section.active, :host-context(lol-uikit-navigation-bar[type=nav-bar-secondary]) .section.active {
-    color: #846bff;
+    color: #6eaff9;
     text-shadow: 0px 0px 21px #8500ff!important;
     /* opacity: 1; */
 }
 
  .section.active {
-    background-image: linear-gradient(0deg, rgba(157, 84, 255, 0.3) 0%, rgba(34, 0, 66, 0.19) 55%)!important;
+    background-image: linear-gradient(0deg, rgba(51, 166, 255, 0.3) 0%, rgba(0, 41, 107, 0.19) 55%)!important;
 }
 
 .section.active, :host-context(lol-uikit-navigation-bar[type=nav-bar-secondary]) .section.active {
@@ -149,7 +149,7 @@ div[data-screen-name='rcp-fe-lol-navigation-screen'] {
 }
 
 lol-uikit-full-page-backdrop {
-    background: linear-gradient(rgba(0, 0, 0, 0.6),rgba(39, 0, 74, 0.8) 93%)!important;
+    background: linear-gradient(rgba(0, 0, 0, 0.6),rgba(0, 37, 74, 0.8) 93%)!important;
     position: absolute;
     left: 0;
     right: 0;
@@ -187,13 +187,13 @@ lol-uikit-full-page-backdrop {
     height: 100%;
     pointer-events: none;
     -webkit-user-select: none;
-    box-shadow: inset 0px 0px 40px rgba(157, 0, 255, 0.23);
+    box-shadow: inset 0px 0px 40px rgba(0, 106, 255, 0.23);
 }
 
 .availability-icon{
     background-color: #0062ad !important;
     border-color: #004f6c !important;
-    filter: drop-shadow(0px 0px 4px #69deff);
+    filter: drop-shadow(0px 0px 2px #69deff);
     border-radius: 10px;
 }
 
@@ -202,8 +202,8 @@ lol-uikit-full-page-backdrop {
 }
 
 .availability-icon.away{
-    background-color: #321167 !important;
-    border-color: #5C20BD !important;
+    background-color: #671111 !important;
+    border-color: #ffffff8a !important;
 }
 
 .status-message.offline{
@@ -266,6 +266,7 @@ lol-uikit-full-page-backdrop {
   visibility: visible;
   display: block;
   position: absolute;
+  right: 11px;
 }
 
 #rcp-fe-viewport-root > .rcp-fe-viewport-overlay > .screen-root[style*="visibility: hidden;"] ~ .play-button-text:after {
@@ -318,7 +319,7 @@ lol-uikit-full-page-backdrop {
 }
 
 .lol-loading-screen-container.lol-loading-screen-default-state{
-  /* background: url('https://i.ibb.co/QcgNzKT/7f7ce09a2a883002643f442a7e7ddfaf.jpg') #0F051F no-repeat !important; */
+  /* background: url('https://wallpapers-clan.com/wp-content/uploads/2023/11/hxh-killua-zoldyck-lightning-desktop-wallpaper-cover.jpg') #0F051F no-repeat !important; */
   background: #0F051F !important;
   /* opacity: 0.6 !important;  */
 }
@@ -328,42 +329,44 @@ lol-uikit-full-page-backdrop {
 }
 
 lol-social-roster-member .open-party .open-party-indicator{
-  background: #AB4AFF !important;
+  background: #4a95ff !important;
 }
 
 lol-social-roster-member .open-party-indicator{
-  background: #4E2275 !important;
+  background: #224d75 !important;
 }
 
 .status-message.open-party.chat{
-  color: #AB4AFF !important;
+  color: #4acfff !important;
 }
 
 .filled.xp-ring{
-  background-color: #AB4AFF !important;
+  background-color: #abb400 !important;
 }
 
 lol-social-status .status-message.dnd{
-  color: #BE70FF !important;
+  color: #70fff8 !important;
   font-weight: bold !important;
   text-transform: uppercase;
 }
 
+#6eaff9
+
 :host .lol-uikit-background-switcher-image{
-  content: url(https://i.ibb.co/QcgNzKT/7f7ce09a2a883002643f442a7e7ddfaf.jpg) !important;
+  content: url(https://wallpapers-clan.com/wp-content/uploads/2023/11/hxh-killua-zoldyck-lightning-desktop-wallpaper-cover.jpg) !important;
   box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5);
   filter:blur(10px);
   width: auto !important;
 }
 
 .parties-view .parties-background lol-uikit-background-switcher{
-  content: url(https://i.ibb.co/QcgNzKT/7f7ce09a2a883002643f442a7e7ddfaf.jpg) !important;
+  content: url(https://wallpapers-clan.com/wp-content/uploads/2023/11/hxh-killua-zoldyck-lightning-desktop-wallpaper-cover.jpg) !important;
   box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5);
   filter:blur(10px);
   width: auto !important;
 }
 .parties-view .parties-background .uikit-background-switcher{
-  content: url(https://i.ibb.co/QcgNzKT/7f7ce09a2a883002643f442a7e7ddfaf.jpg) !important;
+  content: url(https://wallpapers-clan.com/wp-content/uploads/2023/11/hxh-killua-zoldyck-lightning-desktop-wallpaper-cover.jpg) !important;
   box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5);
   filter:blur(10px);
   width: auto !important;
@@ -470,7 +473,7 @@ lol-regalia-banner-v2-element{
   height: 100%;
   /* filter: hue-rotate(-10deg); */
   mix-blend-mode: hue;
-  background-color:rgb(101, 25, 224, 0.6);
+  background-color:rgba(25, 187, 224, 0.6);
   z-index: 1;
 }
 
@@ -495,7 +498,7 @@ lol-regalia-banner-v2-element{
   height: 100%;
   /* filter: hue-rotate(-10deg); */
   mix-blend-mode: hue;
-  background-color:rgb(101, 25, 224, 0.8);
+  background-color:rgb(25, 187, 224, 0.8);
   z-index: 1;
 }
 
@@ -523,7 +526,7 @@ lol-regalia-banner-v2-element{
   height: 100%;
   /* filter: hue-rotate(-10deg); */
   mix-blend-mode: hue;
-  background-color:rgb(101, 25, 224, 0.8);
+  background-color:rgb(25, 187, 224, 0.8  );
   z-index: -1;
 }
 
@@ -546,7 +549,7 @@ hr{
 
 
 ::-webkit-scrollbar-thumb{
-  background-color: #771dee !important;
+  background-color: #0030b5 !important;
 }
 
 .recipe-help-button{
@@ -682,7 +685,7 @@ lol-uikit-tooltip-root{
 }
 
 .chat-header{
-  border-bottom: thin solid #6615c4 !important;
+  border-bottom: thin solid #124cec !important;
 }
 
 lol-social-chat-input .chat-input{
@@ -711,7 +714,7 @@ lol-social-chat-input .chat-input{
 }
 
 .heading{
-  border-bottom: thin solid #6615c4 !important;
+  border-bottom: thin solid #1547c4 !important;
 }
 
 .dialog-frame{
@@ -991,7 +994,7 @@ lol-social-availability-hitbox .availability-icon.open-party{
 }
 
 .mission-button .count-badge{
-  background-color: #BB86FF !important;
+  background-color: #86efff !important;
 }
 
 
@@ -1004,28 +1007,28 @@ lol-social-availability-hitbox .availability-icon.open-party{
 }
 
 .loot-item-visual .shard-overlay{
-  background: #BB86FF !important;
+  background: #86efff !important;
 }
 
 .social-count-badge{
-  background-color: #BB86FF !important;
+  background-color: #86efff !important;
 }
 lol-social-friend-requests .friend-requests-header{
-  color: #BB86FF !important;
+  color: #86efff !important;
 }
 
 .chat-bubble .my-bubble{
-  background-color: #BB86FF !important;
+  background-color: #86efff !important;
 }
 
 lol-social-chat-window .conversation.unread .conversation-subtitle{
-  color: #BB86FF !important;
+  color: #86efff !important;
 }
 
 lol-social-chat-window .conversation.active::before{
-  background-color: #BB86FF !important;
+  background-color: #86efff !important;
 }
 
 lol-social-roster .more-unread .more-unread-bar{
-  background-color: #BB86FF !important;
+  background-color: #86efff !important;
 }
