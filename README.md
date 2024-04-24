@@ -10,7 +10,7 @@ Simple, clean, and customizable (soon!) league theme, without losing the "classi
 Works on any version > 0.5.0.<p>
 
 # Installation
-<p>To install the theme, all you have to do is paste the kysoTheme.js file on plugins folder.<br>
+<p>To install the theme, all you have to do is paste the index.js file on plugins folder.<br>
 <strong>root/<br>
 |__plugins/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;|__KysoTheme.js<br>
