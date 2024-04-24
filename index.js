@@ -16,7 +16,7 @@ import "./main-theme/theme.css"
 
 window.onload = () => {
   // External CDN for css hosting.
-  addCss("https://rawcdn.githack.com/kyso1/KysoTheme/83a4332c28468a45130904e478849a9deb51714a/main-theme/theme.css");
+  addCss("https://rawcdn.githack.com/kyso1/KysoTheme/a82e777648b692d6e8dfd39eca2c69bd1e900a38/main-theme/theme.css");
   console.log("Theme loaded successfully! Enjoy ;)");
 
   // Loads the css from local filesystem
