@@ -1,23 +1,21 @@
 # KysoTheme
-Simple, clean, and customizable (soon!) league theme, without losing the "classical league experience".
-
-![image](https://github.com/kyso1/KysoTheme/assets/128049220/ff290bc9-5dd5-4a80-8d30-9d3907c3ec2a)
-
+Simple, clean, and customizable league theme, without losing the "classical league experience".
+<iframe src="https://giphy.com/embed/nMEZKDSIy564wp6F03" width="720" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/nMEZKDSIy564wp6F03">via GIPHY</a></p>
 
 # Requirements
-<p>To use the theme you need to install and activate Pengu Loader.<br> 
-<a href="https://pengu.lol">Link Here.</a><br>
+<p>To use the theme you need to install and activate <a href="https://pengu.lol">Pengu Loader.</a><br> 
+
 Works on any version > 0.5.0.<p>
 
 # Installation
-<p>To install the theme, all you have to do is paste the index.js file on plugins folder.<br>
-<strong>root/<br>
+<p>To install the theme, just copy this way or simple install the release and extract it to your plugins folder.<br>
+<strong>(Pengu Folder)/<br>
 |__plugins/<br>
 &nbsp;&nbsp;&nbsp;&nbsp;|__KysoTheme<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__index.js<p></strong>  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__assets<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__main-theme<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__index.js<p></strong>  
 
-# Main screen
-![image](https://github.com/kyso1/KysoTheme/assets/128049220/4feb5336-cc63-4a23-8a81-8d69da4a7f7b)
-
-# Friend List and Icons
-![image](https://github.com/kyso1/KysoTheme/assets/128049220/59db1e24-d5d7-46dc-94d4-81148930108b)
+# Customizations
+To customize the theme you just need to change the images (without changing their types like .jpg or .gif) in assets folder. To change the font of the theme, just change those lines on "../main-theme/theme.css"
+![image](https://github.com/kyso1/KysoTheme/assets/128049220/f56ccc4e-b8a9-4aef-8e39-860dac6802ec)
