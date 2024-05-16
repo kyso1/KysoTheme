@@ -1,7 +1,6 @@
 ![image](https://github.com/kyso1/KysoTheme/assets/128049220/b168b428-3b93-4768-bc58-de802537a4b2)
 # KysoTheme
 Simple, clean, and customizable league theme, without losing the "classical league experience".
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/nMEZKDSIy564wp6F03" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/nMEZKDSIy564wp6F03">via GIPHY</a></p>
 
 # Requirements
 <p>To use the theme you need to install and activate <a href="https://pengu.lol">Pengu Loader.</a><br> 
