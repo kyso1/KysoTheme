@@ -669,5 +669,9 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
 .rcp-fe-lol-tft-home .team-planner-button-container__button{
     filter:grayscale(100%);
 }
-
-  
+.rcp-fe-lol-tft-home .tft-home-footer-bg{
+    filter:grayscale(100%);
+}
+.rcp-fe-lol-tft-application-background{
+    background-image : none !important;
+}
