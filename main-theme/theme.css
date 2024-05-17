@@ -210,9 +210,14 @@
     filter: grayscale(100%);
 }
 
-/* removes auto rune */
+/* changes auto rune to hover mode */
 .rune-recommender-button-component{
-    visibility: hidden !important;
+    opacity: 0;
+    transition: 0.2s !important;
+}
+.rune-recommender-button-component:hover{
+    opacity: 1;
+    transition: 0.2s !important;
 }
 
 /* changes while are in-game background */
