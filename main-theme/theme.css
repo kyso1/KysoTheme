@@ -211,20 +211,29 @@
 }
 
 /* removes auto rune */
-.framed-icon-button-component .framed-icon-button-frame{
-    display: none;
-    visibility: hidden;
+.rune-recommender-button-component{
+    visibility: hidden !important;
 }
 
 /* changes while are in-game background */
 .rcp-fe-lol-game-in-progress, .rcp-fe-lol-pre-end-of-game, .rcp-fe-lol-reconnect, .rcp-fe-lol-repair-while-in-game>div, .rcp-fe-lol-waiting-for-stats{
     background-color: transparent !important;
-    background-image: transparent !important;
+    background-image:url('../assets/Main/background.jpg') !important;
+    background-size: 0%;
+    background-position: center center;
+    background-repeat: no-repeat;
 }
 .postgame-background-image{
     background-color: transparent !important;
-    background-image: transparent !important;
+    background-image: url('../assets/Main/background.jpg') !important;
     filter:blur(3px) !important;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+element.style {
+    background-image: url("lol-game-data/assets/content/src/LeagueClient/GameModeAssets/Classic_SRU/img/gameflow-background.jpg");
+    opacity: 0;
 }
 
 /* changes the animation in a lot of things, like to accept the match */
