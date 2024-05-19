@@ -1,6 +1,6 @@
 /*
   Clean Theme by Kyso 
-  version 1.0
+  version 1.1
 */
 
 
@@ -13,7 +13,6 @@
     to remove, just comment from :root til the }*/
     --font-display: 'Mulish', sans-serif !important;
     --font-body: 'Mulish', sans-serif !important;
-    background-image:url('../assets/Main/background.jpg') !important;
 }
 
 /* creates fadeIn animations to uses */
@@ -151,6 +150,8 @@
     opacity: 1;
     transition: 0.2s !important;
 }
+
+/* Lor Button Settings  */
 .launch-lor-button-container{
     opacity: 0;
     transition: 0.2s !important;
@@ -158,6 +159,14 @@
 .launch-lor-button-container:hover{
     opacity: 1;
     transition: 0.2s !important;
+}
+.deep-links-promo {
+    opacity: 0;
+    transition: 0.2s !important;
+}
+.deep-links-promo:hover{
+    opacity: 1;
+    transition: 0.2s !important;    
 }
 
 /* remove rp currency */
@@ -203,11 +212,7 @@
     filter:grayscale(100%); 
 }
 .loot-backdrop {
-    position: absolute;
-    width: 1055px;
-    height: 718px;
-    overflow: hidden;
-    filter: grayscale(100%);
+    opacity: 0 !important;
 }
 
 /* changes auto rune to hover mode */
@@ -219,7 +224,6 @@
     opacity: 1;
     transition: 0.2s !important;
 }
-
 /* changes while are in-game background */
 .rcp-fe-lol-game-in-progress, .rcp-fe-lol-pre-end-of-game, .rcp-fe-lol-reconnect, .rcp-fe-lol-repair-while-in-game>div, .rcp-fe-lol-waiting-for-stats{
     background-color: transparent !important;
@@ -235,10 +239,6 @@
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
-}
-element.style {
-    background-image: url("lol-game-data/assets/content/src/LeagueClient/GameModeAssets/Classic_SRU/img/gameflow-background.jpg");
-    opacity: 0;
 }
 
 /* changes the animation in a lot of things, like to accept the match */
@@ -312,6 +312,10 @@ lol-uikit-video-state-machine{
     isolation: isolate;
     background-color: transparent !important;
     background-image: url('../assets/Collections/collections-bg.jpg') !important;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0;
 }  
 .collections-application:before{
     content: '';
@@ -326,6 +330,9 @@ lol-uikit-video-state-machine{
     position: relative;
     z-index: 10;
     background-image: url('../assets/Collections/collections-bg.jpg') !important;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
 }
 
 /* Your Shop Settings */
@@ -387,15 +394,17 @@ lol-uikit-video-state-machine{
 /* Sets the background of gaming mode select  */
 :host .lol-uikit-background-switcher-image{
     content:url('../assets/ModeSwitcher/switch.jpg');
-    box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5);
+   /* box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5); */
     filter:blur(0px);
     width: auto !important;
+    opacity: 0 !important; /* You can comment this line to show the wallpaper, but i think it's good just transparent*/
 }
 .parties-view .parties-background .uikit-background-switcher{
     content:url('../assets/ModeSwitcher/switch.jpg');
-    box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5);
+    /* box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5); */
     filter:blur(10px);
     width: auto !important;
+    opacity: 0 !important;
 }
 
 /* Creates the play button and hides the older one */
@@ -475,7 +484,7 @@ lol-uikit-video-state-machine{
     opacity: 0.2px !important;
     /* filter: blur(0.5px); */
     background: url('../assets/Loading Screen/loading-background.jpg') #000000 no-repeat !important ;
-    background-size: cover;
+    background-size: cover !important;
     background-position: center center;
     background-repeat: no-repeat;
 }
@@ -483,6 +492,7 @@ lol-uikit-video-state-machine{
     background-image: url('../assets/Loading Screen/loading-icon.gif') !important;
     width: 200px !important;
     height: 200px !important;
+    border-radius: 2px !important;
 }
 .lol-loading-screen-spinner{
     visibility: hidden !important;
