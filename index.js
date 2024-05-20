@@ -19,7 +19,7 @@ export async function init(context) {
       
       const originalCreate = api._apiHome.navigationManager.createSubNavigationFromJSON
       api._apiHome.navigationManager.createSubNavigationFromJSON = async function (e, t, n) {
-          console.log('!!!!!!!!!!!!!!')
+          console.log('Home button created sucessfully!')
           console.dir(n)
 
           n.push({
