@@ -359,6 +359,7 @@ lol-uikit-video-state-machine{
 .store-backdrop {
     position: relative;
     isolation: isolate;
+    opacity: 0;
 }
 .store-backdrop:before{
     content: '';
@@ -559,25 +560,25 @@ lol-social-friend-requests .friend-requests-header{
     background-color: white !important;
 }
 lol-social-chat-window .conversation.unread .conversation-subtitle{
-    color: white !important;
+    color: rgba(255, 255, 255, 0.308) !important;
 }  
 lol-social-chat-window .conversation.active::before{
-    background-color: white !important;
+    background-color: rgba(255, 255, 255, 0.308) !important;
 }  
 lol-social-roster .more-unread .more-unread-bar{
-    background-color: white !important;
+    background-color: rgba(255, 255, 255, 0.308) !important;
 }
 .status-message.offline{
-    color: white !important;
+    color: rgba(255, 255, 255, 0.308) !important;
 } 
 .status-message-wrapper{
-    color: white !important;
+    color: rgba(255, 255, 255, 0.308) !important;
 } 
 .status-message.chat{
-    color: white !important;
+    color: rgba(255, 255, 255, 0.308) !important;
 } 
 .status-message.game-status.chat{
-    color: white !important;
+    color: rgba(255, 255, 255, 0.308) !important;
 } 
 lol-social-roster-member .open-party .open-party-indicator{
     background: white!important;
