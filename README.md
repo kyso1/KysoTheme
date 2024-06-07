@@ -1,4 +1,3 @@
-![image](https://github.com/kyso1/KysoTheme/assets/128049220/b168b428-3b93-4768-bc58-de802537a4b2)
 # KysoTheme
 Simple, clean, and customizable league theme, without losing the "classical league experience".
 
