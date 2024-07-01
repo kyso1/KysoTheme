@@ -1,5 +1,5 @@
 /*
- * @name Clean Theme v1.0
+ * @name Kyso Theme v1.0
  * @author Kyso
  * @description Kyso Clean theme for League of Legends (Pengu Loader)
  * @link https://github.com/kyso1/KysoTheme
@@ -38,7 +38,6 @@ export async function init(context) {
 }
 window.onload = () => {
   console.log("Theme loaded successfully! Enjoy ;)");
-  // Loads the css from local filesystem
   const cssPath = "./main-theme/tema.css";
   _apiHome.appDomNode.textContent = "Home";
   addCss(theme);

@@ -691,3 +691,14 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
 .rcp-fe-lol-tft-application-background{
     background-image : none !important;
 }
+
+/* Profile page changes */
+.lol-career-stats .career-stats-root-component .stats-backdrop{
+    background-image: none !important;
+}
+.parallax-layer-container{
+    visibility: hidden !important;
+}
+.challenges-collection-component .background{
+    visibility: hidden !important;
+}
