@@ -1,6 +1,6 @@
 /*
   Clean Theme by Kyso 
-  version 1.2
+  version 1.0
 */
 
 
@@ -83,14 +83,15 @@
     opacity: 1 !important;
     transition: 0.2s !important;
 }
-.menu_item_navbar_tft {
+/* .menu_item_navbar_tft {
     opacity: 0 !important;
     transition: 0.2s !important;
 }
 .menu_item_navbar_tft:hover {
     opacity: 1 !important;
     transition: 0.2s !important;
-}
+} 
+    i've commented those bcs now im playing more tft than league lol '-' */ 
 .invite-info-panel-container {
     opacity: 0 !important;
     transition: 0.2s !important;
@@ -359,7 +360,6 @@ lol-uikit-video-state-machine{
 .store-backdrop {
     position: relative;
     isolation: isolate;
-    opacity: 0;
 }
 .store-backdrop:before{
     content: '';
@@ -560,25 +560,25 @@ lol-social-friend-requests .friend-requests-header{
     background-color: white !important;
 }
 lol-social-chat-window .conversation.unread .conversation-subtitle{
-    color: rgba(255, 255, 255, 0.308) !important;
+    color: white !important;
 }  
 lol-social-chat-window .conversation.active::before{
-    background-color: rgba(255, 255, 255, 0.308) !important;
+    background-color: white !important;
 }  
 lol-social-roster .more-unread .more-unread-bar{
-    background-color: rgba(255, 255, 255, 0.308) !important;
+    background-color: white !important;
 }
 .status-message.offline{
-    color: rgba(255, 255, 255, 0.308) !important;
+    color: white !important;
 } 
 .status-message-wrapper{
-    color: rgba(255, 255, 255, 0.308) !important;
+    color: white !important;
 } 
 .status-message.chat{
-    color: rgba(255, 255, 255, 0.308) !important;
+    color: white !important;
 } 
 .status-message.game-status.chat{
-    color: rgba(255, 255, 255, 0.308) !important;
+    color: white !important;
 } 
 lol-social-roster-member .open-party .open-party-indicator{
     background: white!important;
@@ -692,13 +692,18 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
     background-image : none !important;
 }
 
-/* Profile page changes */
-.lol-career-stats .career-stats-root-component .stats-backdrop{
-    background-image: none !important;
+/* New mythic shop and others */
+.mythic-shop-backdrop {
+    background:none !important;
+} 
+.moon-skin-root-addon-component .moon-skin-backdrop{
+    background:none !important;
 }
-.parallax-layer-container{
-    visibility: hidden !important;
+
+/* New Home cfgs */
+#activity-center, #activity-center .activity-center__template{
+    background:transparent !important;
 }
-.challenges-collection-component .background{
-    visibility: hidden !important;
+.activity-center__background-component_container{
+    display: none !important;
 }
