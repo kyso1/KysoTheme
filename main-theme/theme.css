@@ -1,6 +1,6 @@
 /*
   Clean Theme by Kyso 
-  version 1.0
+  version 2.0
 */
 
 
@@ -13,6 +13,7 @@
     to remove, just comment from :root til the }*/
     --font-display: 'Mulish', sans-serif !important;
     --font-body: 'Mulish', sans-serif !important;
+    --background-image: url('../assets/Main/background.jpg');
 }
 
 /* creates fadeIn animations to uses */
@@ -228,14 +229,14 @@
 /* changes while are in-game background */
 .rcp-fe-lol-game-in-progress, .rcp-fe-lol-pre-end-of-game, .rcp-fe-lol-reconnect, .rcp-fe-lol-repair-while-in-game>div, .rcp-fe-lol-waiting-for-stats{
     background-color: transparent !important;
-    background-image:url('../assets/Main/background.jpg') !important;
+    background-image:var(--background-image) !important;
     background-size: 0%;
     background-position: center center;
     background-repeat: no-repeat;
 }
 .postgame-background-image{
     background-color: transparent !important;
-    background-image: url('../assets/Main/background.jpg') !important;
+    background-image: var(--background-image) !important;
     filter:blur(3px) !important;
     background-size: cover;
     background-position: center center;
@@ -673,7 +674,7 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
     filter: drop-shadow(1px 1px 1px rgba(255, 255, 255, 0.233)) !important; 
 }
 #rcp-fe-viewport-root{
-    background-image:url('../assets/Main/background.jpg') !important;
+    background-image:var(--background-image) !important;
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -700,10 +701,68 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
     background:none !important;
 }
 
-/* New Home cfgs */
-#activity-center, #activity-center .activity-center__template{
+/* activity center (trashass thing wtf) cfgs */
+/* #activity-center, #activity-center .activity-center__template{
     background:transparent !important;
 }
 .activity-center__background-component_container{
     display: none !important;
+}
+.activity-center-default-activity__content.ready{
+    display: none !important;
+    visibility: hidden;
+} */
+
+#activity-center .activity-center__tabs_section-divider{
+    visibility: hidden !important;
+}
+#activity-center .activity-center__tabs_scrollable{
+    opacity: 0;
+    transition: 0.2s !important;
+}
+#activity-center .activity-center__tabs_scrollable:hover{
+    opacity: 1;
+    transition: 0.2s !important;
+}
+
+/* my screen configs */
+.button-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 10px;
+    background: transparent;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.custom-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.button-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Party Status */
+.lol-social-panel{
+    background: transparent !important;
+    filter: grayscale(100%) !important;
 }
