@@ -55,7 +55,7 @@ function loadHomePage() {
 
         // Create the button container to my own buttons
         let buttonContainer = document.createElement("div");
-        buttonContainer.className = "button-container";
+        buttonContainer.className = "custom-buttons";
 
         let githubButton = createButton(
             "github-button",
