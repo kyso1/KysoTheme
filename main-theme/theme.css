@@ -726,7 +726,7 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
 }
 
 /* my screen configs */
-/* .button-container {
+.custom-buttons {
     position: fixed;
     bottom: 20px;
     left: 20px;
@@ -737,7 +737,7 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
- */
+
 .custom-button {
     background: none;
     border: none;
