@@ -1,8 +1,8 @@
 /*
- * @name Kyso Theme v2.0
- * @author Kyso
- * @description Kyso Clean theme for League of Legends (Pengu Loader)
- * @link https://github.com/kyso1/KysoTheme
+* @name Kyso Theme v2.1
+* @author Kyso
+* @description Kyso Clean theme for League of Legends (Pengu Loader)
+* @link https://github.com/kyso1/KysoTheme
 */
 
 import { githubIconBase64, resetIconBase64, folderIconBase64, previousBase64 } from './utils.js';
@@ -25,21 +25,21 @@ function addHomeButton() {
     let homeButton = document.createElement("div");
     homeButton.className = "activity-center__tab home-button ember-view";
     homeButton.innerHTML = `
-        <button type="button" class="activity-center__tab_content">
-            <div class="activity-center__tab_label">
-                <div class="activity-center__tab_label_display">Home</div>
-            </div>
-        </button>
+    <button type="button" class="activity-center__tab_content">
+    <div class="activity-center__tab_label">
+    <div class="activity-center__tab_label_display">Home</div>
+    </div>
+    </button>
     `;
-
+    
     activityCenterTabs.insertBefore(homeButton, activityCenterTabs.firstChild);
-
+    
     homeButton.querySelector("button").onclick = () => {
         console.log("Home button clicked!");
         sessionStorage.setItem("selectedTab", "home");
         loadHomePage();
     };
-
+    
     return true;
 }
 
@@ -52,18 +52,18 @@ function loadHomePage() {
         // Clear the screen
         contentContainer.innerHTML = "";
         contentContainer.style.background = "transparent";
-
+        
         // Create the button container to my own buttons
-        let buttonContainer = document.createElement("div");
-        buttonContainer.className = "custom-buttons";
-
+        let kysoButtonContainer = document.createElement("div");
+        kysoButtonContainer.className = "kyso-Button-Container";
+        
         let githubButton = createButton(
             "github-button",
             githubIconBase64,
             "GitHub",
             () => window.open("https://github.com/kyso1", "_blank")
         );
-
+        
         let resetButton = createButton(
             "reset-button",
             resetIconBase64,
@@ -97,21 +97,21 @@ function loadHomePage() {
             "Next",
             () => nextBackground()
         );
-
-        buttonContainer.appendChild(githubButton);
-        buttonContainer.appendChild(resetButton);
-        buttonContainer.appendChild(openFolderButton);
-        // buttonContainer.appendChild(previousButton);
-        // buttonContainer.appendChild(nextButton);
-
-        contentContainer.appendChild(buttonContainer);
-
+        
+        kysoButtonContainer.appendChild(githubButton);
+        kysoButtonContainer.appendChild(resetButton);
+        kysoButtonContainer.appendChild(openFolderButton);
+        // kysoButtonContainer.appendChild(previousButton);
+        // kysoButtonContainer.appendChild(nextButton);
+        
+        contentContainer.appendChild(kysoButtonContainer);
+        
         loadBackgroundImages().then(() => {
             if (backgroundImages.length > 0) {
                 changeBackground(backgroundImages[currentBackgroundIndex]);
             }
         });
-
+        
         console.log("Blank page with buttons generated!");
     } else {
         console.error("Content container not found!");
@@ -164,3 +164,20 @@ const checkBodyLoaded = setInterval(() => {
         }, 500);
     }
 }, 100);
+
+
+
+function observeCrestProfileIconUrl() {
+    if (setCrestProfileIconUrl()) return;
+    const crestObserver = new MutationObserver(() => {
+        if (setCrestProfileIconUrl()) {
+            crestObserver.disconnect();
+        }
+    });
+    crestObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    observeCrestProfileIconUrl();
+});
+

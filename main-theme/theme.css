@@ -679,6 +679,7 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
     background-position: center center;
     background-repeat: no-repeat;
 }
+
 /* TFT Configs */
 .rcp-fe-lol-tft-quick-play .quick-play-button .quick-play-button-container{
     filter:grayscale(100%);
@@ -691,6 +692,10 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
 }
 .rcp-fe-lol-tft-application-background{
     background-image : none !important;
+    /* background-color: transparent !important; */
+}
+.rcp-fe-lol-tft.ember-application>.ember-view .rcp-fe-lol-tft-hub .tft-hub-footer-bg{
+    display: none !important;
 }
 
 /* New mythic shop and others */
@@ -726,7 +731,7 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
 }
 
 /* my screen configs */
-.custom-buttons {
+.kyso-Button-Container {
     position: fixed;
     bottom: 20px;
     left: 20px;
@@ -765,4 +770,11 @@ div[data-screen-name=rcp-fe-lol-home] #rcp-fe-lol-home-error .rcp-fe-lol-home-er
 .lol-social-panel{
     background: transparent !important;
     filter: grayscale(100%) !important;
+}
+
+/* icon changes */
+summoner-icon, 
+.top > .icon-image.has-icon, 
+.style-profile-champion-icon-masked > img {
+    content: url(https://wallpapers.com/images/hd/kaneki-sad-v0i7i13o2olr8hpw.jpg) !important;
 }
