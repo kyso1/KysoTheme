@@ -29,8 +29,6 @@ A clean and highly customizable League of Legends client theme powered by [Pengu
         ├── settingsPage.js
         ├── backgroundSelector.js
         ├── autoaccept.js
-        ├── hidefriends.js
-        ├── profileskinunlocker.js
         └── imgUtils.js
 ```
 
@@ -41,6 +39,7 @@ A clean and highly customizable League of Legends client theme powered by [Pengu
 ## What's New in v2.0
 
 ### ⚙️ Native Settings Page
+
 KysoTheme now injects a **dedicated settings tab** directly into the League client's settings panel. Every feature is configurable through a clean UI — no file editing required.
 
 Open it via: **Settings → KysoTheme**
@@ -48,6 +47,7 @@ Open it via: **Settings → KysoTheme**
 ---
 
 ### 🖼️ Background System (fully revamped)
+
 - **Preset selector** — choose from included backgrounds with a single click
 - **URL input** — point to any image, GIF, or video URL (local plugin paths supported: `//plugins/KysoTheme/assets/...`)
 - **Local file upload** — upload images, GIFs, or videos directly from your PC (images ≤ 2 MB are stored as base64; larger files or videos use a path reference)
@@ -58,6 +58,7 @@ Open it via: **Settings → KysoTheme**
 ---
 
 ### 🎨 Accent Color Theme
+
 - **Custom accent color** — pick any hex color to recolor the theme's accent elements (borders, icons, buttons)
 - **Auto-extract from background** — automatically samples the dominant color from the current background image
 - **Color presets** — one-click preset colors included
@@ -66,6 +67,7 @@ Open it via: **Settings → KysoTheme**
 ---
 
 ### 🔤 Font Customization
+
 - **Google Fonts support** — paste any Google Fonts import URL to use a custom font
 - **Local font upload** — upload a `.ttf`, `.otf`, or `.woff2` font file from your PC
 - **Font name field** — use any system-installed font without a URL
@@ -74,6 +76,7 @@ Open it via: **Settings → KysoTheme**
 ---
 
 ### 🖼️ Profile Icon Customization
+
 - **Custom icon via URL** — set any remote image as your profile icon
 - **Local icon upload** — upload an icon from your PC
 - **Built-in crop tool** — interactive 1:1 crop overlay to frame your icon perfectly before applying
@@ -82,19 +85,21 @@ Open it via: **Settings → KysoTheme**
 ---
 
 ### 👁️ Visibility Controls
+
 Fine-tune what's visible in the client:
 
-| Option | Description |
-|--------|-------------|
-| **Hide RP** | Hides the RP currency display in the store |
+| Option                         | Description                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| **Hide RP**                    | Hides the RP currency display in the store                                        |
 | **Always show hover elements** | Keeps missions, chat, profile, and status always visible (disables hover-to-show) |
-| **Hide TFT (hover mode)** | Hides the TFT nav button unless hovered |
-| **Hide social panel only** | Hides the friend list panel on hover |
-| **Hide social + right nav** | Hides both the friend list and the right navigation bar on hover |
+| **Hide TFT (hover mode)**      | Hides the TFT nav button unless hovered                                           |
+| **Hide social panel only**     | Hides the friend list panel on hover                                              |
+| **Hide social + right nav**    | Hides both the friend list and the right navigation bar on hover                  |
 
 ---
 
 ### 🚪 Sliding-Door Buttons
+
 Two optional tab buttons that slide UI sections out of view:
 
 - **Hide Navbar button** — a vertical tab on the left edge that slides the top navigation bar out of view. Keeps Blue Essence visible optionally.
@@ -105,7 +110,9 @@ Both states persist between client sessions.
 ---
 
 ### 🌍 Multi-Language Support
+
 The settings page is fully translated into:
+
 - 🇺🇸 English
 - 🇧🇷 Portuguese (Brazilian)
 - 🇪🇸 Spanish
@@ -116,9 +123,9 @@ Language is auto-detected from the client locale.
 ---
 
 ### 🔧 Other Improvements
+
 - **Profile Skin Unlocker** — shows all skins on the profile page via property descriptor injection
 - **Auto Accept** — automatically accepts match-found popups
-- **Hide Friends button** — toggle friend list visibility with `display: none` (properly removes the space, unlike the previous `visibility: hidden`)
 - **Blur Scrubber** — force-removes `backdrop-filter` blur effects from the sidebar, navigation bar, and social panel for a cleaner look
 - **Persistent settings** — all settings are saved via `DataStore` and restored automatically on every client launch
 - **Home button** — custom icon button added to the Activity Center tabs
@@ -141,14 +148,11 @@ KysoTheme/
 ├── utilsCss/
 │   ├── ThemeSettings.css
 │   ├── AutoAccept.css
-│   ├── DodgeButton.css
-│   └── HideFriends.css
+│   └── DodgeButton.css
 ├── index.js           ← Entry point
 ├── settingsPage.js    ← Settings UI + all apply/persist logic
 ├── backgroundSelector.js
 ├── autoaccept.js
-├── hidefriends.js
-├── profileskinunlocker.js
 └── imgUtils.js
 ```
 
@@ -169,5 +173,4 @@ Or use the **"Upload local file"** option directly in the settings page.
 ## Credits
 
 - Theme by **Kyso**
-- HideFriends & ProfileSkinUnlocker by **Sakurasou** (via MTZ framework)
 - Built for [Pengu Loader](https://pengu.lol)
