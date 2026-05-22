@@ -2,7 +2,7 @@
 
 # KysoTheme
 
-![image](https://github.com/user-attachments/assets/3c8eb00a-8b10-4773-9f63-779804ee9e3d)
+![image](https://prnt.sc/eQIpHBoifqGm)
 
 **A clean, minimal, and deeply customizable League of Legends client theme.**  
 Built for [Pengu Loader](https://pengu.lol) — configure everything without touching a single file.
