@@ -1,0 +1,145 @@
+/*
+ * @name Clean Theme v1.0
+ * @author Kyso
+ * @description Kyso Clean theme for League of Legends (Pengu Loader)
+ * @link https://github.com/kyso1/KysoTheme
+*/
+
+import './main-theme/theme.css';
+
+function addHomeButton() {
+    console.log("[DEBUG] Attempting to add home button");
+    
+    let leftNavMenu = document.querySelector(".left-nav-menu");
+    console.log("[DEBUG] Left nav menu found:", !!leftNavMenu);
+    
+    if (!leftNavMenu) {
+        console.log("[DEBUG] Left nav menu not found, returning false");
+        return false;
+    }
+    
+    if (document.querySelector(".home-button")) {
+        console.log("[DEBUG] Home button already exists, returning false");
+        return false;
+    }
+
+    let firstButton = leftNavMenu.firstChild;
+    console.log("[DEBUG] First button in nav:", firstButton);
+
+    let homeButton = document.createElement("div");
+    homeButton.innerText = "HOME";
+    homeButton.className = "nav-item home-button active";
+    homeButton.style.cssText = `
+        padding: 10px 15px;
+        font-size: 14px;
+        color: white;
+        cursor: pointer;
+        background: transparent;
+    `;
+
+    leftNavMenu.insertBefore(homeButton, firstButton);
+    console.log("[DEBUG] Home button inserted into DOM");
+
+    if (!sessionStorage.getItem("selectedTab")) {
+        console.log("[DEBUG] No selectedTab in sessionStorage, setting to home");
+        sessionStorage.setItem("selectedTab", "home");
+        loadHomePage();
+    }
+
+    homeButton.onclick = () => {
+        console.log("[DEBUG] Home button clicked");
+        sessionStorage.setItem("selectedTab", "home");
+        loadHomePage();
+    };
+
+    console.log("[SUCCESS] Home button created and configured");
+    return true;
+}
+
+function loadHomePage() {
+    console.log("[DEBUG] Loading home page");
+    let contentContainer = document.querySelector(".main-content");
+    console.log("[DEBUG] Content container found:", !!contentContainer);
+    
+    if (contentContainer) {
+        contentContainer.innerHTML = "";
+        contentContainer.style.background = "transparent";
+        console.log("[DEBUG] Content container cleared");
+    }
+}
+
+console.log("[DEBUG] Script initialized, setting up event listeners");
+
+// Variables to store our observer and interval
+let observer = null;
+let homeButtonInterval = null;
+
+// Method 1: DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("[DEBUG] DOMContentLoaded event fired");
+    
+    // CSS is now imported at the top of the file
+    
+    // Try to add the home button immediately
+    if (addHomeButton()) {
+        console.log("[DEBUG] Home button added by DOMContentLoaded handler");
+        return; // No need to set up observer if we already added the button
+    }
+    
+    // Set up observer to watch for DOM changes
+    console.log("[DEBUG] Setting up MutationObserver");
+    observer = new MutationObserver((mutations) => {
+        console.log("[DEBUG] DOM mutation detected:", mutations.length, "changes");
+        if (addHomeButton()) {
+            console.log("[DEBUG] Home button added by MutationObserver, disconnecting");
+            observer.disconnect();
+            
+            // Also clear the interval if it's running
+            if (homeButtonInterval) {
+                clearInterval(homeButtonInterval);
+                homeButtonInterval = null;
+            }
+        }
+    });
+    
+    // Start observing the document body
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    console.log("[DEBUG] MutationObserver started");
+});
+
+// Method 2: Fallback to the original interval approach
+console.log("[DEBUG] Setting up fallback interval check for document.body");
+const checkBodyLoaded = setInterval(() => {
+    console.log("[DEBUG] Checking if document.body is available");
+    if (document.body) {
+        console.log("[DEBUG] document.body is now available, clearing interval");
+        clearInterval(checkBodyLoaded);
+        
+        // CSS is now imported at the top of the file
+        
+        // Try to add home button immediately
+        if (addHomeButton()) {
+            console.log("[DEBUG] Home button added immediately");
+            return; // No need to set up interval if we already added the button
+        }
+        
+        console.log("[DEBUG] Setting up interval for home button");
+        homeButtonInterval = setInterval(() => {
+            console.log("[DEBUG] Interval check for adding home button");
+            if (addHomeButton()) {
+                console.log("[DEBUG] Home button added by interval, clearing interval");
+                clearInterval(homeButtonInterval);
+                homeButtonInterval = null;
+                
+                // Also disconnect the observer if it's running
+                if (observer) {
+                    observer.disconnect();
+                    observer = null;
+                }
+            }
+        }, 500);
+    }
+}, 100);

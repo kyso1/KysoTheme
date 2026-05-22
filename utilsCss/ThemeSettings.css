@@ -1,0 +1,640 @@
+/* ============================================================
+   KysoTheme – Estilos da página de configurações
+   ============================================================ */
+
+/* ── Item de navegação na sidebar de Settings ── */
+.kyso-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  border-left: 2px solid transparent;
+  color: #c0c0c0;
+  font-family: var(--font-body, "Beaufort for LOL", "Mulish", sans-serif);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.kyso-nav-item:hover {
+  background: rgba(200, 155, 60, 0.12);
+  color: #e8d49e;
+}
+
+.kyso-nav-item[active] {
+  border-left-color: #c8a040;
+  background: rgba(200, 155, 60, 0.18);
+  color: #f0d080;
+}
+
+.kyso-nav-label {
+  flex: 1;
+}
+
+/* ── Wrapper do painel de conteúdo ── */
+.kyso-settings-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 0 8px 0 0;
+  box-sizing: border-box;
+}
+
+/* ── Painel principal ── */
+.kyso-settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 32px;
+  color: #d0d0d0;
+  font-family: var(--font-body, "Beaufort for LOL", "Mulish", sans-serif);
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 760px;
+}
+
+/* ── Cabeçalho ── */
+.kyso-settings-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid rgba(200, 155, 60, 0.4);
+  padding-bottom: 12px;
+}
+
+.kyso-settings-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0d080;
+  letter-spacing: 0.06em;
+}
+
+.kyso-settings-version {
+  font-size: 11px;
+  color: #888;
+}
+
+/* ── Seção ── */
+.kyso-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(200, 155, 60, 0.2);
+  border-radius: 6px;
+  padding: 18px 20px;
+}
+
+.kyso-settings-section-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c8a040;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── SVG icons (inline) ── */
+.kyso-svg-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  color: currentColor;
+  stroke: currentColor;
+}
+.kyso-settings-section-title .kyso-svg-icon {
+  width: 18px;
+  height: 18px;
+}
+.kyso-btn .kyso-svg-icon {
+  width: 14px;
+  height: 14px;
+}
+.kyso-save-feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.kyso-save-feedback .kyso-svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Linha de configuração ── */
+.kyso-settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kyso-settings-row--toggle {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kyso-settings-row--sub {
+  margin-left: 20px;
+  padding-left: 12px;
+  border-left: 2px solid rgba(200, 170, 110, 0.35);
+  opacity: 0.9;
+}
+
+.kyso-settings-row--upload {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kyso-settings-row--upload .kyso-label {
+  flex: 0 0 100%;
+}
+
+/* ── Label ── */
+.kyso-label {
+  font-size: 12px;
+  color: #b0b0b0;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ── Hint (texto auxiliar) ── */
+.kyso-hint {
+  font-size: 11px;
+  color: #777;
+  font-weight: 400;
+}
+
+/* ── Input de texto ── */
+.kyso-input {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-family: var(--font-body, "Beaufort for LOL", "Mulish", sans-serif);
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.kyso-input:focus {
+  border-color: #c8a040;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.kyso-input::placeholder {
+  color: #555;
+}
+
+/* ── Select ── */
+.kyso-select {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(200, 155, 60, 0.35);
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-family: var(--font-body, "Beaufort for LOL", "Mulish", sans-serif);
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.kyso-select:focus {
+  border-color: #c8a040;
+}
+
+.kyso-select option {
+  background: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* ── Botões – estilo lol-uikit-flat-button ── */
+.kyso-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font-family: var(--font-display, "Beaufort for LOL", "Mulish", sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+  transition: filter 0.1s ease;
+}
+
+.kyso-btn:hover {
+  filter: brightness(1.2);
+}
+
+.kyso-btn:active {
+  filter: brightness(0.88);
+}
+
+/* Gold filled – acção primária (Apply) */
+.kyso-btn--primary {
+  background: linear-gradient(to bottom, #c8aa6e 0%, #c89b3c 100%);
+  color: #010a13;
+  box-shadow: 0 0 0 1px #785a28 inset;
+}
+
+/* Outlined gold – acção secundária (Choose file) */
+.kyso-btn--secondary {
+  background: transparent;
+  color: #c8aa6e;
+  box-shadow: 0 0 0 1px #785a28 inset;
+}
+
+.kyso-btn--secondary:hover {
+  background: rgba(200, 170, 110, 0.1);
+  filter: none;
+}
+
+/* Outlined danger – acção destrutiva (Remove) */
+.kyso-btn--danger {
+  background: transparent;
+  color: #e84057;
+  box-shadow: 0 0 0 1px #c84060 inset;
+}
+
+.kyso-btn--danger:hover {
+  background: rgba(232, 64, 87, 0.1);
+  filter: none;
+}
+
+/* Save – gold preenchido de maior destaque */
+.kyso-btn--save {
+  background: linear-gradient(to bottom, #c8aa6e 0%, #c89b3c 100%);
+  color: #010a13;
+  box-shadow:
+    0 0 0 1px #785a28 inset,
+    0 0 8px rgba(200, 155, 60, 0.3);
+  font-size: 12px;
+  padding: 10px 28px;
+  letter-spacing: 0.1em;
+}
+
+/* Label que age como botão de upload */
+.kyso-upload-label {
+  cursor: pointer;
+}
+
+/* ── Nome do arquivo selecionado ── */
+.kyso-filename {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  align-self: center;
+}
+
+/* ── Toggle switch ── */
+.kyso-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.kyso-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.kyso-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(80, 80, 80, 0.8);
+  border: 1px solid #555;
+  border-radius: 24px;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.kyso-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #999;
+  border-radius: 50%;
+  transition:
+    transform 0.2s,
+    background 0.2s;
+}
+
+.kyso-toggle input:checked + .kyso-toggle-slider {
+  background: rgba(200, 155, 60, 0.75);
+  border-color: #c8a040;
+}
+
+.kyso-toggle input:checked + .kyso-toggle-slider::before {
+  transform: translateX(20px) translateY(-50%);
+  background: #f0d080;
+}
+
+/* ── Rodapé ── */
+.kyso-settings-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+/* ── Feedback de salvo ── */
+.kyso-save-feedback {
+  font-size: 12px;
+  color: #6dcc88;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-weight: 600;
+}
+
+.kyso-save-feedback.visible {
+  opacity: 1;
+}
+
+/* ── Scrollbar customizada dentro do painel ── */
+.kyso-settings-content-wrapper::-webkit-scrollbar {
+  width: 4px;
+}
+
+.kyso-settings-content-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kyso-settings-content-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 60, 0.4);
+  border-radius: 4px;
+}
+
+/* ============================================================
+   Crop modal — seletor 1:1 para ícones
+   ============================================================ */
+.kyso-crop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body, "Beaufort for LOL", "Mulish", sans-serif);
+}
+
+.kyso-crop-modal {
+  background: #1e2328;
+  border: 1px solid rgba(200, 155, 60, 0.5);
+  border-radius: 6px;
+  padding: 18px;
+  max-width: 80vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+.kyso-crop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kyso-crop-title {
+  color: #f0d080;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.kyso-crop-hint {
+  color: #c0c0c0;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.kyso-crop-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0e13;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.kyso-crop-image-wrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  user-select: none;
+}
+
+.kyso-crop-image {
+  display: block;
+  max-width: min(60vw, 640px);
+  max-height: 60vh;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.kyso-crop-box {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #c8a040;
+  background: rgba(200, 155, 60, 0.12);
+  cursor: move;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.kyso-crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #c8a040;
+  border: 1px solid #1e2328;
+  border-radius: 50%;
+}
+.kyso-crop-handle[data-h="nw"] {
+  top: -6px;
+  left: -6px;
+  cursor: nwse-resize;
+}
+.kyso-crop-handle[data-h="ne"] {
+  top: -6px;
+  right: -6px;
+  cursor: nesw-resize;
+}
+.kyso-crop-handle[data-h="sw"] {
+  bottom: -6px;
+  left: -6px;
+  cursor: nesw-resize;
+}
+.kyso-crop-handle[data-h="se"] {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
+}
+
+.kyso-crop-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Color Theme section ──────────────────────────────────────────────────── */
+
+/* Row com label em cima (para os presets) */
+.kyso-settings-row--label-top {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Grade de swatches */
+.kyso-color-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+/* Cada swatch é um botão circular colorido */
+.kyso-color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.12s,
+    border-color 0.12s,
+    box-shadow 0.12s;
+  outline: none;
+  padding: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.kyso-color-swatch:hover {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.kyso-color-swatch--active {
+  border-color: #c8a040;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px rgba(200, 160, 64, 0.45);
+}
+
+/* Row do picker customizado */
+.kyso-color-picker-row {
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Input type=color */
+.kyso-color-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 44px;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid rgba(200, 155, 60, 0.4);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.kyso-color-input:hover {
+  border-color: rgba(200, 155, 60, 0.8);
+}
+
+.kyso-color-input::-webkit-color-swatch-wrapper {
+  padding: 1px;
+}
+
+.kyso-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
+/* Input de hex manual */
+.kyso-color-hex-input {
+  width: 78px;
+  height: 32px;
+  padding: 0 8px;
+  font-family: monospace;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid rgba(200, 155, 60, 0.4);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #f0e6d2;
+  outline: none;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.kyso-color-hex-input:focus {
+  border-color: rgba(200, 155, 60, 0.85);
+}
+
+.kyso-color-hex-input.kyso-color-hex-input--invalid {
+  border-color: rgba(220, 80, 80, 0.75);
+  color: #ff8080;
+}
+
+/* Feedback row for color section */
+#kyso-color-feedback {
+  color: #7ec880;
+  font-size: 12px;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 0;
+  animation: kyso-fadein 0.2s ease;
+}
+
+#kyso-color-feedback .kyso-svg-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  stroke: #7ec880;
+}

@@ -1,0 +1,916 @@
+/*
+  Clean Theme by Kyso 
+  version 2.0
+*/
+
+/* You can choose your preferred font on https://fonts.google.com, and paste them on import url line  */
+@import url("https://fonts.googleapis.com/css2?family=Mulish+Condensed:wght@300&family=Orbitron&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Mulish:wght@800&display=swap");
+
+:root {
+  /* override default League font
+    to remove, just comment from :root til the }*/
+  --font-display: "Mulish", sans-serif !important;
+  --font-body: "Mulish", sans-serif !important;
+  /* DEPRECATED: --background-image não é mais usada. Mantida para compat caso plugin antigo referencie.
+     Sistema novo: #kyso-global-bg é um <div> fixed body-level que contém <img> ou <video>.
+     Vide settingsPage.js → applyBackground().
+     Original era sobrescrita pelo settingsPage.js via CSS inline quando o usuário
+       configura um background. O valor padrão abaixo é o fallback. */
+  --background-image: url("../assets/Main/background.jpg");
+
+  /* ─── Color accent — sobrescrito por settingsPage.js ─────────────────────
+     --kyso-accent      : cor principal (text, borders, badges)
+     --kyso-accent-glow : versão translúcida para glows / drop-shadow
+     --kyso-filter      : filter aplicado nos elementos coloridos do jogo
+     Defaults = branco / grayscale (comportamento original do tema)          */
+  --kyso-accent: #ffffff;
+  --kyso-accent-glow: rgba(255, 255, 255, 0.5);
+  --kyso-filter: grayscale(100%);
+}
+
+/* creates fadeIn animations to uses */
+@-webkit-keyframes fadeIn {
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, -30%, 0);
+    transform: translate3d(0, -30%, 0);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    -webkit-transform: translate3d(0, -30%, 0);
+    transform: translate3d(0, -30%, 0);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}
+
+/* Navigation RCP */
+#rcp-fe-viewport-root #rcp-fe-lol-navigation-app {
+  pointer-events: none;
+  position: relative;
+  z-index: 10;
+}
+.section,
+:host-context(lol-uikit-navigation-bar[type="nav-bar-secondary"]) .section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--kyso-accent) !important;
+  border: none;
+  margin: 0;
+  text-decoration: none;
+  outline: none;
+  transition: text-shadow 0.3s ease-in-out;
+  width: 100%;
+  height: 100%;
+  min-height: 20px;
+  cursor: pointer;
+}
+
+/* Hover-fade rules moved to settingsPage.js (applyHideOptions)
+   so the "Always show hover elements" toggle can disable them. */
+.summoner-xp-radial-container {
+  opacity: 0;
+  transition: 0.2s !important;
+}
+.summoner-xp-radial-container:hover {
+  opacity: 1;
+  transition: 0.2s !important;
+}
+.style-profile-skin-picker-button {
+  opacity: 0;
+  transition: 0.2s !important;
+}
+.style-profile-skin-picker-button:hover {
+  opacity: 1;
+  transition: 0.2s !important;
+}
+
+/* Lor Button Settings  */
+.launch-lor-button-container {
+  opacity: 0;
+  transition: 0.2s !important;
+}
+.launch-lor-button-container:hover {
+  opacity: 1;
+  transition: 0.2s !important;
+}
+.deep-links-promo {
+  opacity: 0;
+  transition: 0.2s !important;
+}
+.deep-links-promo:hover {
+  opacity: 1;
+  transition: 0.2s !important;
+}
+
+/* remove rp currency */
+/* .currency-rp-container-top-up-enabled{
+     display: none !important;
+} */
+
+/* set lobby find game button colors */
+.find-match-button-container,
+.role-selectors-container,
+.animation-button-icon {
+  filter: var(--kyso-filter);
+}
+.lol-parties-game-info-panel {
+  filter: var(--kyso-filter);
+}
+.confirm-button-container {
+  filter: var(--kyso-filter);
+}
+.generic-button .generic-button-root .generic-button-state {
+  filter: var(--kyso-filter);
+}
+.parties-game-type-select-wrapper {
+  filter: var(--kyso-filter);
+}
+.parties-game-select-screen {
+  filter: var(--kyso-filter);
+}
+.v2-banner-placeholder
+  .placeholder-invited-container
+  .placeholder-invited-video {
+  filter: var(--kyso-filter);
+}
+.parties-game-info-panel-invites {
+  filter: var(--kyso-filter);
+}
+.parties-status-card-bg-container,
+.parties-status-card,
+:host .parties-game-info-panel-content {
+  filter: var(--kyso-filter);
+}
+.deep-links-promo-element .launch-lor-button {
+  filter: var(--kyso-filter);
+}
+.lobby-header-map-icon {
+  filter: var(--kyso-filter);
+}
+.loot-backdrop {
+  opacity: 0 !important;
+}
+
+/* changes auto rune to hover mode */
+.rune-recommender-button-component {
+  opacity: 0;
+  transition: 0.2s !important;
+}
+.rune-recommender-button-component:hover {
+  opacity: 1;
+  transition: 0.2s !important;
+}
+/* In-game screens: transparente. Background global é fornecido por #kyso-global-bg
+   (body-level, fixed, z-index:-1). Mantido único em todo o cliente. */
+.rcp-fe-lol-game-in-progress,
+.rcp-fe-lol-pre-end-of-game,
+.rcp-fe-lol-reconnect,
+.rcp-fe-lol-repair-while-in-game > div,
+.rcp-fe-lol-waiting-for-stats {
+  background: transparent !important;
+  background-image: none !important;
+}
+.postgame-background-image {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* changes the animation in a lot of things, like to accept the match */
+.ready-check-state-machine-timer {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+  filter: hue-rotate(0deg) !important;
+}
+.ready-check-timer {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+}
+.ready-check-timer.ember-view {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+}
+.ready-check-root-element {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+}
+.ready-check-root-element.ember-view {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+}
+.fake-application-template {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+}
+
+/* Top Navigation Icons */
+.navigation-status-ticker.has-incidents {
+  visibility: hidden !important;
+}
+.main-navigation-menu-item .menu_item_navbar_event_hub .ember-view {
+  left: -338px !important;
+}
+.main-navigation-menu-item .menu_item_navbar_competitive .ember-view {
+  left: -448px !important;
+}
+.right-nav-vertical-rule {
+  visibility: hidden !important;
+}
+.collections-sub-nav-container {
+  z-index: 10 !important;
+  filter: hue-rotate(0deg) !important;
+}
+.basic-button {
+  left: 32vw !important;
+  height: 48px !important;
+  width: 122px !important;
+  top: 15px !important;
+}
+.left-nav-menu {
+  position: relative !important;
+  margin-left: -200px !important;
+}
+.league-logo {
+  display: none !important;
+}
+.play-button-frame {
+  background-image: none !important;
+}
+lol-uikit-video-state-machine {
+  display: none !important;
+}
+
+/* Collections settings */
+
+.collections-application {
+  position: relative;
+  isolation: isolate;
+  background-color: transparent !important;
+  background-image: url("../assets/Collections/collections-bg.jpg") !important;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0;
+}
+.collections-application:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent !important;
+}
+.collections-routes {
+  position: relative;
+  z-index: 10;
+  background-image: url("../assets/Collections/collections-bg.jpg") !important;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+/* Your Shop Settings */
+.yourshop-root {
+  position: relative;
+  isolation: isolate;
+}
+.yourshop-root:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: hue;
+  background-color: var(--kyso-accent) !important;
+  z-index: 1;
+}
+.yourshop-content-wrapper {
+  position: relative;
+  z-index: 2;
+}
+/* Lol Store configs  */
+.store-backdrop {
+  position: relative;
+  isolation: isolate;
+}
+.store-backdrop:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* filter: hue-rotate(-10deg); */
+  mix-blend-mode: hue;
+  background-color: var(--kyso-accent) !important;
+  z-index: -1;
+}
+.__rcp-fe-lol-store {
+  position: relative;
+  z-index: 1;
+}
+::-webkit-scrollbar-thumb {
+  background-color: transparent !important;
+}
+.chat-header {
+  border-bottom: transparent !important;
+}
+.heading {
+  border-bottom: transparent !important;
+}
+
+/*hides the restriction warning from player profile*/
+.player-restriction-info-component .player-restriction-warning-icon {
+  visibility: hidden;
+}
+
+/* Sets the background of gaming mode select  */
+:host .lol-uikit-background-switcher-image {
+  content: url("../assets/ModeSwitcher/switch.jpg");
+  /* box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5); */
+  filter: blur(0px);
+  width: auto !important;
+  opacity: 0 !important; /* You can comment this line to show the wallpaper, but i think it's good just transparent*/
+}
+.parties-view .parties-background .uikit-background-switcher {
+  content: url("../assets/ModeSwitcher/switch.jpg");
+  /* box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5); */
+  filter: blur(10px);
+  width: auto !important;
+  opacity: 0 !important;
+}
+
+/* Creates the play button and hides the older one */
+
+/* Fix to only |> display, you can change this if you want another thing
+   written on the play button */
+.play-button-content {
+  left: 30px !important;
+}
+.play-button-container {
+  background: transparent !important;
+  border-radius: 50px !important;
+  border: 1px solid var(--kyso-accent) !important;
+  filter: drop-shadow(1px 1px 8px var(--kyso-accent-glow)) !important;
+  transition: 0.2s !important;
+  cursor: pointer;
+}
+.play-button-container:hover {
+  filter: drop-shadow(1px 1px 15px var(--kyso-accent-glow)) !important;
+  transition: 0.2s !important;
+}
+.play-button-content {
+  width: calc(100% - 52px) !important;
+}
+.play-button-text {
+  color: var(--kyso-accent) !important;
+  font-family: "Open Sans", sans-serif !important;
+  content: "▶" !important;
+  visibility: hidden;
+  z-index: 0 !important;
+}
+.play-button-text:after {
+  content: "▶";
+  visibility: visible;
+  display: block;
+  position: absolute;
+  left: 28px;
+}
+#rcp-fe-viewport-root
+  > .rcp-fe-viewport-overlay
+  > .screen-root[style*="visibility: hidden;"]
+  ~ .play-button-text:after {
+  visibility: hidden !important;
+}
+.play-button-component[style*="visibility: hidden;"] ~ .play-button-text:after {
+  visibility: hidden !important;
+}
+.play-button-component[style*="visibility: hidden;"] + .play-button-text:after {
+  visibility: hidden !important;
+}
+.play-button-component[style*="visibility: hidden;"] .play-button-text:after {
+  visibility: hidden !important;
+}
+.screen-root[style*="visibility: hidden;"] .play-button-text:after {
+  visibility: hidden !important;
+}
+.screen-root[style*="visibility: hidden;"] ~ .play-button-text:after {
+  visibility: hidden !important;
+}
+.screen-root[style*="visibility: hidden;"] + .play-button-text:after {
+  visibility: hidden !important;
+}
+.champion-select-main-container:not(:hidden) ~ .play-button-text:after {
+  display: none !important;
+  visibility: hidden !important;
+}
+.champion-select-main-container:visible .play-button-text:after {
+  display: none !important;
+}
+.play-button-container:hover .play-button-text:after {
+  color: #c7c7c7 !important;
+}
+.play-button-container:active .play-button-text:after {
+  color: #c7c7c7 !important;
+}
+/* Loading screen configs */
+
+.lol-loading-screen-container.lol-loading-screen-default-state {
+  /* background: #1a1580 !important; */
+  opacity: 0.2px !important;
+  /* filter: blur(0.5px); */
+  background: url("../assets/Loading Screen/loading-background.jpg") #000000
+    no-repeat !important ;
+  background-size: cover !important;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.lol-loading-screen-lol-icon {
+  background-image: url("../assets/Loading Screen/loading-icon.gif") !important;
+  width: 200px !important;
+  height: 200px !important;
+  border-radius: 2px !important;
+}
+.lol-loading-screen-spinner {
+  visibility: hidden !important;
+}
+.lol-loading-screen-status-container {
+  width: 700px !important;
+  /* visibility: hidden !important; */
+}
+.lol-loading-screen-container.lol-loading-screen-default-state
+  .lol-loading-screen-status-container {
+  margin-top: -60px !important;
+  filter: var(--kyso-filter) !important;
+}
+
+/* Champ Select configs */
+.champion-select {
+  background-image: url("../assets/Runes and Select/champ-select-and-runes.jpg") !important;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+.champion-select
+  .champion-splash-background
+  .background-vignette-container.defocussed
+  > .champ-select-bg {
+  opacity: 0 !important;
+}
+.champ-select-bg-darken {
+  opacity: 0.2 !important;
+}
+.background-vignette-container.focussed.static.visible {
+  display: none !important;
+}
+.lol-uikit-background-switcher-image.none.transition {
+  display: none !important;
+}
+/* Runes config */
+.perks-body-content {
+  background-image: url("../assets/Runes and Select/champ-select-and-runes.jpg");
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+/* Changing some colors on notifications and etc */
+.parties-status-card.closed {
+  visibility: hidden !important;
+}
+.navigation-status-ticker {
+  position: absolute !important;
+  left: 430px !important;
+  top: 24px !important;
+}
+.mission-button .count-badge {
+  background-color: var(--kyso-accent) !important;
+}
+.loot-item-visual .shard-overlay {
+  background: var(--kyso-accent) !important;
+}
+.social-count-badge {
+  background-color: var(--kyso-accent) !important;
+}
+lol-social-friend-requests .friend-requests-header {
+  color: var(--kyso-accent) !important;
+}
+.chat-bubble .my-bubble {
+  background-color: var(--kyso-accent) !important;
+}
+lol-social-chat-window .conversation.unread .conversation-subtitle {
+  color: var(--kyso-accent) !important;
+}
+lol-social-chat-window .conversation.active::before {
+  background-color: var(--kyso-accent) !important;
+}
+lol-social-roster .more-unread .more-unread-bar {
+  background-color: var(--kyso-accent) !important;
+}
+.status-message.offline {
+  color: var(--kyso-accent) !important;
+}
+.status-message-wrapper {
+  color: var(--kyso-accent) !important;
+}
+.status-message.chat {
+  color: var(--kyso-accent) !important;
+}
+.status-message.game-status.chat {
+  color: var(--kyso-accent) !important;
+}
+lol-social-roster-member .open-party .open-party-indicator {
+  background: var(--kyso-accent) !important;
+}
+lol-social-roster-member .open-party-indicator {
+  background: var(--kyso-accent) !important;
+}
+.rcp-fe-viewport-sidebar {
+  background: var(--social-sidebar-bg-color) !important;
+}
+.right-nav-vertical-rule {
+  display: none !important;
+}
+.rcp-fe-viewport-sidebar {
+  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)) !important;
+}
+.availability-icon.mobile {
+  background-color: transparent !important;
+}
+.main-navigation-menu-item {
+  filter: var(--kyso-filter) !important;
+}
+.status-message.open-party.chat {
+  color: var(--kyso-accent) !important;
+}
+.filled.xp-ring {
+  background-color: var(--kyso-accent) !important;
+}
+lol-social-status .status-message.dnd {
+  color: var(--kyso-accent) !important;
+  font-weight: lighter !important;
+  text-transform: lowercase !important;
+}
+
+.section.active,
+:host-context(lol-uikit-navigation-bar[type="nav-bar-secondary"])
+  .section.active {
+  color: var(--kyso-accent) !important;
+  text-shadow: 0px 1px 15px var(--kyso-accent-glow) !important;
+  font-family: "Orbitron", sans-serif !important;
+}
+.section,
+:host-context(lol-uikit-navigation-bar[type="nav-bar-secondary"]) .section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--kyso-accent) !important;
+  border: none;
+  margin: 0;
+  text-decoration: none;
+  outline: none;
+  transition:
+    text-shadow 0.3s ease-in-out,
+    background 1s;
+  width: 100%;
+  height: 100%;
+  min-height: 20px;
+  cursor: pointer;
+  font-family: "Orbitron", sans-serif !important;
+}
+div[data-screen-name="rcp-fe-lol-navigation-screen"] {
+  height: 79px;
+  width: 1278px;
+  border-top: 0px solid #ffffff2a !important;
+  box-sizing: border-box;
+}
+.lol-social-sidebar {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: column;
+  flex-direction: column;
+  color: transparent !important;
+  font-size: 12px;
+  cursor: default;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Kill backdrop-filter blur globalmente. Game-mode picker, parties view,
+   nav-bar superior — todos voltavam com blur. Global é a única forma robusta. */
+*,
+*::before,
+*::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Parties view: blur azul vem do .parties-background com video baked-in,
+   não é backdrop-filter. Colapsa altura (trick Elaina-theme). */
+.parties-view .parties-background {
+  height: 0px !important;
+}
+.v2-lobby-root-component .navbar-blur {
+  background: none !important;
+  backdrop-filter: none !important;
+}
+.parties-status-card-bg-container video,
+.parties-game-section.use-animation > .parties-game-info-panel-bg-container > video {
+  display: none !important;
+}
+
+/* Home configs */
+div[data-screen-name="rcp-fe-lol-home"]
+  #rcp-fe-lol-home-error
+  .rcp-fe-lol-home-error-group {
+  visibility: hidden !important;
+}
+.rcp-fe-lol-home-article-loading-spinner.loading,
+div[data-screen-name="rcp-fe-lol-home"].active
+  .rcp-fe-lol-home-loading-spinner.loading {
+  visibility: hidden !important;
+}
+#rcp-fe-viewport-root {
+  display: flex;
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  filter: drop-shadow(1px 1px 1px var(--kyso-accent-glow)) !important;
+}
+/* Viewport-root é transparente. Background global vive em #kyso-global-bg
+   (body-level, fixed, z-index:-1). */
+#rcp-fe-viewport-root {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* ─── Global background container ──────────────────────────────
+   <div id="kyso-global-bg"> contém <img> ou <video> em fullscreen
+   atrás de tudo. Persiste por toda sessão e screen do cliente. */
+#kyso-global-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: #000;
+}
+#kyso-global-bg > img,
+#kyso-global-bg > video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  /* Força composite layer (GPU). Sem isso, vídeo grande repinta CPU em
+     cada frame e trava o client. */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ─── Hide top navbar (estilo Elaina) ──────────────────────────
+   Botão posicionado DENTRO de .right-nav-menu via prepend. Slide
+   horizontal arrasta itens + botão por translateX(navWidth-40). */
+.hide-top-navbar {
+  opacity: 1 !important;
+  height: 100%;
+  min-width: 40px;
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  --disabled-color: #f0e6d280;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  transition: transform 0.5s ease 0s;
+  transform: translateX(0px);
+  color: #c8a040;
+  font-family: var(--font-body, "Mulish", sans-serif);
+  user-select: none;
+}
+.hide-top-navbar:hover {
+  filter: drop-shadow(1px 1px 3px #ffd28aaa);
+}
+.hide-top-navbar-icon {
+  width: 36px;
+  height: 36px;
+  margin-right: 0;
+  position: relative;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* Transition para itens do top navbar (Elaina aplica via JS mas
+   pré-declarar evita flash no primeiro click). */
+.right-nav-menu {
+  transition: opacity 0.5s ease, transform 0.5s ease 0s;
+}
+.main-navigation-menu-item,
+.right-nav-vertical-rule,
+.wallet-and-badges {
+  transition: opacity 0.5s ease, transform 0.5s ease 0s;
+}
+
+/* Kill backdrop blur do navbar (Elaina). */
+.rcp-fe-lol-navigation-app .navbar_backdrop {
+  backdrop-filter: blur(0px) !important;
+}
+
+/* ─── Hide social panel (sliding-door estilo Elaina) ───────────
+   Tab vertical 20px na borda direita, em frente ao social-panel.
+   Click slida painel + botão p/ fora do viewport. */
+.hide-friendslist {
+  height: 130px;
+  position: absolute;
+  top: 328px;
+  right: 222px;
+  width: 20px;
+  border: 2px solid #8c8263;
+  border-radius: 6px 0 0 6px;
+  background-color: rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+  display: block;
+  opacity: 0.3;
+  transition: opacity 0.5s ease 0s, transform 0.5s ease 0s;
+  transform: translateX(0px);
+  z-index: 9999;
+  color: #c8a040;
+  font-family: var(--font-body, "Mulish", sans-serif);
+  user-select: none;
+}
+.hide-friendslist:hover {
+  opacity: 1;
+  filter: drop-shadow(1px 1px 3px #ffd28aaa);
+}
+.hide-friendslist-icon {
+  width: 36px;
+  position: relative;
+  left: -9px;
+  top: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  line-height: 1;
+}
+/* Transitions pré-declarados nos elementos que slidam */
+.lol-social-lower-pane-container,
+.sidebar-background,
+.alpha-version-panel,
+lol-parties-game-info-panel,
+.watermark {
+  transition: transform 0.5s ease 0s !important;
+}
+
+/* ─── Parties game-search-status sem background (Elaina) ──── */
+:host .parties-game-search-status,
+.parties-game-search-status {
+  background: none !important;
+  border: 1px solid #8c8263 !important;
+  border-radius: 10px !important;
+  margin-top: 1px !important;
+}
+
+/* ─── Parties status card (lobby open/closed) — sem fundo verde/azul ──── */
+:host .parties-status-card .parties-status-card-bg-container,
+.parties-status-card .parties-status-card-bg-container,
+:host .parties-status-card-bg-container,
+.parties-status-card-bg-container {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+:host .parties-status-card.open,
+:host .parties-status-card.closed,
+.parties-status-card.open,
+.parties-status-card.closed {
+  background: none !important;
+  background-color: transparent !important;
+  filter: none !important;
+}
+/* TFT Configs */
+.rcp-fe-lol-tft-quick-play .quick-play-button .quick-play-button-container {
+  filter: var(--kyso-filter);
+}
+.rcp-fe-lol-tft-home .team-planner-button-container__button {
+  filter: var(--kyso-filter);
+}
+.rcp-fe-lol-tft-home .tft-home-footer-bg {
+  filter: var(--kyso-filter);
+}
+.rcp-fe-lol-tft-application-background {
+  background-image: none !important;
+}
+
+/* New mythic shop and others */
+.mythic-shop-backdrop {
+  background: none !important;
+}
+.moon-skin-root-addon-component .moon-skin-backdrop {
+  background: none !important;
+}
+
+/* activity center (trashass thing wtf) cfgs */
+/* #activity-center, #activity-center .activity-center__template{
+    background:transparent !important;
+}
+.activity-center__background-component_container{
+    display: none !important;
+}
+.activity-center-default-activity__content.ready{
+    display: none !important;
+    visibility: hidden;
+} */
+
+#activity-center .activity-center__tabs_section-divider {
+  visibility: hidden !important;
+}
+#activity-center .activity-center__tabs_scrollable {
+  opacity: 0;
+  transition: 0.2s !important;
+}
+#activity-center .activity-center__tabs_scrollable:hover {
+  opacity: 1;
+  transition: 0.2s !important;
+}
+
+/* my screen configs */
+.custom-buttons {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  background: transparent;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.custom-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.button-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Party Status */
+.lol-social-panel {
+  background: transparent !important;
+  filter: var(--kyso-filter) !important;
+}
+/* Icon override moved to settingsPage.js (applyIcon)
+   so it follows the user-selected iconUrl. */
+
+/* Lobby blurs.*/
+.v2-header-component .lobby-header-overlay {
+  display: none !important;
+}
+
