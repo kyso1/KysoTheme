@@ -4,6 +4,7 @@
  */
 
 import "./utilsCss/ThemeSettings.css";
+import * as assetReplacers from "./assetReplacers.js";
 
 // ─────────────────────────────────────────────
 //  i18n – Internacionalização
@@ -670,6 +671,15 @@ const PLUGIN_ASSETS_BASE = `//plugins/${PLUGIN_NAME}/assets/`;
 function pluginAsset(relPath) {
   // relPath = "Main/background.jpg" → "//plugins/KysoTheme/assets/Main/background.jpg"
   return PLUGIN_ASSETS_BASE + String(relPath).replace(/^\/+/, "");
+}
+
+// Resolves a {cat}Source/{cat}Local/{cat}Web triple into a final URL.
+// cat = "background" | "banner" | "crest" | "profileIcon" | "loadingBg" | "loadingIcon"
+function resolveAsset(cat, settings) {
+  const source = settings[cat + "Source"];
+  if (source === "web") return settings[cat + "Web"] || "";
+  const local = settings[cat + "Local"] || "";
+  return local ? pluginAsset(local) : "";
 }
 
 // Default bg usado quando settings.backgroundUrl está vazia.
