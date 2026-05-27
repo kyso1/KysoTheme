@@ -128,20 +128,6 @@ function initBlurScrubber() {
   });
 }
 
-
-const DEFAULT_ICON_URL =
-  "https://media.discordapp.net/attachments/1368146210669461555/1441499018487136428/IMG_6681_1.JPEG?ex=69220413&is=6920b293&hm=74cbf415cce3d06d8e088d5d1fd16c6b64123d08f80e9ac6b34a91aaaaeee54e&=&format=webp&width=540&height=960";
-
-function getSavedIconUrl() {
-  try {
-    const raw = DataStore.get("KysoTheme.settings");
-    const settings = raw ? JSON.parse(raw) : {};
-    return settings.iconUrl || DEFAULT_ICON_URL;
-  } catch {
-    return DEFAULT_ICON_URL;
-  }
-}
-
 function addHomeButton() {
   let activityCenterTabs = document.querySelector(
     "#activity-center .activity-center__tabs",
@@ -233,7 +219,6 @@ function loadHomePage() {
     buttonContainer.appendChild(githubButton);
     buttonContainer.appendChild(resetButton);
     buttonContainer.appendChild(openFolderButton);
-    changeIcon();
     // buttonContainer.appendChild(previousButton);
     // buttonContainer.appendChild(nextButton);
 
@@ -262,7 +247,6 @@ let homeButtonInterval = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   if (addHomeButton()) return;
-  changeIcon();
   observer = new MutationObserver((mutations) => {
     if (addHomeButton()) {
       observer.disconnect();
@@ -277,79 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
     childList: true,
     subtree: true,
   });
-});
-
-function changeIcon() {
-  console.log("Configurando observador para trocar ícones...");
-
-  const getProfilePageIcon = () => {
-    const regaliaProfile = document.querySelector(
-      "lol-regalia-profile-v2-element",
-    );
-    if (regaliaProfile && regaliaProfile.shadowRoot) {
-      return regaliaProfile.shadowRoot.querySelector(
-        "div > div > div.regalia-profile-crest-hover-area.picker-enabled > lol-regalia-crest-v2-element",
-      );
-    }
-    return null;
-  };
-
-  const updateProfileIcon = () => {
-    const url = getSavedIconUrl();
-    if (!url) return;
-    const profilePageIcon = getProfilePageIcon();
-    if (
-      profilePageIcon &&
-      profilePageIcon.getAttribute("profile-icon-url") !== url
-    ) {
-      try {
-        profilePageIcon.setAttribute("profile-icon-url", url);
-        console.log("Ícone da página de perfil alterado com sucesso!");
-      } catch (e) {
-        console.error("Erro ao alterar ícone da página de perfil:", e);
-      }
-    }
-  };
-
-  // Agora observamos o carregamento do perfil dinamicamente!
-  const observer = new MutationObserver(() => {
-    const profilePageIcon = getProfilePageIcon();
-    if (profilePageIcon) {
-      updateProfileIcon();
-    }
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  // Atualizar o ícone geral da barra lateral
-  const updateGeneralIcon = () => {
-    const url = getSavedIconUrl();
-    if (!url) return;
-    let profileIconGeneral = document.querySelector(
-      "lol-social-avatar .summoner-level-icon .icon-image",
-    );
-    if (profileIconGeneral && profileIconGeneral.getAttribute("src") !== url) {
-      try {
-        profileIconGeneral.setAttribute("src", url);
-        console.log("Ícone geral alterado!");
-      } catch (e) {
-        console.error("Erro ao alterar ícone geral:", e);
-      }
-    }
-  };
-
-  updateGeneralIcon();
-  const generalIconInterval = setInterval(updateGeneralIcon, 300);
-
-  // Limpeza
-  window.addEventListener("beforeunload", () => {
-    observer.disconnect();
-    clearInterval(generalIconInterval);
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  changeIcon();
 });
 
 const checkBodyLoaded = setInterval(() => {
