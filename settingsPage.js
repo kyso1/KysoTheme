@@ -1638,8 +1638,9 @@ function openIconCropModal(srcUrl, onConfirm) {
 // ─────────────────────────────────────────────
 //  Construção da UI de configurações
 // ─────────────────────────────────────────────
-function buildSettingsPanel() {
+async function buildSettingsPanel() {
   const settings = { ...DEFAULTS, ...loadSettings() };
+  const manifest = await assetReplacers.loadManifest();
 
   const panel = document.createElement("div");
   panel.className = "kyso-settings-panel";
@@ -1649,41 +1650,14 @@ function buildSettingsPanel() {
       <span class="kyso-settings-version">v2.0</span>
     </div>
 
-    <!-- Background -->
-    <section class="kyso-settings-section">
-      <h3 class="kyso-settings-section-title">${ICONS.picture}<span>${t("bgSection")}</span></h3>
+    <!-- Player Assets -->
+    <section class="kyso-settings-section" id="kyso-assets-section">
+      <h3 class="kyso-settings-section-title">${ICONS.picture}<span>${t("assetsSection")}</span></h3>
 
-      <div class="kyso-settings-row">
-        <label class="kyso-label" for="kyso-bg-preset">${t("bgPreset")}</label>
-        <select id="kyso-bg-preset" class="kyso-select">
-          <option value="">— ${t("bgPresetNone")} —</option>
-          ${PRESET_BACKGROUNDS.map(
-            (p) => `<option value="${pluginAsset(p.path)}">${p.label}</option>`,
-          ).join("")}
-        </select>
-      </div>
+      ${buildAssetBlock("background", "bgSection", manifest.categories.backgrounds, settings)}
 
-      <div class="kyso-settings-row">
-        <label class="kyso-label" for="kyso-bg-url">${t("bgUrl")}</label>
-        <input id="kyso-bg-url" class="kyso-input" type="text"
-          placeholder="${t("bgUrlPlaceholder")}"
-          value="${settings.backgroundUrl || ""}">
-        <span class="kyso-hint">${t("bgUrlHint")}</span>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--upload">
-        <label class="kyso-label">${t("bgUpload")}</label>
-        <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
-          ${ICONS.folder}<span>${t("bgChoose")}</span>
-          <input id="kyso-bg-file" type="file" accept="image/*,video/*,.gif" style="display:none;">
-        </label>
-        <button id="kyso-bg-open-folder" class="kyso-btn kyso-btn--secondary" type="button">
-          ${ICONS.folder}<span>${t("bgOpenFolder")}</span>
-        </button>
-        <span id="kyso-bg-filename" class="kyso-filename">${t("noFile")}</span>
-      </div>
-
-      <div class="kyso-settings-row">
+      <!-- Background-specific extra: type override -->
+      <div class="kyso-settings-row kyso-asset-bg-type-row">
         <label class="kyso-label" for="kyso-bg-type">${t("bgType")}</label>
         <select id="kyso-bg-type" class="kyso-select">
           <option value="auto" ${settings.backgroundType === "auto" ? "selected" : ""}>${t("bgTypeAuto")}</option>
@@ -1693,10 +1667,11 @@ function buildSettingsPanel() {
         </select>
       </div>
 
-      <div class="kyso-settings-row">
-        <button id="kyso-bg-apply" class="kyso-btn kyso-btn--primary">${t("bgApply")}</button>
-        <button id="kyso-bg-reset" class="kyso-btn kyso-btn--danger">${t("bgRemove")}</button>
-      </div>
+      ${buildAssetBlock("banner", "bannerLabel", manifest.categories.banners, settings)}
+      ${buildAssetBlock("crest", "crestLabel", manifest.categories.crests, settings)}
+      ${buildAssetBlock("profileIcon", "profileIconLabel", manifest.categories.profileIcons, settings)}
+      ${buildAssetBlock("loadingBg", "loadingBgLabel", manifest.categories.loadingBackgrounds, settings)}
+      ${buildAssetBlock("loadingIcon", "loadingIconLabel", manifest.categories.loadingIcons, settings)}
     </section>
 
     <!-- Visibility -->
@@ -2346,7 +2321,7 @@ const SETTINGS_SENTINEL =
 
 let injected = false;
 
-function tryInjectSettingsTab() {
+async function tryInjectSettingsTab() {
   if (injected) return;
 
   // Verifica se a janela de Settings está aberta
@@ -2393,7 +2368,7 @@ function tryInjectSettingsTab() {
   kysoContent.id = "kyso-settings-content";
   kysoContent.className = "kyso-settings-content-wrapper";
   kysoContent.style.display = "none";
-  kysoContent.appendChild(buildSettingsPanel());
+  kysoContent.appendChild(await buildSettingsPanel());
   settingsContent.appendChild(kysoContent);
 
   kysoNavItem.addEventListener("click", () => {
