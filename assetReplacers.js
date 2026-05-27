@@ -165,3 +165,42 @@ export function applyCrest(url) {
   });
   _crestObserver.observe(document.body, { childList: true, subtree: true });
 }
+
+// applyLoadingScreen — single <style id="kyso-loading-style"> in document.head.
+// Empty URL for either field omits the corresponding rule.
+// Both empty → remove the element entirely.
+export function applyLoadingScreen({ bgUrl, iconUrl }) {
+  const id = "kyso-loading-style";
+  let style = document.head.querySelector("#" + id);
+  if (!bgUrl && !iconUrl) {
+    if (style) style.remove();
+    return;
+  }
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    document.head.appendChild(style);
+  }
+  const parts = [];
+  if (bgUrl) {
+    parts.push(
+      `.lol-loading-screen-container.lol-loading-screen-default-state {
+         background: url("${bgUrl}") #000000 center/cover no-repeat !important;
+         background-size: cover !important;
+         background-position: center center !important;
+         opacity: 0.2px !important;
+       }`,
+    );
+  }
+  if (iconUrl) {
+    parts.push(
+      `.lol-loading-screen-lol-icon {
+         background-image: url("${iconUrl}") !important;
+         width: 200px !important;
+         height: 200px !important;
+         border-radius: 2px !important;
+       }`,
+    );
+  }
+  style.textContent = parts.join("\n");
+}
