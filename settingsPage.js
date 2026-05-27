@@ -760,6 +760,56 @@ function resolveAsset(cat, settings) {
   return local ? pluginAsset(local) : "";
 }
 
+// Builds the HTML for one asset category block.
+// cat is the prefix used in DEFAULTS keys: e.g. "banner" → bannerSource/bannerLocal/bannerWeb.
+// labelKey is the i18n key for the section heading: e.g. "bannerLabel".
+// manifestEntries is the array from manifest.categories[<cat plural>].
+function buildAssetBlock(cat, labelKey, manifestEntries, settings) {
+  const source = settings[cat + "Source"] || "local";
+  const local = settings[cat + "Local"] || "";
+  const web = settings[cat + "Web"] || "";
+
+  const options = manifestEntries.length
+    ? `<option value="">— ${t("selectPlaceholder")} —</option>` +
+      manifestEntries
+        .map(
+          (e) =>
+            `<option value="${e.path}" ${e.path === local ? "selected" : ""}>${e.label}</option>`,
+        )
+        .join("")
+    : `<option value="">${t("noLocalAssets")}</option>`;
+
+  return `
+    <div class="kyso-asset-block" data-cat="${cat}">
+      <h4 class="kyso-asset-block-title">${t(labelKey)}</h4>
+      <div class="kyso-settings-row kyso-asset-source-row">
+        <label class="kyso-radio">
+          <input type="radio" name="kyso-${cat}-source" value="local" ${source === "local" ? "checked" : ""}>
+          <span>${t("sourceLocal")}</span>
+        </label>
+        <label class="kyso-radio">
+          <input type="radio" name="kyso-${cat}-source" value="web" ${source === "web" ? "checked" : ""}>
+          <span>${t("sourceWeb")}</span>
+        </label>
+      </div>
+      <div class="kyso-settings-row kyso-asset-local-row" ${source === "local" ? "" : 'style="display:none"'}>
+        <select id="kyso-${cat}-local" class="kyso-select" data-cat="${cat}">
+          ${options}
+        </select>
+      </div>
+      <div class="kyso-settings-row kyso-asset-web-row" ${source === "web" ? "" : 'style="display:none"'}>
+        <input id="kyso-${cat}-web" class="kyso-input" type="text"
+               placeholder="${t("webUrlPlaceholder")}"
+               value="${web.replace(/"/g, "&quot;")}">
+        <button class="kyso-btn kyso-btn--primary kyso-${cat}-apply" data-cat="${cat}">${t("applyAsset")}</button>
+      </div>
+      <div class="kyso-settings-row">
+        <button class="kyso-btn kyso-btn--secondary kyso-${cat}-reset" data-cat="${cat}">${t("resetToDefault")}</button>
+      </div>
+    </div>
+  `;
+}
+
 // Default bg usado quando settings.backgroundUrl está vazia.
 const DEFAULT_BG_URL = pluginAsset("Main/background.jpg");
 
