@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "categories": {
+    "backgrounds": [
+      { "label": "Default Static", "path": "Main/background.jpg" },
+      { "label": "Default Animated", "path": "Main/background.gif" },
+      { "label": "Main Alt 1", "path": "Main/1.jpg" },
+      { "label": "Main Alt 2", "path": "Main/2.jpg" },
+      { "label": "Collections 22", "path": "Collections/collections-bg22.jpg" },
+      { "label": "Champ Select & Runes", "path": "Runes and Select/champ-select-and-runes.jpg" },
+      { "label": "Runes Alt 1", "path": "Runes and Select/1.jpg" },
+      { "label": "Mode Switcher", "path": "ModeSwitcher/switch.jpg" },
+      { "label": "Mode Switcher Alt", "path": "ModeSwitcher/switch1.jpg" }
+    ],
+    "banners": [],
+    "crests": [],
+    "profileIcons": [],
+    "loadingBackgrounds": [
+      { "label": "Default", "path": "Loading Screen/loading-background.jpg" },
+      { "label": "Alt 1", "path": "Loading Screen/1.jpg" }
+    ],
+    "loadingIcons": [
+      { "label": "Default", "path": "Loading Screen/loading-icon.gif" }
+    ]
+  }
+}
