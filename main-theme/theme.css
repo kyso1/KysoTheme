@@ -431,22 +431,9 @@ lol-uikit-video-state-machine {
 }
 /* Loading screen configs */
 
-.lol-loading-screen-container.lol-loading-screen-default-state {
-  /* background: #1a1580 !important; */
-  opacity: 0.2px !important;
-  /* filter: blur(0.5px); */
-  background: url("../assets/Loading Screen/loading-background.jpg") #000000
-    no-repeat !important ;
-  background-size: cover !important;
-  background-position: center center;
-  background-repeat: no-repeat;
-}
-.lol-loading-screen-lol-icon {
-  background-image: url("../assets/Loading Screen/loading-icon.gif") !important;
-  width: 200px !important;
-  height: 200px !important;
-  border-radius: 2px !important;
-}
+/* Loading screen background + icon are now injected at runtime by
+   assetReplacers.applyLoadingScreen() from user settings. Spinner /
+   status-container layout-only rules below remain. */
 .lol-loading-screen-spinner {
   visibility: hidden !important;
 }
