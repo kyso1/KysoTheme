@@ -134,3 +134,34 @@ export function applyBanner(url) {
   });
   _bannerObserver.observe(document.body, { childList: true, subtree: true });
 }
+
+// applyCrest — injects override style into the crest element's shadow root.
+let _crestObserver = null;
+let _currentCrestUrl = "";
+
+function _updateCrestDom(url) {
+  const profile = document.querySelector("lol-regalia-profile-v2-element");
+  if (!profile || !profile.shadowRoot) return;
+  const crest = profile.shadowRoot.querySelector("lol-regalia-crest-v2-element");
+  if (!crest || !crest.shadowRoot) return;
+  const style = ensureStyleIn(crest.shadowRoot, "kyso-crest-override");
+  if (!style) return;
+  style.textContent = url
+    ? `:host, :host > div, .crest, [class*="crest"] {
+         background-image: url("${url}") !important;
+         background-size: contain !important;
+         background-position: center !important;
+         background-repeat: no-repeat !important;
+       }`
+    : "";
+}
+
+export function applyCrest(url) {
+  _currentCrestUrl = url || "";
+  if (_crestObserver) _crestObserver.disconnect();
+  _updateCrestDom(_currentCrestUrl);
+  _crestObserver = new MutationObserver(() => {
+    _updateCrestDom(_currentCrestUrl);
+  });
+  _crestObserver.observe(document.body, { childList: true, subtree: true });
+}
