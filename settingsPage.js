@@ -587,8 +587,34 @@ function saveSettings(settings) {
 //  Configurações padrão
 // ─────────────────────────────────────────────
 const DEFAULTS = {
+  // Legacy mirrors (write-only after migration — never read internally)
   backgroundUrl: "",
+  iconUrl: "",
+  // Background — Local|Web triple
+  backgroundSource: "local",
+  backgroundLocal: "Main/background.jpg",
+  backgroundWeb: "",
   backgroundType: "auto", // "auto" | "gif" | "image" | "video"
+  // Banner
+  bannerSource: "local",
+  bannerLocal: "",
+  bannerWeb: "",
+  // Crest
+  crestSource: "local",
+  crestLocal: "",
+  crestWeb: "",
+  // Profile icon (self-only — no allPlayers toggle)
+  profileIconSource: "local",
+  profileIconLocal: "",
+  profileIconWeb: "",
+  // Loading screen
+  loadingBgSource: "local",
+  loadingBgLocal: "Loading Screen/loading-background.jpg",
+  loadingBgWeb: "",
+  loadingIconSource: "local",
+  loadingIconLocal: "Loading Screen/loading-icon.gif",
+  loadingIconWeb: "",
+  // Visibility / hide features
   hideRP: false,
   hideHoverElements: false,
   hideTFT: false,
@@ -596,18 +622,16 @@ const DEFAULTS = {
   hideSocialPanel: false,
   fontUrl: "",
   fontFamily: "",
-  iconUrl: "",
-  iconAllPlayers: false, // false = só o próprio ícone; true = todos os jogadores
-  // Sliding-door hide-navbar feature
-  enableHideNavbarBtn: false, // mostra/oculta o botão tab vertical
-  navbarHidden: false, // estado atual (persiste entre reloads)
-  showBlueEssenceOnHide: false, // mantém wallet visível quando navbar está oculta
-  // Sliding-door hide-social-panel feature (Elaina-style)
+  // Sliding-door hide-navbar
+  enableHideNavbarBtn: false,
+  navbarHidden: false,
+  showBlueEssenceOnHide: false,
+  // Sliding-door hide-social-panel
   enableHideSocialBtn: false,
   socialHidden: false,
-  // Color accent theme
-  accentColor: "", // hex string ("#c8a040") ou "" = branco padrão
-  accentAuto: false, // true = extrai cor dominante do background
+  // Color accent
+  accentColor: "",
+  accentAuto: false,
 };
 
 // ─────────────────────────────────────────────
