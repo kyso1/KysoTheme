@@ -2283,6 +2283,45 @@ function tryInjectSettingsTab() {
 }
 
 // ─────────────────────────────────────────────
+//  Migração de chaves legacy → triples Source/Local/Web (PR A)
+// ─────────────────────────────────────────────
+// Roda 1x no boot dentro de initSettingsPage. Idempotente: re-rodar com chaves
+// novas presentes é no-op para essas chaves.
+function migrateSettings(saved) {
+  if (!saved || typeof saved !== "object") return saved;
+  const out = { ...saved };
+
+  // Remove chave descontinuada
+  if (out.iconAllPlayers !== undefined) delete out.iconAllPlayers;
+
+  const ASSETS_PREFIX = "//plugins/KysoTheme/assets/";
+
+  // Background: derive Source/Local/Web from legacy backgroundUrl
+  if (out.backgroundUrl && out.backgroundSource === undefined) {
+    if (out.backgroundUrl.startsWith(ASSETS_PREFIX)) {
+      out.backgroundSource = "local";
+      out.backgroundLocal = out.backgroundUrl.slice(ASSETS_PREFIX.length);
+    } else {
+      out.backgroundSource = "web";
+      out.backgroundWeb = out.backgroundUrl;
+    }
+  }
+
+  // Profile icon: derive from legacy iconUrl
+  if (out.iconUrl && out.profileIconSource === undefined) {
+    if (out.iconUrl.startsWith(ASSETS_PREFIX)) {
+      out.profileIconSource = "local";
+      out.profileIconLocal = out.iconUrl.slice(ASSETS_PREFIX.length);
+    } else {
+      out.profileIconSource = "web";
+      out.profileIconWeb = out.iconUrl;
+    }
+  }
+
+  return out;
+}
+
+// ─────────────────────────────────────────────
 //  Inicialização
 // ─────────────────────────────────────────────
 export function initSettingsPage() {
@@ -2305,6 +2344,13 @@ export function initSettingsPage() {
       saved = { ...saved, backgroundUrl: "", backgroundType: "auto" };
       saveSettings(saved);
     }
+  }
+
+  // Migração PR A: chaves legacy → triples Source/Local/Web
+  const _migrated = migrateSettings(saved);
+  if (JSON.stringify(_migrated) !== JSON.stringify(saved)) {
+    saveSettings(_migrated);
+    saved = _migrated;
   }
 
   applyAllSettings(saved);
