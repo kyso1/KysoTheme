@@ -1311,17 +1311,23 @@ function updateIconInDOM(url, allPlayers = false) {
 
 export function applyAllSettings(settings) {
   const merged = { ...DEFAULTS, ...settings };
-  applyBackground(merged.backgroundUrl, merged.backgroundType);
+  const bgUrl = resolveAsset("background", merged);
+  applyBackground(bgUrl, merged.backgroundType);
   applyFont(merged.fontUrl, merged.fontFamily);
   applyHideOptions(merged);
-  applyIcon(merged.iconUrl, merged.iconAllPlayers);
+  // Asset replacers — self-only profile icon, no global CSS path
+  assetReplacers.applyBanner(resolveAsset("banner", merged));
+  assetReplacers.applyCrest(resolveAsset("crest", merged));
+  assetReplacers.applyProfileIcon(resolveAsset("profileIcon", merged));
+  assetReplacers.applyLoadingScreen({
+    bgUrl: resolveAsset("loadingBg", merged),
+    iconUrl: resolveAsset("loadingIcon", merged),
+  });
   applyHideNavbarBtnSetting(merged);
   applyHideSocialBtnSetting(merged);
-  // Color accent
+  // Color accent — still uses resolved bgUrl for auto-extraction
   if (merged.accentAuto) {
-    extractAccentFromBackground(merged.backgroundUrl).then((hex) =>
-      applyAccentColor(hex),
-    );
+    extractAccentFromBackground(bgUrl).then((hex) => applyAccentColor(hex));
   } else {
     applyAccentColor(merged.accentColor || "");
   }
