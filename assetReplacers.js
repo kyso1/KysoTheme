@@ -103,3 +103,34 @@ export function applyProfileIcon(url) {
   });
   _profileIconObserver.observe(document.body, { childList: true, subtree: true });
 }
+
+// applyBanner — injects override style into the banner element's shadow root.
+// Selectors are broad to survive minor Riot rendering changes.
+let _bannerObserver = null;
+let _currentBannerUrl = "";
+
+function _updateBannerDom(url) {
+  const profile = document.querySelector("lol-regalia-profile-v2-element");
+  if (!profile || !profile.shadowRoot) return;
+  const banner = profile.shadowRoot.querySelector("lol-regalia-banner-v2-element");
+  if (!banner || !banner.shadowRoot) return;
+  const style = ensureStyleIn(banner.shadowRoot, "kyso-banner-override");
+  if (!style) return;
+  style.textContent = url
+    ? `:host, :host > div, .banner, [class*="banner"] {
+         background-image: url("${url}") !important;
+         background-size: cover !important;
+         background-position: center !important;
+       }`
+    : "";
+}
+
+export function applyBanner(url) {
+  _currentBannerUrl = url || "";
+  if (_bannerObserver) _bannerObserver.disconnect();
+  _updateBannerDom(_currentBannerUrl);
+  _bannerObserver = new MutationObserver(() => {
+    _updateBannerDom(_currentBannerUrl);
+  });
+  _bannerObserver.observe(document.body, { childList: true, subtree: true });
+}
