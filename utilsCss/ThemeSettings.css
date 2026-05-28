@@ -638,3 +638,38 @@
   flex-shrink: 0;
   stroke: #7ec880;
 }
+
+  /* Player Assets blocks (PR A) */
+  .kyso-asset-block {
+    margin: 12px 0 18px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+  }
+
+  .kyso-asset-block-title {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--kyso-accent, #ffffff);
+  }
+
+  .kyso-asset-source-row {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+  }
+
+  .kyso-radio {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .kyso-asset-local-row .kyso-select,
+  .kyso-asset-web-row .kyso-input {
+    flex: 1;
+    min-width: 0;
+  }
