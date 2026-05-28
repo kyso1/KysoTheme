@@ -832,7 +832,12 @@ const PLUGIN_ASSETS_BASE = `//plugins/${PLUGIN_NAME}/assets/`;
 
 function pluginAsset(relPath) {
   // relPath = "Main/background.jpg" → "//plugins/KysoTheme/assets/Main/background.jpg"
-  return PLUGIN_ASSETS_BASE + String(relPath).replace(/^\/+/, "");
+  // Absolute URLs (http(s), //, data:) pass through unchanged so manifest entries
+  // can point at LCU built-in plugins (ex.: //plugins/rcp-fe-lol-static-assets/...).
+  if (!relPath) return "";
+  const s = String(relPath);
+  if (/^(https?:)?\/\//.test(s) || s.startsWith("data:")) return s;
+  return PLUGIN_ASSETS_BASE + s.replace(/^\/+/, "");
 }
 
 // Resolves a {cat}Source/{cat}Local/{cat}Web triple into a final URL.
@@ -2879,7 +2884,7 @@ async function tryInjectSettingsTab() {
 }
 
 // ─────────────────────────────────────────────
-//  Migração de chaves legacy → triples Source/Local/Web (PR A)
+//  Migração de chaves legacy → triples Source/Local/Web
 // ─────────────────────────────────────────────
 // Roda 1x no boot dentro de initSettingsPage. Idempotente: re-rodar com chaves
 // novas presentes é no-op para essas chaves.
@@ -2947,14 +2952,23 @@ export function initSettingsPage() {
 
   applyAllSettings(saved);
 
-  // Observa o DOM para detectar quando a janela de Settings abre
-  const observer = new MutationObserver(() => {
-    tryInjectSettingsTab();
+  // Pré-aquece o manifest pra a primeira abertura de settings já achar cache
+  assetReplacers.loadManifest().catch(() => {});
 
-    // Se a janela foi fechada, reseta o flag para reinjetar na próxima abertura
-    if (!document.querySelector(SETTINGS_SENTINEL)) {
-      injected = false;
-    }
+  // Observer agressivo (childList+subtree em body) dispara dezenas de vezes
+  // por segundo durante navegação do LCU. Coalesce com rAF: 1 check por frame,
+  // mais que suficiente pra UX de abertura de painel.
+  let _rafPending = false;
+  const observer = new MutationObserver(() => {
+    if (_rafPending) return;
+    _rafPending = true;
+    requestAnimationFrame(() => {
+      _rafPending = false;
+      tryInjectSettingsTab();
+      if (!document.querySelector(SETTINGS_SENTINEL)) {
+        injected = false;
+      }
+    });
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
