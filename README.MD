@@ -27,10 +27,10 @@ KysoTheme transforms the League of Legends client into a cleaner, more personal 
 
 ## 📋 Requirements
 
-| Requirement | Version |
-|---|---|
-| [Pengu Loader](https://pengu.lol) | 0.5.0 or above |
-| League of Legends | Any current patch |
+| Requirement                       | Version           |
+| --------------------------------- | ----------------- |
+| [Pengu Loader](https://pengu.lol) | 0.5.0 or above    |
+| League of Legends                 | Any current patch |
 
 ---
 
@@ -73,14 +73,14 @@ No external apps, no config files.
 
 > Supports images, animated GIFs, and videos as the client background.
 
-| Feature | Details |
-|---|---|
-| **Preset selector** | Instantly switch between included backgrounds |
-| **Custom URL** | Link to any image, GIF, or video — remote or local (`//plugins/KysoTheme/assets/...`) |
-| **Local upload** | Upload a file directly from your PC. Files ≤ 2 MB are stored as base64; larger files use a path |
-| **Video support** | Full `.mp4` / `.webm` video backgrounds |
-| **Media type** | Auto-detect, or manually force Image / GIF / Video |
-| **Open assets folder** | Quick-access button to browse local asset files |
+| Feature                | Details                                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------------------- |
+| **Preset selector**    | Instantly switch between included backgrounds                                                   |
+| **Custom URL**         | Link to any image, GIF, or video — remote or local (`//plugins/KysoTheme/assets/...`)           |
+| **Local upload**       | Upload a file directly from your PC. Files ≤ 2 MB are stored as base64; larger files use a path |
+| **Video support**      | Full `.mp4` / `.webm` video backgrounds                                                         |
+| **Media type**         | Auto-detect, or manually force Image / GIF / Video                                              |
+| **Open assets folder** | Quick-access button to browse local asset files                                                 |
 
 **Supported formats:** `.jpg` `.png` `.webp` `.gif` `.mp4` `.webm`
 
@@ -123,13 +123,13 @@ Set a fully custom profile icon — yours alone, or across the entire client.
 
 Fine-tune exactly what shows up in the client UI:
 
-| Toggle | What it does |
-|---|---|
-| **Hide RP** | Removes the RP currency from the store bar |
+| Toggle                         | What it does                                                  |
+| ------------------------------ | ------------------------------------------------------------- |
+| **Hide RP**                    | Removes the RP currency from the store bar                    |
 | **Always show hover elements** | Keeps missions, chat, profile, and status permanently visible |
-| **Hide TFT (hover mode)** | Hides the TFT nav button unless you hover over it |
-| **Hide social panel only** | Collapses the friend list on hover |
-| **Hide social + right nav** | Collapses both the friend list and right navigation bar |
+| **Hide TFT (hover mode)**      | Hides the TFT nav button unless you hover over it             |
+| **Hide social panel only**     | Collapses the friend list on hover                            |
+| **Hide social + right nav**    | Collapses both the friend list and right navigation bar       |
 
 ---
 
@@ -159,13 +159,13 @@ The settings page is fully translated. Language is detected automatically from t
 
 ### 🔧 Under the Hood
 
-| Feature | Description |
-|---|---|
-| **Profile Skin Unlocker** | Unlocks all skins on the profile page for display |
-| **Auto Accept** | Automatically accepts match-found popups |
-| **Blur Scrubber** | Force-removes `backdrop-filter` blur from the sidebar, navbar, and social panel |
-| **Persistent settings** | Everything is saved via `DataStore` and restored on every client launch |
-| **Home button** | Custom icon button injected into the Activity Center tabs |
+| Feature                   | Description                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| **Profile Skin Unlocker** | Unlocks all skins on the profile page for display                               |
+| **Auto Accept**           | Automatically accepts match-found popups                                        |
+| **Blur Scrubber**         | Force-removes `backdrop-filter` blur from the sidebar, navbar, and social panel |
+| **Persistent settings**   | Everything is saved via `DataStore` and restored on every client launch         |
+| **Home button**           | Custom icon button injected into the Activity Center tabs                       |
 
 ---
 
