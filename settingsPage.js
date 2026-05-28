@@ -789,14 +789,12 @@ function buildAssetBlock(cat, labelKey, manifestEntries, settings) {
     <div class="kyso-asset-block" data-cat="${cat}">
       <h4 class="kyso-asset-block-title">${t(labelKey)}</h4>
       <div class="kyso-settings-row kyso-asset-source-row">
-        <label class="kyso-radio">
-          <input type="radio" name="kyso-${cat}-source" value="local" ${source === "local" ? "checked" : ""}>
-          <span>${t("sourceLocal")}</span>
+        <span class="kyso-asset-source-label ${source === "local" ? "kyso-asset-source-label--active" : ""}">${t("sourceLocal")}</span>
+        <label class="kyso-toggle">
+          <input type="checkbox" id="kyso-${cat}-source-toggle" ${source === "web" ? "checked" : ""}>
+          <span class="kyso-toggle-slider"></span>
         </label>
-        <label class="kyso-radio">
-          <input type="radio" name="kyso-${cat}-source" value="web" ${source === "web" ? "checked" : ""}>
-          <span>${t("sourceWeb")}</span>
-        </label>
+        <span class="kyso-asset-source-label ${source === "web" ? "kyso-asset-source-label--active" : ""}">${t("sourceWeb")}</span>
       </div>
       <div class="kyso-settings-row kyso-asset-local-row" ${source === "local" ? "" : 'style="display:none"'}>
         <select id="kyso-${cat}-local" class="kyso-select" data-cat="${cat}">
@@ -1900,20 +1898,23 @@ async function buildSettingsPanel() {
   const ASSET_CATS = ["background", "banner", "crest", "profileIcon", "loadingBg", "loadingIcon"];
 
   ASSET_CATS.forEach((cat) => {
-    // Source switch (radio buttons)
-    panel.querySelectorAll(`input[name="kyso-${cat}-source"]`).forEach((radio) => {
-      radio.addEventListener("change", (e) => {
-        if (!e.target.checked) return;
-        const newSource = e.target.value; // "local" | "web"
+    // Source toggle (checkbox: unchecked = local, checked = web)
+    const sourceToggle = panel.querySelector(`#kyso-${cat}-source-toggle`);
+    if (sourceToggle) {
+      sourceToggle.addEventListener("change", (e) => {
+        const newSource = e.target.checked ? "web" : "local";
         const block = panel.querySelector(`.kyso-asset-block[data-cat="${cat}"]`);
         if (!block) return;
         block.querySelector(".kyso-asset-local-row").style.display = newSource === "local" ? "" : "none";
         block.querySelector(".kyso-asset-web-row").style.display = newSource === "web" ? "" : "none";
+        block.querySelectorAll(".kyso-asset-source-label").forEach((lbl, i) => {
+          lbl.classList.toggle("kyso-asset-source-label--active", i === (newSource === "local" ? 0 : 1));
+        });
         const s = { ...DEFAULTS, ...loadSettings(), [cat + "Source"]: newSource };
         saveSettings(s);
         applyAllSettings(s);
       });
-    });
+    }
 
     // Local <select> — auto-apply on change
     const localSelect = panel.querySelector(`#kyso-${cat}-local`);
@@ -1955,12 +1956,17 @@ async function buildSettingsPanel() {
         const webRow = block?.querySelector(".kyso-asset-web-row");
         const localSel = block?.querySelector(`#kyso-${cat}-local`);
         const webIn = block?.querySelector(`#kyso-${cat}-web`);
-        const sourceRadios = block?.querySelectorAll(`input[name="kyso-${cat}-source"]`) || [];
+        const srcToggle = block?.querySelector(`#kyso-${cat}-source-toggle`);
+        const srcLabels = block?.querySelectorAll(".kyso-asset-source-label") || [];
+        const defSource = DEFAULTS[cat + "Source"];
         if (localSel) localSel.value = DEFAULTS[cat + "Local"];
         if (webIn) webIn.value = DEFAULTS[cat + "Web"];
-        sourceRadios.forEach((r) => (r.checked = r.value === DEFAULTS[cat + "Source"]));
-        if (localRow) localRow.style.display = DEFAULTS[cat + "Source"] === "local" ? "" : "none";
-        if (webRow) webRow.style.display = DEFAULTS[cat + "Source"] === "web" ? "" : "none";
+        if (srcToggle) srcToggle.checked = defSource === "web";
+        srcLabels.forEach((lbl, i) => {
+          lbl.classList.toggle("kyso-asset-source-label--active", i === (defSource === "local" ? 0 : 1));
+        });
+        if (localRow) localRow.style.display = defSource === "local" ? "" : "none";
+        if (webRow) webRow.style.display = defSource === "web" ? "" : "none";
       });
     }
   });
