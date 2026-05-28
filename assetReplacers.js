@@ -6,7 +6,11 @@ const PLUGIN_ASSETS_BASE = `//plugins/${PLUGIN_NAME}/assets/`;
 
 export function pluginAsset(relPath) {
   if (!relPath) return "";
-  return PLUGIN_ASSETS_BASE + String(relPath).replace(/^\/+/, "");
+  const s = String(relPath);
+  // Absolute URLs (http(s), //, data:) pass through so manifest entries can
+  // point at LCU built-in assets (ex.: //plugins/rcp-fe-lol-static-assets/...).
+  if (/^(https?:)?\/\//.test(s) || s.startsWith("data:")) return s;
+  return PLUGIN_ASSETS_BASE + s.replace(/^\/+/, "");
 }
 
 let _manifestCache = null;

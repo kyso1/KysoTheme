@@ -13,11 +13,23 @@
       { "label": "Mode Switcher Alt", "path": "ModeSwitcher/switch1.jpg" }
     ],
     "banners": [],
-    "crests": [],
+    "crests": [
+      { "label": "Iron",        "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-iron.png" },
+      { "label": "Bronze",      "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-bronze.png" },
+      { "label": "Silver",      "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-silver.png" },
+      { "label": "Gold",        "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-gold.png" },
+      { "label": "Platinum",    "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-platinum.png" },
+      { "label": "Emerald",     "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-emerald.png" },
+      { "label": "Diamond",     "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-diamond.png" },
+      { "label": "Master",      "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-master.png" },
+      { "label": "Grandmaster", "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-grandmaster.png" },
+      { "label": "Challenger",  "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-challenger.png" },
+      { "label": "Unranked",    "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-unranked.png" }
+    ],
     "profileIcons": [],
     "loadingBackgrounds": [
       { "label": "Default", "path": "Loading Screen/loading-background.jpg" },
-      { "label": "Alt 1", "path": "Loading Screen/1.jpg" }
+      { "label": "Alt 1",   "path": "Loading Screen/1.jpg" }
     ],
     "loadingIcons": [
       { "label": "Default", "path": "Loading Screen/loading-icon.gif" }
