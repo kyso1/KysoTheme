@@ -1030,11 +1030,18 @@ function applyRgbEffect(mode, speed, baseHex) {
 
   const sp = Math.max(1, Math.min(5, speed || 3));
   const root = document.documentElement;
+  // Throttle: update CSS vars at ~20fps max regardless of display refresh rate.
+  // Each setProperty on :root triggers style recalc on every element using that
+  // custom property — limiting to 50ms intervals cuts CPU load significantly.
+  const TICK_INTERVAL = 50; // ms → ~20 fps
 
   if (mode === "rainbow") {
-    let startTime = null;
+    let startTime = null, lastTick = 0;
     function rainbowTick(ts) {
+      _rgbAnimHandle = requestAnimationFrame(rainbowTick);
       if (startTime === null) startTime = ts;
+      if (ts - lastTick < TICK_INTERVAL) return;
+      lastTick = ts;
       const h = ((ts - startTime) * sp * 0.04) % 360;
       const { r, g, b } = _hslToRgb(h, 80, 50);
       root.style.setProperty("--kyso-accent-h", h.toFixed(0));
@@ -1042,41 +1049,44 @@ function applyRgbEffect(mode, speed, baseHex) {
       root.style.setProperty("--kyso-accent-l", "50");
       root.style.setProperty("--kyso-accent", _toHexStr(r, g, b));
       root.style.setProperty("--kyso-accent-glow", `rgba(${r},${g},${b},0.5)`);
-      _rgbAnimHandle = requestAnimationFrame(rainbowTick);
     }
     _rgbAnimHandle = requestAnimationFrame(rainbowTick);
   } else if (mode === "blink") {
     const { h, s } = _hexToHsl(baseHex || "#c8a040");
     const period = 500 / sp; // ms per on/off phase
-    let startTime = null;
+    let startTime = null, lastTick = 0;
+    root.style.setProperty("--kyso-accent-h", Math.round(h).toString());
+    root.style.setProperty("--kyso-accent-s", Math.round(s).toString());
     function blinkTick(ts) {
+      _rgbAnimHandle = requestAnimationFrame(blinkTick);
       if (startTime === null) startTime = ts;
+      if (ts - lastTick < TICK_INTERVAL) return;
+      lastTick = ts;
       const on = Math.floor((ts - startTime) / period) % 2 === 0;
       const l = on ? 50 : 8;
       const { r, g, b } = _hslToRgb(h, s, l);
       root.style.setProperty("--kyso-accent-l", l);
       root.style.setProperty("--kyso-accent", _toHexStr(r, g, b));
       root.style.setProperty("--kyso-accent-glow", `rgba(${r},${g},${b},0.5)`);
-      _rgbAnimHandle = requestAnimationFrame(blinkTick);
     }
-    root.style.setProperty("--kyso-accent-h", Math.round(h).toString());
-    root.style.setProperty("--kyso-accent-s", Math.round(s).toString());
     _rgbAnimHandle = requestAnimationFrame(blinkTick);
   } else if (mode === "pulse") {
     const { h, s } = _hexToHsl(baseHex || "#c8a040");
     const freq = sp * 0.001; // rad/ms
-    let startTime = null;
+    let startTime = null, lastTick = 0;
+    root.style.setProperty("--kyso-accent-h", Math.round(h).toString());
+    root.style.setProperty("--kyso-accent-s", Math.round(s).toString());
     function pulseTick(ts) {
+      _rgbAnimHandle = requestAnimationFrame(pulseTick);
       if (startTime === null) startTime = ts;
+      if (ts - lastTick < TICK_INTERVAL) return;
+      lastTick = ts;
       const l = Math.round(35 + 30 * Math.sin((ts - startTime) * freq));
       const { r, g, b } = _hslToRgb(h, s, l);
       root.style.setProperty("--kyso-accent-l", l);
       root.style.setProperty("--kyso-accent", _toHexStr(r, g, b));
       root.style.setProperty("--kyso-accent-glow", `rgba(${r},${g},${b},0.5)`);
-      _rgbAnimHandle = requestAnimationFrame(pulseTick);
     }
-    root.style.setProperty("--kyso-accent-h", Math.round(h).toString());
-    root.style.setProperty("--kyso-accent-s", Math.round(s).toString());
     _rgbAnimHandle = requestAnimationFrame(pulseTick);
   }
 }
@@ -1367,18 +1377,28 @@ function createSocialToggleButton() {
 function applyHideSocialBtnSetting(settings) {
   if (settings.enableHideSocialBtn) {
     const ensureButton = () => {
-      if (
-        !document.querySelector(".hide-friendslist") &&
-        document.querySelector("#rcp-fe-viewport-root")
-      ) {
+      // Only show the drawer button when the social panel is actually present.
+      // In champion select and other non-lobby views the sidebar is unmounted,
+      // so the button must be hidden there to avoid floating over the UI.
+      const socialPresent = !!document.querySelector(
+        ".lol-social-lower-pane-container, lol-social-roster"
+      );
+      const existingBtn = document.querySelector(".hide-friendslist");
+
+      if (!socialPresent) {
+        if (existingBtn) existingBtn.remove();
+        return;
+      }
+
+      if (!existingBtn && document.querySelector("#rcp-fe-viewport-root")) {
         if (createSocialToggleButton()) {
           setTimeout(
             () => applySocialHiddenState(loadSettings().socialHidden),
             100,
           );
         }
-      } else if (document.querySelector(".hide-friendslist")) {
-        // Botão existe — reaplica estado p/ elementos que foram remontados
+      } else if (existingBtn) {
+        // Button exists + social panel is present — reapply state for re-mounted elements
         applySocialHiddenState(loadSettings().socialHidden);
       }
     };
