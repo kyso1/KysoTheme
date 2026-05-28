@@ -69,18 +69,38 @@ No external apps, no config files.
 
 ---
 
-### 🖼️ Background System
+### 🎨 Player Assets
 
-> Supports images, animated GIFs, and videos as the client background.
+A unified panel that lets you swap every visual asset the client renders for you — backgrounds, banners, crests, loading screens — from one place. Each asset has a **Local / Web** toggle: pick a file shipped with the theme, or paste any URL.
 
-| Feature                | Details                                                                                         |
-| ---------------------- | ----------------------------------------------------------------------------------------------- |
-| **Preset selector**    | Instantly switch between included backgrounds                                                   |
-| **Custom URL**         | Link to any image, GIF, or video — remote or local (`//plugins/KysoTheme/assets/...`)           |
-| **Local upload**       | Upload a file directly from your PC. Files ≤ 2 MB are stored as base64; larger files use a path |
-| **Video support**      | Full `.mp4` / `.webm` video backgrounds                                                         |
-| **Media type**         | Auto-detect, or manually force Image / GIF / Video                                              |
-| **Open assets folder** | Quick-access button to browse local asset files                                                 |
+| Asset                  | What it does                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Background**         | Full client background — images, animated GIFs, or videos (`.mp4` / `.webm`)                         |
+| **Banner**             | Replaces your regalia banner on the profile page (shadow-DOM style injection, transparent overlay)   |
+| **Crest**              | Replaces the frame around your profile icon — ships with all **ranked emblems** (Iron → Challenger)  |
+| **Loading screen**     | Custom loading-screen background **and** spinning icon, applied at game launch                       |
+| **Profile icon**       | Custom icon for your profile page + sidebar; optional "Apply to all players" mode                    |
+
+**Local / Web switch:**
+- **Local** — dropdown listing every file declared in `assets/manifest.json`. Drop a new file into the right folder, add a one-line manifest entry, reload — it shows up.
+- **Web** — paste any URL. Useful for icons hosted on Discord, Imgur, etc.
+
+**Manifest example** (`assets/manifest.json`):
+
+```json
+{
+  "categories": {
+    "crests": [
+      { "label": "Diamond", "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-diamond.png" },
+      { "label": "My custom", "path": "Crests/custom.png" }
+    ]
+  }
+}
+```
+
+Entries can point at a local file (relative path under `assets/`) **or** an absolute URL — including built-in LCU assets like the ranked emblems above.
+
+**Media type override:** the Background block has an extra dropdown to force Image / GIF / Video parsing in case auto-detect picks wrong.
 
 **Supported formats:** `.jpg` `.png` `.webp` `.gif` `.mp4` `.webm`
 
@@ -108,14 +128,30 @@ Replace the default League client font with anything you like.
 
 ---
 
-### 🪪 Profile Icon
+### 🪪 Profile Icon (with crop tool)
 
-Set a fully custom profile icon — yours alone, or across the entire client.
+Set a fully custom profile icon — yours alone, or replicated across the entire client.
 
 - **Remote URL** — link any image as your icon
 - **Local upload** — upload directly from your PC
 - **Built-in crop tool** — interactive 1:1 crop overlay so your icon is always framed perfectly
-- **Apply to all players** — optionally replaces icons in the social panel, chat, and hover cards
+- **Apply to all players** — when **OFF**, only your profile page and the sidebar profile button get the custom icon (other players keep Riot defaults). When **ON**, the icon also replaces everyone else's via global CSS.
+
+---
+
+### 🎨 RGB Accent Animations
+
+Beyond a static accent color, you can drive the entire theme through animated RGB modes — useful for streamers or anyone who wants a more lively look.
+
+| Mode               | What it does                                                       |
+| ------------------ | ------------------------------------------------------------------ |
+| **Static**         | Fixed accent color                                                 |
+| **Rainbow cycle**  | Smooth hue rotation across the full color wheel                    |
+| **Fade L→R**       | Horizontal gradient sweep                                          |
+| **Blink**          | Strobe between two colors                                          |
+| **Spiral fade**    | Spiraling hue transition                                           |
+
+All modes share a **speed slider** (throttled to ~20 fps for low CPU impact) and a hex picker so you can lock the base color.
 
 ---
 
@@ -151,7 +187,7 @@ The settings page is fully translated. Language is detected automatically from t
 
 <div align="center">
 
-🇺🇸 English &nbsp;|&nbsp; 🇧🇷 Português &nbsp;|&nbsp; 🇪🇸 Español &nbsp;|&nbsp; 🇩🇪 Deutsch
+🇺🇸 English &nbsp;|&nbsp; 🇧🇷 Português &nbsp;|&nbsp; 🇪🇸 Español &nbsp;|&nbsp; 🇩🇪 Deutsch &nbsp;|&nbsp; 🇯🇵 日本語 &nbsp;|&nbsp; 🇰🇷 한국어
 
 </div>
 
@@ -174,8 +210,9 @@ The settings page is fully translated. Language is detected automatically from t
 ```
 KysoTheme/
 ├── assets/
-│   ├── Main/               ← Your backgrounds go here
-│   ├── Loading Screen/
+│   ├── manifest.json       ← Declares every "Local" asset by category
+│   ├── Main/               ← Backgrounds
+│   ├── Loading Screen/     ← Loading-screen background + icon
 │   ├── ModeSwitcher/
 │   ├── Runes and Select/
 │   ├── Collections/
@@ -187,6 +224,7 @@ KysoTheme/
 │   ├── AutoAccept.css
 │   └── DodgeButton.css
 ├── utilsImg/               ← UI icons used by the theme
+├── assetReplacers.js       ← Pure DOM-mutation module (banner / crest / icon / loading)
 ├── index.js                ← Entry point
 ├── settingsPage.js         ← Settings UI & all apply/persist logic
 ├── backgroundSelector.js
@@ -196,15 +234,24 @@ KysoTheme/
 
 ---
 
-## 🖼️ Adding Custom Backgrounds
+## 🖼️ Adding Custom Assets
 
-Drop any supported file into `assets/Main/` and reference it in the settings panel:
+Two ways to bring new assets into the theme.
 
+**1. Via the Web URL field** (zero config) — just paste a URL into any asset's *Web* tab and hit Apply.
+
+**2. Via the manifest** (so it shows up in the *Local* dropdown):
+
+1. Drop your file into the right folder under `assets/` (e.g. `assets/Main/`, `assets/Crests/`, `assets/Loading Screen/`).
+2. Open `assets/manifest.json` and add a one-line entry to the matching category:
+
+```json
+{ "label": "My background", "path": "Main/my-bg.jpg" }
 ```
-//plugins/KysoTheme/assets/Main/yourfile.ext
-```
 
-Or just use the **"Upload local file"** button in the settings page — no paths needed.
+3. Reload the client. The new entry shows up in the Local dropdown for that asset.
+
+The manifest also accepts **absolute URLs** in `path` — handy for pointing at built-in LCU assets like the ranked emblems shipped under `//plugins/rcp-fe-lol-static-assets/...`.
 
 > 💡 **Tip:** For best performance, use `.webm` for animated backgrounds. It's smaller than `.gif` and renders more smoothly.
 
