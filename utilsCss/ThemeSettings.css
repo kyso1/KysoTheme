@@ -210,12 +210,25 @@
   color: #e0e0e0;
   font-family: var(--font-body, "Beaufort for LOL", "Mulish", sans-serif);
   font-size: 12px;
-  padding: 7px 10px;
+  padding: 7px 32px 7px 10px;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background-color 0.15s;
   width: 100%;
   box-sizing: border-box;
+  /* Custom chevron — drop the native OS appearance */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c8a040' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+.kyso-select:hover {
+  border-color: rgba(200, 155, 60, 0.6);
+  background-color: rgba(0, 0, 0, 0.55);
 }
 
 .kyso-select:focus {
@@ -225,6 +238,7 @@
 .kyso-select option {
   background: #1a1a1a;
   color: #e0e0e0;
+  padding: 4px 8px;
 }
 
 /* ── Botões – estilo lol-uikit-flat-button ── */
@@ -645,45 +659,61 @@
   stroke: #7ec880;
 }
 
-  /* Player Assets blocks (PR A) */
-  .kyso-asset-block {
-    margin: 12px 0 18px;
-    padding: 10px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-  }
+/* Player Assets blocks */
+.kyso-asset-block {
+  margin: 10px 0 12px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
 
-  .kyso-asset-block-title {
-    margin: 0 0 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--kyso-accent, #ffffff);
-  }
+.kyso-asset-block:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.035);
+}
 
-  .kyso-asset-source-row {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    align-items: center;
-  }
+.kyso-asset-block-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--kyso-accent, #ffffff);
+  letter-spacing: 0.2px;
+}
 
-  .kyso-asset-source-label {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.45);
-    transition: color 0.2s;
-    user-select: none;
-  }
+.kyso-asset-source-row {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
 
-  .kyso-asset-source-label--active {
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 600;
-  }
+.kyso-asset-source-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 0.2s;
+  user-select: none;
+}
 
-  .kyso-asset-local-row .kyso-select,
-  .kyso-asset-web-row .kyso-input {
-    flex: 1;
-    min-width: 0;
-  }
+.kyso-asset-source-label--active {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.kyso-asset-local-row,
+.kyso-asset-web-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.kyso-asset-local-row .kyso-select,
+.kyso-asset-web-row .kyso-input {
+  flex: 1;
+  min-width: 0;
+}
 
 /* Range slider (RGB speed control) */
 .kyso-range {
@@ -701,6 +731,13 @@
   justify-content: space-between;
   cursor: pointer;
   user-select: none;
+  padding: 10px 14px;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.18s ease;
+}
+
+.kyso-asset-block:not(.kyso-asset-block--collapsed) .kyso-asset-block-header {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .kyso-asset-block-header:hover .kyso-asset-block-title {
@@ -713,11 +750,16 @@
   color: var(--kyso-accent, #c8a040);
   cursor: pointer;
   padding: 2px 4px;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
-  transition: transform 0.2s;
+  transition: transform 0.2s ease;
   display: flex;
   align-items: center;
+  opacity: 0.75;
+}
+
+.kyso-asset-block-header:hover .kyso-asset-block-toggle {
+  opacity: 1;
 }
 
 .kyso-asset-block--collapsed .kyso-asset-block-toggle {
@@ -725,9 +767,33 @@
 }
 
 .kyso-asset-block-body {
-  margin-top: 8px;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .kyso-asset-block--collapsed .kyso-asset-block-body {
   display: none;
+}
+
+/* Background type override row sits between background block and the next
+   block; give it a sub-row look so the user reads it as a background-only
+   modifier instead of an independent setting */
+.kyso-asset-bg-type-row {
+  margin: 4px 0 10px 14px;
+  padding: 6px 12px;
+  border-left: 2px solid rgba(200, 155, 60, 0.25);
+  flex-direction: row !important;
+  align-items: center;
+  gap: 10px;
+}
+
+.kyso-asset-bg-type-row .kyso-label {
+  flex: 0 0 auto;
+}
+
+.kyso-asset-bg-type-row .kyso-select {
+  flex: 1;
+  max-width: 200px;
 }
