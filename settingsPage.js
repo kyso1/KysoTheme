@@ -659,7 +659,13 @@ function loadSettings() {
 }
 
 function saveSettings(settings) {
-  DataStore.set(STORE_KEY, JSON.stringify(settings));
+  const _toSave = {
+    ...settings,
+    // Legacy mirrors — derived from new triples so external readers still work
+    backgroundUrl: resolveAsset("background", { ...DEFAULTS, ...settings }),
+    iconUrl: resolveAsset("profileIcon", { ...DEFAULTS, ...settings }),
+  };
+  DataStore.set(STORE_KEY, JSON.stringify(_toSave));
 }
 
 // ─────────────────────────────────────────────
@@ -1890,108 +1896,84 @@ async function buildSettingsPanel() {
   `;
 
   // ── Wiring de eventos ──────────────────────────────
-  // Background – upload local. Estratégia em camadas:
-  //   1. Vídeo:  NUNCA base64 (trava client). Mostra instrução p/ dropar
-  //              arquivo em assets/ e colar caminho manualmente.
-  //   2. Imagem: se < 2 MB, encoda dataURL (persiste em DataStore). Acima,
-  //              instrui mesma estratégia do vídeo.
-  const bgFileInput = panel.querySelector("#kyso-bg-file");
-  const bgFilename = panel.querySelector("#kyso-bg-filename");
-  const bgUrlInput = panel.querySelector("#kyso-bg-url");
-  const bgPresetSelect = panel.querySelector("#kyso-bg-preset");
-  const bgTypeSelect = panel.querySelector("#kyso-bg-type");
+  // Asset blocks — source switch, local select, web apply, reset.
+  const ASSET_CATS = ["background", "banner", "crest", "profileIcon", "loadingBg", "loadingIcon"];
 
-  // Preset escolhido → preenche URL + auto-detecta tipo
-  bgPresetSelect.addEventListener("change", () => {
-    const val = bgPresetSelect.value;
-    if (!val) return;
-    bgUrlInput.value = val;
-    bgFilename.textContent = val.split("/").pop();
-    bgTypeSelect.value = "auto";
-  });
-
-  // Open folder button
-  const openFolderBtn = panel.querySelector("#kyso-bg-open-folder");
-  if (openFolderBtn) {
-    openFolderBtn.addEventListener("click", () => {
-      try {
-        if (window.openPluginsFolder) {
-          window.openPluginsFolder(`${PLUGIN_NAME}/assets/Main`);
-        }
-      } catch (e) {
-        console.error("[KysoTheme] openPluginsFolder não disponível:", e);
-      }
+  ASSET_CATS.forEach((cat) => {
+    // Source switch (radio buttons)
+    panel.querySelectorAll(`input[name="kyso-${cat}-source"]`).forEach((radio) => {
+      radio.addEventListener("change", (e) => {
+        if (!e.target.checked) return;
+        const newSource = e.target.value; // "local" | "web"
+        const block = panel.querySelector(`.kyso-asset-block[data-cat="${cat}"]`);
+        if (!block) return;
+        block.querySelector(".kyso-asset-local-row").style.display = newSource === "local" ? "" : "none";
+        block.querySelector(".kyso-asset-web-row").style.display = newSource === "web" ? "" : "none";
+        const s = { ...DEFAULTS, ...loadSettings(), [cat + "Source"]: newSource };
+        saveSettings(s);
+        applyAllSettings(s);
+      });
     });
-  }
 
-  bgFileInput.addEventListener("change", () => {
-    const file = bgFileInput.files[0];
-    if (!file) return;
-    bgFilename.textContent = file.name;
-
-    const isVideo =
-      file.type.startsWith("video/") ||
-      /\.(mp4|webm|ogv|ogg)$/i.test(file.name);
-    const tooBig = file.size > MAX_BASE64_BYTES;
-
-    if (isVideo || tooBig) {
-      // Mostra instrução e abre folder explorer p/ usuário.
-      const suggested = pluginAsset(`Main/${file.name}`);
-      bgUrlInput.value = suggested;
-      // Auto-set type p/ video se for vídeo
-      const typeSelect = panel.querySelector("#kyso-bg-type");
-      if (isVideo) typeSelect.value = "video";
-      showFeedback(
-        panel,
-        `Copie "${file.name}" para a pasta assets/Main/ e clique Aplicar. ` +
-          `(${isVideo ? "vídeos" : "arquivos grandes"} não podem virar base64)`,
-      );
-      // Tenta abrir a pasta pra facilitar
-      try {
-        if (window.openPluginsFolder) {
-          window.openPluginsFolder(`${PLUGIN_NAME}/assets/Main`);
-        }
-      } catch {}
-      return;
+    // Local <select> — auto-apply on change
+    const localSelect = panel.querySelector(`#kyso-${cat}-local`);
+    if (localSelect) {
+      localSelect.addEventListener("change", (e) => {
+        const s = { ...DEFAULTS, ...loadSettings(), [cat + "Local"]: e.target.value };
+        saveSettings(s);
+        applyAllSettings(s);
+      });
     }
 
-    // Imagem pequena → dataURL OK
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      bgUrlInput.value = e.target.result;
-    };
-    reader.readAsDataURL(file);
+    // Web <input> + Apply button
+    const webApply = panel.querySelector(`.kyso-${cat}-apply`);
+    const webInput = panel.querySelector(`#kyso-${cat}-web`);
+    if (webApply && webInput) {
+      webApply.addEventListener("click", () => {
+        const s = { ...DEFAULTS, ...loadSettings(), [cat + "Web"]: webInput.value.trim() };
+        saveSettings(s);
+        applyAllSettings(s);
+      });
+    }
+
+    // Reset to default
+    const resetBtn = panel.querySelector(`.kyso-${cat}-reset`);
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        const s = {
+          ...DEFAULTS,
+          ...loadSettings(),
+          [cat + "Source"]: DEFAULTS[cat + "Source"],
+          [cat + "Local"]: DEFAULTS[cat + "Local"],
+          [cat + "Web"]: DEFAULTS[cat + "Web"],
+        };
+        saveSettings(s);
+        applyAllSettings(s);
+        // Re-render this block so UI reflects new state
+        const block = panel.querySelector(`.kyso-asset-block[data-cat="${cat}"]`);
+        const localRow = block?.querySelector(".kyso-asset-local-row");
+        const webRow = block?.querySelector(".kyso-asset-web-row");
+        const localSel = block?.querySelector(`#kyso-${cat}-local`);
+        const webIn = block?.querySelector(`#kyso-${cat}-web`);
+        const sourceRadios = block?.querySelectorAll(`input[name="kyso-${cat}-source"]`) || [];
+        if (localSel) localSel.value = DEFAULTS[cat + "Local"];
+        if (webIn) webIn.value = DEFAULTS[cat + "Web"];
+        sourceRadios.forEach((r) => (r.checked = r.value === DEFAULTS[cat + "Source"]));
+        if (localRow) localRow.style.display = DEFAULTS[cat + "Source"] === "local" ? "" : "none";
+        if (webRow) webRow.style.display = DEFAULTS[cat + "Source"] === "web" ? "" : "none";
+      });
+    }
   });
 
-  // Background – aplicar
-  panel.querySelector("#kyso-bg-apply").addEventListener("click", () => {
-    const url = panel.querySelector("#kyso-bg-url").value.trim();
-    const type = panel.querySelector("#kyso-bg-type").value;
-    const s = {
-      ...DEFAULTS,
-      ...loadSettings(),
-      backgroundUrl: url,
-      backgroundType: type,
-    };
-    saveSettings(s);
-    applyBackground(url, type);
-    showFeedback(panel, t("bgApplied"));
-  });
-
-  // Background – remover
-  panel.querySelector("#kyso-bg-reset").addEventListener("click", () => {
-    panel.querySelector("#kyso-bg-url").value = "";
-    bgFilename.textContent = t("noFile");
-    const s = {
-      ...DEFAULTS,
-      ...loadSettings(),
-      backgroundUrl: "",
-      backgroundType: "auto",
-    };
-    saveSettings(s);
-    applyBackground("", "auto");
-    showFeedback(panel, t("bgRemoved"));
-  });
+  // Background type select — standalone handler
+  const bgTypeSel = panel.querySelector("#kyso-bg-type");
+  if (bgTypeSel) {
+    bgTypeSel.addEventListener("change", (e) => {
+      const s = { ...DEFAULTS, ...loadSettings(), backgroundType: e.target.value };
+      saveSettings(s);
+      applyAllSettings(s);
+    });
+  }
 
   // Toggles – persistência em tempo real
   const toggles = [
@@ -2208,67 +2190,11 @@ async function buildSettingsPanel() {
     showFeedback(panel, t("fontRemoved"));
   });
 
-  // Ícone – upload local (abre o crop modal automaticamente)
-  const iconFileInput = panel.querySelector("#kyso-icon-file");
-  const iconFilename = panel.querySelector("#kyso-icon-filename");
-  iconFileInput.addEventListener("change", () => {
-    const file = iconFileInput.files[0];
-    if (!file) return;
-    iconFilename.textContent = file.name;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      openIconCropModal(dataUrl, (cropped) => {
-        panel.querySelector("#kyso-icon-url").value = cropped;
-      });
-    };
-    reader.readAsDataURL(file);
-  });
-
-  // Ícone – botão de crop (também usado para URL remota)
-  panel.querySelector("#kyso-icon-crop").addEventListener("click", () => {
-    const url = panel.querySelector("#kyso-icon-url").value.trim();
-    if (!url) {
-      showFeedback(panel, t("noFile"));
-      return;
-    }
-    openIconCropModal(url, (cropped) => {
-      panel.querySelector("#kyso-icon-url").value = cropped;
-    });
-  });
-
-  // Ícone – aplicar
-  panel.querySelector("#kyso-icon-apply").addEventListener("click", () => {
-    const iconUrl = panel.querySelector("#kyso-icon-url").value.trim();
-    const iconAllPlayers = panel.querySelector(
-      "#kyso-icon-all-players",
-    ).checked;
-    const s = { ...DEFAULTS, ...loadSettings(), iconUrl, iconAllPlayers };
-    saveSettings(s);
-    applyIcon(iconUrl, iconAllPlayers);
-    showFeedback(panel, t("iconApplied"));
-  });
-
-  // Ícone – remover
-  panel.querySelector("#kyso-icon-reset").addEventListener("click", () => {
-    panel.querySelector("#kyso-icon-url").value = "";
-    iconFilename.textContent = t("noFile");
-    const s = {
-      ...DEFAULTS,
-      ...loadSettings(),
-      iconUrl: "",
-      iconAllPlayers: panel.querySelector("#kyso-icon-all-players").checked,
-    };
-    saveSettings(s);
-    applyIcon("");
-    showFeedback(panel, t("iconRemoved"));
-  });
-
   // Salvar tudo
   panel.querySelector("#kyso-save-all").addEventListener("click", () => {
     const prev = { ...DEFAULTS, ...loadSettings() };
     const s = {
-      backgroundUrl: panel.querySelector("#kyso-bg-url").value.trim(),
+      ...prev,
       backgroundType: panel.querySelector("#kyso-bg-type").value,
       hideRP: panel.querySelector("#kyso-hide-rp").checked,
       hideHoverElements: panel.querySelector("#kyso-show-hover").checked,
@@ -2277,8 +2203,6 @@ async function buildSettingsPanel() {
       hideSocialPanel: panel.querySelector("#kyso-hide-social").checked,
       fontUrl: panel.querySelector("#kyso-font-url").value.trim(),
       fontFamily: panel.querySelector("#kyso-font-family").value.trim(),
-      iconUrl: panel.querySelector("#kyso-icon-url").value.trim(),
-      iconAllPlayers: panel.querySelector("#kyso-icon-all-players").checked,
       enableHideNavbarBtn: panel.querySelector("#kyso-enable-hide-navbar")
         .checked,
       navbarHidden: prev.navbarHidden, // preserva estado de runtime
