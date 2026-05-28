@@ -516,6 +516,12 @@
   justify-content: flex-end;
 }
 
+/* Wide stage for 4:1 banner crop */
+.kyso-crop-stage--wide .kyso-crop-image {
+  max-width: min(75vw, 760px);
+  max-height: 50vh;
+}
+
 /* ── Color Theme section ──────────────────────────────────────────────────── */
 
 /* Row com label em cima (para os presets) */

@@ -98,6 +98,10 @@ const TRANSLATIONS = {
       "Drag the box to choose the visible area. LoL icons are always square.",
     cropApply: "Apply crop",
     cropCancel: "Cancel",
+    bannerCropButton: "Crop banner",
+    bannerCropTitle: "Crop banner (4:1)",
+    bannerCropHint:
+      "Drag the box to choose the visible area. LoL banners use a 4:1 ratio (1920 × 480).",
     noFile: "No file selected",
     rgbSection: "RGB Effects",
     rgbMode: "Animation mode",
@@ -197,6 +201,10 @@ const TRANSLATIONS = {
       "Arraste a caixa para escolher a área visível. Ícones do LoL são sempre quadrados.",
     cropApply: "Aplicar corte",
     cropCancel: "Cancelar",
+    bannerCropButton: "Cortar banner",
+    bannerCropTitle: "Cortar banner (4:1)",
+    bannerCropHint:
+      "Arraste a caixa para escolher a área visível. Banners do LoL usam proporção 4:1 (1920 × 480).",
     noFile: "Nenhum arquivo selecionado",
     rgbSection: "Efeitos RGB",
     rgbMode: "Modo de animação",
@@ -297,6 +305,10 @@ const TRANSLATIONS = {
       "Arrastra el cuadro para elegir el área visible. Los iconos de LoL son siempre cuadrados.",
     cropApply: "Aplicar recorte",
     cropCancel: "Cancelar",
+    bannerCropButton: "Recortar banner",
+    bannerCropTitle: "Recortar banner (4:1)",
+    bannerCropHint:
+      "Arrastra el cuadro para elegir el área visible. Los banners de LoL usan proporción 4:1 (1920 × 480).",
     noFile: "Ningún archivo seleccionado",
     rgbSection: "Efectos RGB",
     rgbMode: "Modo de animación",
@@ -398,6 +410,10 @@ const TRANSLATIONS = {
       "Ziehe das Feld, um den sichtbaren Bereich zu wählen. LoL-Symbole sind immer quadratisch.",
     cropApply: "Zuschnitt anwenden",
     cropCancel: "Abbrechen",
+    bannerCropButton: "Banner zuschneiden",
+    bannerCropTitle: "Banner zuschneiden (4:1)",
+    bannerCropHint:
+      "Ziehe das Feld für den sichtbaren Bereich. LoL-Banner verwenden 4:1 (1920 × 480).",
     noFile: "Keine Datei ausgewählt",
     rgbSection: "RGB-Effekte",
     rgbMode: "Animationsmodus",
@@ -496,6 +512,9 @@ const TRANSLATIONS = {
     cropHint: "枠をドラッグして表示領域を選択。LoLのアイコンは常に正方形です。",
     cropApply: "切り抜きを適用",
     cropCancel: "キャンセル",
+    bannerCropButton: "バナーを切り抜く",
+    bannerCropTitle: "バナーを切り抜き (4:1)",
+    bannerCropHint: "枠をドラッグして表示領域を選択。LoLバナーは4:1比率 (1920 × 480) です。",
     noFile: "ファイルが選択されていません",
     rgbSection: "RGB エフェクト",
     rgbMode: "アニメーションモード",
@@ -594,6 +613,10 @@ const TRANSLATIONS = {
       "상자를 드래그하여 표시 영역을 선택하세요. LoL 아이콘은 항상 정사각형입니다.",
     cropApply: "자르기 적용",
     cropCancel: "취소",
+    bannerCropButton: "배너 자르기",
+    bannerCropTitle: "배너 자르기 (4:1)",
+    bannerCropHint:
+      "상자를 드래그하여 표시 영역을 선택하세요. LoL 배너는 4:1 비율 (1920 × 480)을 사용합니다.",
     noFile: "선택된 파일 없음",
     rgbSection: "RGB 효과",
     rgbMode: "애니메이션 모드",
@@ -1621,6 +1644,13 @@ export function applyAllSettings(settings) {
 // ─────────────────────────────────────────────
 const CROP_OUTPUT_SIZE = 256;
 
+// ─────────────────────────────────────────────
+//  Crop modal 4:1 — banners do LoL são 1920×480.
+//  Saída: PNG dataURL 960×240.
+// ─────────────────────────────────────────────
+const BANNER_CROP_W = 960;
+const BANNER_CROP_H = 240;
+
 function openIconCropModal(srcUrl, onConfirm) {
   const overlay = document.createElement("div");
   overlay.className = "kyso-crop-overlay";
@@ -1789,8 +1819,151 @@ function openIconCropModal(srcUrl, onConfirm) {
   });
 }
 
-// ─────────────────────────────────────────────
-//  Construção da UI de configurações
+function openBannerCropModal(srcUrl, onConfirm) {
+  const overlay = document.createElement("div");
+  overlay.className = "kyso-crop-overlay";
+  overlay.innerHTML = `
+    <div class="kyso-crop-modal" role="dialog" aria-modal="true">
+      <div class="kyso-crop-header">
+        <span class="kyso-crop-title">${t("bannerCropTitle")}</span>
+      </div>
+      <div class="kyso-crop-hint">${t("bannerCropHint")}</div>
+      <div class="kyso-crop-stage kyso-crop-stage--wide">
+        <div class="kyso-crop-image-wrap">
+          <img class="kyso-crop-image" alt="" draggable="false">
+          <div class="kyso-crop-box">
+            <div class="kyso-crop-handle" data-h="nw"></div>
+            <div class="kyso-crop-handle" data-h="ne"></div>
+            <div class="kyso-crop-handle" data-h="sw"></div>
+            <div class="kyso-crop-handle" data-h="se"></div>
+          </div>
+        </div>
+      </div>
+      <div class="kyso-crop-actions">
+        <button class="kyso-btn kyso-btn--secondary kyso-crop-cancel">${t("cropCancel")}</button>
+        <button class="kyso-btn kyso-btn--primary kyso-crop-confirm">${t("cropApply")}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const img = overlay.querySelector(".kyso-crop-image");
+  const box = overlay.querySelector(".kyso-crop-box");
+
+  let dispW = 0, dispH = 0;
+  let cx = 0, cy = 0, cw = 0, ch = 0;
+
+  const layoutBox = () => {
+    box.style.left = `${cx}px`;
+    box.style.top = `${cy}px`;
+    box.style.width = `${cw}px`;
+    box.style.height = `${ch}px`;
+  };
+
+  const init = () => {
+    dispW = img.clientWidth;
+    dispH = img.clientHeight;
+    cw = Math.floor(dispW * 0.9);
+    ch = Math.round(cw / 4);
+    if (ch > dispH * 0.9) {
+      ch = Math.floor(dispH * 0.9);
+      cw = ch * 4;
+    }
+    cx = Math.floor((dispW - cw) / 2);
+    cy = Math.floor((dispH - ch) / 2);
+    layoutBox();
+  };
+
+  img.addEventListener("load", init);
+  img.crossOrigin = "anonymous";
+  img.src = srcUrl;
+
+  let drag = null;
+  box.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    const handle = e.target.classList.contains("kyso-crop-handle")
+      ? e.target.dataset.h
+      : null;
+    drag = { mode: handle ? "resize" : "move", handle, sx: e.clientX, sy: e.clientY, cx, cy, cw, ch };
+  });
+
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = e.clientX - drag.sx;
+    const dy = e.clientY - drag.sy;
+    if (drag.mode === "move") {
+      cx = Math.max(0, Math.min(dispW - drag.cw, drag.cx + dx));
+      cy = Math.max(0, Math.min(dispH - drag.ch, drag.cy + dy));
+      cw = drag.cw;
+      ch = drag.ch;
+    } else {
+      const h = drag.handle;
+      let newCw;
+      if (h === "se") {
+        newCw = Math.max(40, Math.min(drag.cw + dx, dispW - drag.cx));
+        cx = drag.cx;
+        cy = drag.cy;
+      } else if (h === "sw") {
+        newCw = Math.max(40, Math.min(drag.cw - dx, drag.cx + drag.cw));
+        cx = drag.cx + drag.cw - newCw;
+        cy = drag.cy;
+      } else if (h === "ne") {
+        newCw = Math.max(40, Math.min(drag.cw + dx, dispW - drag.cx));
+        cx = drag.cx;
+        cy = drag.cy + drag.ch - Math.round(newCw / 4);
+      } else { // nw
+        newCw = Math.max(40, Math.min(drag.cw - dx, drag.cx + drag.cw));
+        cx = drag.cx + drag.cw - newCw;
+        cy = drag.cy + drag.ch - Math.round(newCw / 4);
+      }
+      cw = newCw;
+      ch = Math.round(cw / 4);
+      cx = Math.max(0, Math.min(cx, dispW - cw));
+      cy = Math.max(0, Math.min(cy, dispH - ch));
+    }
+    layoutBox();
+  };
+
+  const onUp = () => { drag = null; };
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+
+  const cleanup = () => {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+    overlay.remove();
+  };
+
+  overlay.querySelector(".kyso-crop-cancel").addEventListener("click", cleanup);
+
+  overlay.querySelector(".kyso-crop-confirm").addEventListener("click", () => {
+    const scale = img.naturalWidth / dispW;
+    const sx = Math.round(cx * scale);
+    const sy = Math.round(cy * scale);
+    const sW = Math.round(cw * scale);
+    const sH = Math.round(ch * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = BANNER_CROP_W;
+    canvas.height = BANNER_CROP_H;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, sx, sy, sW, sH, 0, 0, BANNER_CROP_W, BANNER_CROP_H);
+
+    let dataUrl;
+    try {
+      dataUrl = canvas.toDataURL("image/png");
+    } catch (err) {
+      console.error("[KysoTheme] Banner crop falhou (CORS):", err);
+      alert(
+        "Não foi possível recortar essa imagem (CORS). Faça upload de um arquivo local ou use uma URL que permita CORS.",
+      );
+      return;
+    }
+    cleanup();
+    onConfirm(dataUrl);
+  });
+}
 // ─────────────────────────────────────────────
 async function buildSettingsPanel() {
   const settings = { ...DEFAULTS, ...loadSettings() };
@@ -1822,6 +1995,21 @@ async function buildSettingsPanel() {
       </div>
 
       ${buildAssetBlock("banner", "bannerLabel", manifest.categories.banners, settings)}
+
+      <div class="kyso-settings-row kyso-settings-row--upload">
+        <label class="kyso-label">${t("iconUpload")}</label>
+        <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
+          ${ICONS.folder}<span>${t("iconChoose")}</span>
+          <input id="kyso-banner-file" type="file" accept="image/*" style="display:none;">
+        </label>
+        <span id="kyso-banner-filename" class="kyso-filename">${t("noFile")}</span>
+      </div>
+      <div class="kyso-settings-row">
+        <button id="kyso-banner-crop" class="kyso-btn kyso-btn--secondary" disabled>
+          ${ICONS.scissors}<span>${t("bannerCropButton")}</span>
+        </button>
+      </div>
+
       ${buildAssetBlock("crest", "crestLabel", manifest.categories.crests, settings)}
       ${buildAssetBlock("profileIcon", "profileIconLabel", manifest.categories.profileIcons, settings)}
       ${buildAssetBlock("loadingBg", "loadingBgLabel", manifest.categories.loadingBackgrounds, settings)}
@@ -2364,6 +2552,55 @@ async function buildSettingsPanel() {
     saveSettings(s);
     applyFont("", "");
     showFeedback(panel, t("fontRemoved"));
+  });
+
+  // Banner — upload + crop (4:1 / 960×240)
+  const bannerFileInput = panel.querySelector("#kyso-banner-file");
+  const bannerFilename = panel.querySelector("#kyso-banner-filename");
+  const bannerCropBtn = panel.querySelector("#kyso-banner-crop");
+  let _bannerPendingUrl = "";
+
+  bannerFileInput.addEventListener("change", () => {
+    const file = bannerFileInput.files[0];
+    if (!file) return;
+    bannerFilename.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      _bannerPendingUrl = ev.target.result;
+      bannerCropBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  bannerCropBtn.addEventListener("click", () => {
+    if (!_bannerPendingUrl) return;
+    openBannerCropModal(_bannerPendingUrl, (dataUrl) => {
+      const s = {
+        ...DEFAULTS,
+        ...loadSettings(),
+        bannerWeb: dataUrl,
+        bannerSource: "web",
+      };
+      saveSettings(s);
+      applyAllSettings(s);
+      // Sync the banner block UI to "web" mode
+      const block = panel.querySelector('.kyso-asset-block[data-cat="banner"]');
+      if (block) {
+        block.querySelector(".kyso-asset-local-row").style.display = "none";
+        block.querySelector(".kyso-asset-web-row").style.display = "";
+        const webIn = block.querySelector("#kyso-banner-web");
+        if (webIn) webIn.value = dataUrl;
+        const srcToggle = block.querySelector("#kyso-banner-source-toggle");
+        if (srcToggle) srcToggle.checked = true;
+        block.querySelectorAll(".kyso-asset-source-label").forEach((lbl, i) => {
+          lbl.classList.toggle("kyso-asset-source-label--active", i === 1);
+        });
+      }
+      bannerFilename.textContent = t("noFile");
+      bannerCropBtn.disabled = true;
+      _bannerPendingUrl = "";
+      showFeedback(panel, t("saveAllDone"));
+    });
   });
 
   // RGB Effects — mode selector + speed slider

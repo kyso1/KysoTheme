@@ -121,6 +121,13 @@ function _updateBannerDom(url) {
          background-image: url("${url}") !important;
          background-size: cover !important;
          background-position: center !important;
+       }
+       img {
+         content: url("${url}") !important;
+         width: 100% !important;
+         height: 100% !important;
+         object-fit: cover !important;
+         object-position: center !important;
        }`
     : "";
 }
