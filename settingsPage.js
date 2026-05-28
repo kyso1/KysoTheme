@@ -99,6 +99,13 @@ const TRANSLATIONS = {
     cropApply: "Apply crop",
     cropCancel: "Cancel",
     noFile: "No file selected",
+    rgbSection: "RGB Effects",
+    rgbMode: "Animation mode",
+    rgbModeNone: "Off",
+    rgbModeRainbow: "Rainbow",
+    rgbModeBlink: "Blink",
+    rgbModePulse: "Pulse",
+    rgbSpeed: "Speed",
     saveAll: "Save all settings",
     saveAllDone: "Settings saved!",
   },
@@ -191,6 +198,13 @@ const TRANSLATIONS = {
     cropApply: "Aplicar corte",
     cropCancel: "Cancelar",
     noFile: "Nenhum arquivo selecionado",
+    rgbSection: "Efeitos RGB",
+    rgbMode: "Modo de animação",
+    rgbModeNone: "Desligado",
+    rgbModeRainbow: "Arco-íris",
+    rgbModeBlink: "Piscar",
+    rgbModePulse: "Pulsar",
+    rgbSpeed: "Velocidade",
     saveAll: "Salvar todas as configurações",
     saveAllDone: "Configurações salvas!",
   },
@@ -284,6 +298,13 @@ const TRANSLATIONS = {
     cropApply: "Aplicar recorte",
     cropCancel: "Cancelar",
     noFile: "Ningún archivo seleccionado",
+    rgbSection: "Efectos RGB",
+    rgbMode: "Modo de animación",
+    rgbModeNone: "Apagado",
+    rgbModeRainbow: "Arcoíris",
+    rgbModeBlink: "Parpadeo",
+    rgbModePulse: "Pulso",
+    rgbSpeed: "Velocidad",
     saveAll: "Guardar configuración",
     saveAllDone: "¡Configuración guardada!",
   },
@@ -378,6 +399,13 @@ const TRANSLATIONS = {
     cropApply: "Zuschnitt anwenden",
     cropCancel: "Abbrechen",
     noFile: "Keine Datei ausgewählt",
+    rgbSection: "RGB-Effekte",
+    rgbMode: "Animationsmodus",
+    rgbModeNone: "Aus",
+    rgbModeRainbow: "Regenbogen",
+    rgbModeBlink: "Blinken",
+    rgbModePulse: "Puls",
+    rgbSpeed: "Geschwindigkeit",
     saveAll: "Alle Einstellungen speichern",
     saveAllDone: "Einstellungen gespeichert!",
   },
@@ -469,6 +497,13 @@ const TRANSLATIONS = {
     cropApply: "切り抜きを適用",
     cropCancel: "キャンセル",
     noFile: "ファイルが選択されていません",
+    rgbSection: "RGB エフェクト",
+    rgbMode: "アニメーションモード",
+    rgbModeNone: "オフ",
+    rgbModeRainbow: "レインボー",
+    rgbModeBlink: "点滅",
+    rgbModePulse: "パルス",
+    rgbSpeed: "速度",
     saveAll: "すべての設定を保存",
     saveAllDone: "設定を保存しました！",
   },
@@ -560,6 +595,13 @@ const TRANSLATIONS = {
     cropApply: "자르기 적용",
     cropCancel: "취소",
     noFile: "선택된 파일 없음",
+    rgbSection: "RGB 효과",
+    rgbMode: "애니메이션 모드",
+    rgbModeNone: "끄기",
+    rgbModeRainbow: "레인보우",
+    rgbModeBlink: "깜박임",
+    rgbModePulse: "펄스",
+    rgbSpeed: "속도",
     saveAll: "모든 설정 저장",
     saveAllDone: "설정이 저장되었습니다!",
   },
@@ -642,6 +684,12 @@ const ICONS = {
       '<circle cx="17" cy="10.5" r="1.5" fill="currentColor" stroke="none"/>' +
       '<circle cx="10" cy="15" r="1.5" fill="currentColor" stroke="none"/>',
   ),
+  // Sparkle / efeito RGB (animação de cor)
+  rgb: _svg(
+    '<path d="M12 2l1.4 4.2L18 8l-4.6 1.8L12 14l-1.4-4.2L6 8l4.6-1.8z" fill="currentColor" stroke="none"/>' +
+      '<path d="M5 3l.7 2.1L8 6.5l-2.3.9L5 9.5l-.7-2.1L2 6.5l2.3-.9z" fill="currentColor" stroke="none"/>' +
+      '<path d="M19 15l.7 2.1L22 18.5l-2.3.9L19 21.5l-.7-2.1L16 18.5l2.3-.9z" fill="currentColor" stroke="none"/>',
+  ),
 };
 
 // ─────────────────────────────────────────────
@@ -717,12 +765,17 @@ const DEFAULTS = {
   // Color accent
   accentColor: "",
   accentAuto: false,
+  // RGB accent animation (PR C)
+  rgbMode: "none",
+  rgbSpeed: 3,
 };
 
 // ─────────────────────────────────────────────
 //  Aplicação das configurações no DOM / CSS
 // ─────────────────────────────────────────────
 let dynamicStyle = null;
+let _rgbAnimHandle = null;
+let _accentAutoGen = 0;
 
 function getOrCreateDynamicStyle() {
   if (!dynamicStyle) {
@@ -894,28 +947,115 @@ function _hexToHsl(hex) {
   return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
-/** Converte uma cor hex em string de CSS filter que reproduz aproximadamente essa cor */
-function _hexToFilter(hex) {
-  const normalized = hex.replace("#", "").toLowerCase();
-  if (!normalized || normalized === "ffffff" || normalized === "fff") {
-    return "grayscale(100%)";
-  }
-  const { h, s, l } = _hexToHsl(hex);
-  // sepia base ≈ 38°; hue-rotate compensa
-  const rotate = Math.round((h - 38 + 360) % 360);
-  const sat = Math.min(Math.round(s * 4 + 100), 800);
-  const bright = l < 30 ? 1.5 : l > 75 ? 0.85 : 1;
-  return `grayscale(0%) sepia(100%) hue-rotate(${rotate}deg) saturate(${sat}%) brightness(${bright})`;
+/** HSL (h=0-360, s=0-100, l=0-100) → { r, g, b } (0-255) */
+function _hslToRgb(h, s, l) {
+  s /= 100;
+  l /= 100;
+  const k = (n) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) =>
+    l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return {
+    r: Math.round(f(0) * 255),
+    g: Math.round(f(8) * 255),
+    b: Math.round(f(4) * 255),
+  };
+}
+
+function _toHexStr(r, g, b) {
+  return (
+    "#" +
+    [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")
+  );
 }
 
 /** Aplica a cor de acento nas CSS custom properties de :root */
 function applyAccentColor(hex) {
   const color = hex && hex !== "" ? hex : "#ffffff";
   const { r, g, b } = _hexToRgb(color);
+  const { h, s, l } = _hexToHsl(color);
   const root = document.documentElement;
   root.style.setProperty("--kyso-accent", color);
   root.style.setProperty("--kyso-accent-glow", `rgba(${r},${g},${b},0.5)`);
-  root.style.setProperty("--kyso-filter", _hexToFilter(color));
+  root.style.setProperty("--kyso-accent-r", r);
+  root.style.setProperty("--kyso-accent-g", g);
+  root.style.setProperty("--kyso-accent-b", b);
+  root.style.setProperty("--kyso-accent-h", Math.round(h));
+  root.style.setProperty("--kyso-accent-s", Math.round(s));
+  root.style.setProperty("--kyso-accent-l", Math.round(l));
+}
+
+// ─────────────────────────────────────────────
+//  RGB accent animation engine (PR C)
+// ─────────────────────────────────────────────
+function _stopRgbAnim() {
+  if (_rgbAnimHandle !== null) {
+    cancelAnimationFrame(_rgbAnimHandle);
+    _rgbAnimHandle = null;
+  }
+}
+
+/**
+ * Starts / stops the accent RGB animation.
+ * @param {string} mode     "none" | "rainbow" | "blink" | "pulse"
+ * @param {number} speed    1-5
+ * @param {string} baseHex  Current saved accent hex
+ */
+function applyRgbEffect(mode, speed, baseHex) {
+  _stopRgbAnim();
+  if (!mode || mode === "none") return; // applyAccentColor already called by caller
+
+  const sp = Math.max(1, Math.min(5, speed || 3));
+  const root = document.documentElement;
+
+  if (mode === "rainbow") {
+    let startTime = null;
+    function rainbowTick(ts) {
+      if (startTime === null) startTime = ts;
+      const h = ((ts - startTime) * sp * 0.04) % 360;
+      const { r, g, b } = _hslToRgb(h, 80, 50);
+      root.style.setProperty("--kyso-accent-h", h.toFixed(0));
+      root.style.setProperty("--kyso-accent-s", "80");
+      root.style.setProperty("--kyso-accent-l", "50");
+      root.style.setProperty("--kyso-accent", _toHexStr(r, g, b));
+      root.style.setProperty("--kyso-accent-glow", `rgba(${r},${g},${b},0.5)`);
+      _rgbAnimHandle = requestAnimationFrame(rainbowTick);
+    }
+    _rgbAnimHandle = requestAnimationFrame(rainbowTick);
+  } else if (mode === "blink") {
+    const { h, s } = _hexToHsl(baseHex || "#c8a040");
+    const period = 500 / sp; // ms per on/off phase
+    let startTime = null;
+    function blinkTick(ts) {
+      if (startTime === null) startTime = ts;
+      const on = Math.floor((ts - startTime) / period) % 2 === 0;
+      const l = on ? 50 : 8;
+      const { r, g, b } = _hslToRgb(h, s, l);
+      root.style.setProperty("--kyso-accent-l", l);
+      root.style.setProperty("--kyso-accent", _toHexStr(r, g, b));
+      root.style.setProperty("--kyso-accent-glow", `rgba(${r},${g},${b},0.5)`);
+      _rgbAnimHandle = requestAnimationFrame(blinkTick);
+    }
+    root.style.setProperty("--kyso-accent-h", Math.round(h).toString());
+    root.style.setProperty("--kyso-accent-s", Math.round(s).toString());
+    _rgbAnimHandle = requestAnimationFrame(blinkTick);
+  } else if (mode === "pulse") {
+    const { h, s } = _hexToHsl(baseHex || "#c8a040");
+    const freq = sp * 0.001; // rad/ms
+    let startTime = null;
+    function pulseTick(ts) {
+      if (startTime === null) startTime = ts;
+      const l = Math.round(35 + 30 * Math.sin((ts - startTime) * freq));
+      const { r, g, b } = _hslToRgb(h, s, l);
+      root.style.setProperty("--kyso-accent-l", l);
+      root.style.setProperty("--kyso-accent", _toHexStr(r, g, b));
+      root.style.setProperty("--kyso-accent-glow", `rgba(${r},${g},${b},0.5)`);
+      _rgbAnimHandle = requestAnimationFrame(pulseTick);
+    }
+    root.style.setProperty("--kyso-accent-h", Math.round(h).toString());
+    root.style.setProperty("--kyso-accent-s", Math.round(s).toString());
+    _rgbAnimHandle = requestAnimationFrame(pulseTick);
+  }
 }
 
 /**
@@ -1459,9 +1599,19 @@ export function applyAllSettings(settings) {
   applyHideSocialBtnSetting(merged);
   // Color accent — still uses resolved bgUrl for auto-extraction
   if (merged.accentAuto) {
-    extractAccentFromBackground(bgUrl).then((hex) => applyAccentColor(hex));
+    const _gen = ++_accentAutoGen;
+    extractAccentFromBackground(bgUrl).then((hex) => {
+      if (_gen !== _accentAutoGen) return; // discard stale async result
+      applyAccentColor(hex);
+      applyRgbEffect(merged.rgbMode || "none", merged.rgbSpeed || 3, hex);
+    });
   } else {
     applyAccentColor(merged.accentColor || "");
+    applyRgbEffect(
+      merged.rgbMode || "none",
+      merged.rgbSpeed || 3,
+      merged.accentColor || "",
+    );
   }
 }
 
@@ -1807,6 +1957,26 @@ async function buildSettingsPanel() {
           <input id="kyso-color-auto" type="checkbox" ${settings.accentAuto ? "checked" : ""}>
           <span class="kyso-toggle-slider"></span>
         </label>
+      </div>
+    </section>
+
+    <!-- RGB Effects -->
+    <section class="kyso-settings-section" id="kyso-rgb-section">
+      <h3 class="kyso-settings-section-title">${ICONS.rgb}<span>${t("rgbSection")}</span></h3>
+
+      <div class="kyso-settings-row">
+        <label class="kyso-label" for="kyso-rgb-mode">${t("rgbMode")}</label>
+        <select id="kyso-rgb-mode" class="kyso-select">
+          <option value="none" ${!settings.rgbMode || settings.rgbMode === "none" ? "selected" : ""}>${t("rgbModeNone")}</option>
+          <option value="rainbow" ${settings.rgbMode === "rainbow" ? "selected" : ""}>${t("rgbModeRainbow")}</option>
+          <option value="blink" ${settings.rgbMode === "blink" ? "selected" : ""}>${t("rgbModeBlink")}</option>
+          <option value="pulse" ${settings.rgbMode === "pulse" ? "selected" : ""}>${t("rgbModePulse")}</option>
+        </select>
+      </div>
+
+      <div class="kyso-settings-row" id="kyso-rgb-speed-row" ${!settings.rgbMode || settings.rgbMode === "none" ? 'style="display:none"' : ""}>
+        <label class="kyso-label" for="kyso-rgb-speed">${t("rgbSpeed")}: <span id="kyso-rgb-speed-value">${settings.rgbSpeed || 3}</span></label>
+        <input type="range" id="kyso-rgb-speed" class="kyso-range" min="1" max="5" step="1" value="${settings.rgbSpeed || 3}">
       </div>
     </section>
 
@@ -2196,6 +2366,28 @@ async function buildSettingsPanel() {
     showFeedback(panel, t("fontRemoved"));
   });
 
+  // RGB Effects — mode selector + speed slider
+  const rgbModeSelect = panel.querySelector("#kyso-rgb-mode");
+  const rgbSpeedInput = panel.querySelector("#kyso-rgb-speed");
+  const rgbSpeedValue = panel.querySelector("#kyso-rgb-speed-value");
+  const rgbSpeedRow = panel.querySelector("#kyso-rgb-speed-row");
+
+  rgbModeSelect.addEventListener("change", () => {
+    const mode = rgbModeSelect.value;
+    rgbSpeedRow.style.display = mode === "none" ? "none" : "";
+    const s = { ...DEFAULTS, ...loadSettings(), rgbMode: mode };
+    saveSettings(s);
+    applyRgbEffect(mode, s.rgbSpeed || 3, s.accentColor || "");
+  });
+
+  rgbSpeedInput.addEventListener("input", () => {
+    const speed = parseInt(rgbSpeedInput.value, 10);
+    rgbSpeedValue.textContent = speed;
+    const s = { ...DEFAULTS, ...loadSettings(), rgbSpeed: speed };
+    saveSettings(s);
+    applyRgbEffect(s.rgbMode || "none", speed, s.accentColor || "");
+  });
+
   // Salvar tudo
   panel.querySelector("#kyso-save-all").addEventListener("click", () => {
     const prev = { ...DEFAULTS, ...loadSettings() };
@@ -2219,6 +2411,8 @@ async function buildSettingsPanel() {
       enableHideSocialBtn: panel.querySelector("#kyso-enable-hide-social-btn")
         .checked,
       socialHidden: prev.socialHidden,
+      rgbMode: panel.querySelector("#kyso-rgb-mode").value,
+      rgbSpeed: parseInt(panel.querySelector("#kyso-rgb-speed").value, 10) || 3,
     };
     saveSettings(s);
     applyAllSettings(s);

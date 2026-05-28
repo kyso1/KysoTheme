@@ -677,3 +677,12 @@
     flex: 1;
     min-width: 0;
   }
+
+/* Range slider (RGB speed control) */
+.kyso-range {
+  flex: 1;
+  min-width: 80px;
+  max-width: 160px;
+  cursor: pointer;
+  accent-color: var(--kyso-accent, #c8a040);
+}

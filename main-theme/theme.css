@@ -22,11 +22,19 @@
   /* ─── Color accent — sobrescrito por settingsPage.js ─────────────────────
      --kyso-accent      : cor principal (text, borders, badges)
      --kyso-accent-glow : versão translúcida para glows / drop-shadow
-     --kyso-filter      : filter aplicado nos elementos coloridos do jogo
+     --kyso-accent-h/s/l: componentes HSL (sem unidade) para cálculo do filtro
+     --kyso-filter      : calculado via calc() dos componentes H/S/L acima;
+                          não precisa ser sobrescrito por JS diretamente.
      Defaults = branco / grayscale (comportamento original do tema)          */
   --kyso-accent: #ffffff;
   --kyso-accent-glow: rgba(255, 255, 255, 0.5);
-  --kyso-filter: grayscale(100%);
+  --kyso-accent-h: 0;
+  --kyso-accent-s: 0;
+  --kyso-accent-l: 100;
+  --kyso-filter: sepia(1)
+    hue-rotate(calc(var(--kyso-accent-h) * 1deg - 38deg))
+    saturate(clamp(0%, calc(var(--kyso-accent-s) * 5%), 800%))
+    brightness(clamp(0.5, calc(0.5 + var(--kyso-accent-l) * 0.01), 1.5));
 }
 
 /* creates fadeIn animations to uses */
