@@ -732,9 +732,8 @@ function loadSettings() {
 function saveSettings(settings) {
   const _toSave = {
     ...settings,
-    // Legacy mirrors — derived from new triples so external readers still work
+    // Legacy mirror — derived from new triple so external readers still work
     backgroundUrl: resolveAsset("background", { ...DEFAULTS, ...settings }),
-    iconUrl: resolveAsset("profileIcon", { ...DEFAULTS, ...settings }),
   };
   DataStore.set(STORE_KEY, JSON.stringify(_toSave));
 }
@@ -791,6 +790,9 @@ const DEFAULTS = {
   // RGB accent animation (PR C)
   rgbMode: "none",
   rgbSpeed: 3,
+  // Icon (self or all-players)
+  iconUrl: "",
+  iconAllPlayers: false,
 };
 
 // ─────────────────────────────────────────────
@@ -846,7 +848,7 @@ function resolveAsset(cat, settings) {
 // cat is the prefix used in DEFAULTS keys: e.g. "banner" → bannerSource/bannerLocal/bannerWeb.
 // labelKey is the i18n key for the section heading: e.g. "bannerLabel".
 // manifestEntries is the array from manifest.categories[<cat plural>].
-function buildAssetBlock(cat, labelKey, manifestEntries, settings) {
+function buildAssetBlock(cat, labelKey, manifestEntries, settings, startCollapsed = true) {
   const source = settings[cat + "Source"] || "local";
   const local = settings[cat + "Local"] || "";
   const web = settings[cat + "Web"] || "";
@@ -862,29 +864,34 @@ function buildAssetBlock(cat, labelKey, manifestEntries, settings) {
     : `<option value="">${t("noLocalAssets")}</option>`;
 
   return `
-    <div class="kyso-asset-block" data-cat="${cat}">
-      <h4 class="kyso-asset-block-title">${t(labelKey)}</h4>
-      <div class="kyso-settings-row kyso-asset-source-row">
-        <span class="kyso-asset-source-label ${source === "local" ? "kyso-asset-source-label--active" : ""}">${t("sourceLocal")}</span>
-        <label class="kyso-toggle">
-          <input type="checkbox" id="kyso-${cat}-source-toggle" ${source === "web" ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-        <span class="kyso-asset-source-label ${source === "web" ? "kyso-asset-source-label--active" : ""}">${t("sourceWeb")}</span>
+    <div class="kyso-asset-block ${startCollapsed ? "kyso-asset-block--collapsed" : ""}" data-cat="${cat}">
+      <div class="kyso-asset-block-header">
+        <h4 class="kyso-asset-block-title">${t(labelKey)}</h4>
+        <button class="kyso-asset-block-toggle" type="button" aria-label="toggle">▾</button>
       </div>
-      <div class="kyso-settings-row kyso-asset-local-row" ${source === "local" ? "" : 'style="display:none"'}>
-        <select id="kyso-${cat}-local" class="kyso-select" data-cat="${cat}">
-          ${options}
-        </select>
-      </div>
-      <div class="kyso-settings-row kyso-asset-web-row" ${source === "web" ? "" : 'style="display:none"'}>
-        <input id="kyso-${cat}-web" class="kyso-input" type="text"
-               placeholder="${t("webUrlPlaceholder")}"
-               value="${web.replace(/"/g, "&quot;")}">
-        <button class="kyso-btn kyso-btn--primary kyso-${cat}-apply" data-cat="${cat}">${t("applyAsset")}</button>
-      </div>
-      <div class="kyso-settings-row">
-        <button class="kyso-btn kyso-btn--secondary kyso-${cat}-reset" data-cat="${cat}">${t("resetToDefault")}</button>
+      <div class="kyso-asset-block-body">
+        <div class="kyso-settings-row kyso-asset-source-row">
+          <span class="kyso-asset-source-label ${source === "local" ? "kyso-asset-source-label--active" : ""}">${t("sourceLocal")}</span>
+          <label class="kyso-toggle">
+            <input type="checkbox" id="kyso-${cat}-source-toggle" ${source === "web" ? "checked" : ""}>
+            <span class="kyso-toggle-slider"></span>
+          </label>
+          <span class="kyso-asset-source-label ${source === "web" ? "kyso-asset-source-label--active" : ""}">${t("sourceWeb")}</span>
+        </div>
+        <div class="kyso-settings-row kyso-asset-local-row" ${source === "local" ? "" : 'style="display:none"'}>
+          <select id="kyso-${cat}-local" class="kyso-select" data-cat="${cat}">
+            ${options}
+          </select>
+        </div>
+        <div class="kyso-settings-row kyso-asset-web-row" ${source === "web" ? "" : 'style="display:none"'}>
+          <input id="kyso-${cat}-web" class="kyso-input" type="text"
+                 placeholder="${t("webUrlPlaceholder")}"
+                 value="${web.replace(/"/g, "&quot;")}">
+          <button class="kyso-btn kyso-btn--primary kyso-${cat}-apply" data-cat="${cat}">${t("applyAsset")}</button>
+        </div>
+        <div class="kyso-settings-row">
+          <button class="kyso-btn kyso-btn--secondary kyso-${cat}-reset" data-cat="${cat}">${t("resetToDefault")}</button>
+        </div>
       </div>
     </div>
   `;
@@ -1630,10 +1637,13 @@ export function applyAllSettings(settings) {
   applyBackground(bgUrl, merged.backgroundType);
   applyFont(merged.fontUrl, merged.fontFamily);
   applyHideOptions(merged);
-  // Asset replacers — self-only profile icon, no global CSS path
+  // Asset replacers — self-only profile icon (shadow DOM), CSS icon injection
   assetReplacers.applyBanner(resolveAsset("banner", merged));
   assetReplacers.applyCrest(resolveAsset("crest", merged));
-  assetReplacers.applyProfileIcon(resolveAsset("profileIcon", merged));
+  const _iconUrl = merged.iconUrl || "";
+  const _iconAll = merged.iconAllPlayers || false;
+  applyIcon(_iconUrl, _iconAll);
+  assetReplacers.applyProfileIcon(_iconUrl);
   assetReplacers.applyLoadingScreen({
     bgUrl: resolveAsset("loadingBg", merged),
     iconUrl: resolveAsset("loadingIcon", merged),
@@ -2017,9 +2027,9 @@ async function buildSettingsPanel() {
       ${buildAssetBlock("banner", "bannerLabel", manifest.categories.banners, settings)}
 
       <div class="kyso-settings-row kyso-settings-row--upload">
-        <label class="kyso-label">${t("iconUpload")}</label>
+        <label class="kyso-label">${t("bgUpload")}</label>
         <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
-          ${ICONS.folder}<span>${t("iconChoose")}</span>
+          ${ICONS.folder}<span>${t("bgChoose")}</span>
           <input id="kyso-banner-file" type="file" accept="image/*" style="display:none;">
         </label>
         <span id="kyso-banner-filename" class="kyso-filename">${t("noFile")}</span>
@@ -2031,7 +2041,6 @@ async function buildSettingsPanel() {
       </div>
 
       ${buildAssetBlock("crest", "crestLabel", manifest.categories.crests, settings)}
-      ${buildAssetBlock("profileIcon", "profileIconLabel", manifest.categories.profileIcons, settings)}
       ${buildAssetBlock("loadingBg", "loadingBgLabel", manifest.categories.loadingBackgrounds, settings)}
       ${buildAssetBlock("loadingIcon", "loadingIconLabel", manifest.categories.loadingIcons, settings)}
     </section>
@@ -2248,7 +2257,7 @@ async function buildSettingsPanel() {
       </div>
 
       <div class="kyso-settings-row">
-        <button id="kyso-icon-crop" class="kyso-btn kyso-btn--secondary">${ICONS.scissors}<span>${t("cropButton")}</span></button>
+        <button id="kyso-icon-crop" class="kyso-btn kyso-btn--secondary" ${settings.iconUrl ? "" : "disabled"}>${ICONS.scissors}<span>${t("cropButton")}</span></button>
         <button id="kyso-icon-apply" class="kyso-btn kyso-btn--primary">${t("iconApply")}</button>
         <button id="kyso-icon-reset" class="kyso-btn kyso-btn--danger">${t("iconRemove")}</button>
       </div>
@@ -2273,7 +2282,7 @@ async function buildSettingsPanel() {
 
   // ── Wiring de eventos ──────────────────────────────
   // Asset blocks — source switch, local select, web apply, reset.
-  const ASSET_CATS = ["background", "banner", "crest", "profileIcon", "loadingBg", "loadingIcon"];
+  const ASSET_CATS = ["background", "banner", "crest", "loadingBg", "loadingIcon"];
 
   ASSET_CATS.forEach((cat) => {
     // Source toggle (checkbox: unchecked = local, checked = web)
@@ -2348,6 +2357,93 @@ async function buildSettingsPanel() {
       });
     }
   });
+
+  // Asset block collapse toggle — delegated on panel
+  panel.addEventListener("click", (e) => {
+    const toggle = e.target.closest(".kyso-asset-block-toggle");
+    if (!toggle) return;
+    const block = toggle.closest(".kyso-asset-block");
+    if (block) block.classList.toggle("kyso-asset-block--collapsed");
+  });
+
+  // ── Icon section handlers ────────────────────────────────────────────────
+  const iconUrlInput = panel.querySelector("#kyso-icon-url");
+  const iconFileInput = panel.querySelector("#kyso-icon-file");
+  const iconFilename = panel.querySelector("#kyso-icon-filename");
+  const iconCropBtn = panel.querySelector("#kyso-icon-crop");
+  const iconApplyBtn = panel.querySelector("#kyso-icon-apply");
+  const iconResetBtn = panel.querySelector("#kyso-icon-reset");
+  const iconAllPlayersChk = panel.querySelector("#kyso-icon-all-players");
+  let _iconPendingUrl = "";
+
+  function _enableIconCrop() {
+    iconCropBtn.disabled = !(iconUrlInput.value.trim() || _iconPendingUrl);
+  }
+
+  iconUrlInput.addEventListener("input", _enableIconCrop);
+
+  iconFileInput.addEventListener("change", () => {
+    const file = iconFileInput.files[0];
+    if (!file) return;
+    iconFilename.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      _iconPendingUrl = ev.target.result;
+      iconUrlInput.value = "";
+      _enableIconCrop();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  iconCropBtn.addEventListener("click", () => {
+    const src = _iconPendingUrl || iconUrlInput.value.trim();
+    if (!src) return;
+    openIconCropModal(src, (dataUrl) => {
+      _iconPendingUrl = "";
+      iconFilename.textContent = t("noFile");
+      iconUrlInput.value = dataUrl;
+      _enableIconCrop();
+      const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
+      const s = { ...DEFAULTS, ...loadSettings(), iconUrl: dataUrl, iconAllPlayers: allPlayers };
+      saveSettings(s);
+      applyIcon(dataUrl, allPlayers);
+      assetReplacers.applyProfileIcon(dataUrl);
+      showFeedback(panel, t("iconApplied"));
+    });
+  });
+
+  iconApplyBtn.addEventListener("click", () => {
+    const url = iconUrlInput.value.trim();
+    const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
+    const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
+    saveSettings(s);
+    applyIcon(url, allPlayers);
+    assetReplacers.applyProfileIcon(url);
+    showFeedback(panel, t("iconApplied"));
+  });
+
+  iconResetBtn.addEventListener("click", () => {
+    iconUrlInput.value = "";
+    _iconPendingUrl = "";
+    iconFilename.textContent = t("noFile");
+    iconCropBtn.disabled = true;
+    const s = { ...DEFAULTS, ...loadSettings(), iconUrl: "", iconAllPlayers: false };
+    if (iconAllPlayersChk) iconAllPlayersChk.checked = false;
+    saveSettings(s);
+    applyIcon("", false);
+    assetReplacers.applyProfileIcon("");
+    showFeedback(panel, t("iconRemove"));
+  });
+
+  if (iconAllPlayersChk) {
+    iconAllPlayersChk.addEventListener("change", () => {
+      const url = iconUrlInput.value.trim();
+      const allPlayers = iconAllPlayersChk.checked;
+      const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
+      saveSettings(s);
+      applyIcon(url, allPlayers);
+    });
+  }
 
   // Background type select — standalone handler
   const bgTypeSel = panel.querySelector("#kyso-bg-type");
@@ -2791,9 +2887,6 @@ function migrateSettings(saved) {
   if (!saved || typeof saved !== "object") return saved;
   const out = { ...saved };
 
-  // Remove chave descontinuada
-  if (out.iconAllPlayers !== undefined) delete out.iconAllPlayers;
-
   const ASSETS_PREFIX = "//plugins/KysoTheme/assets/";
 
   // Background: derive Source/Local/Web from legacy backgroundUrl
@@ -2807,14 +2900,13 @@ function migrateSettings(saved) {
     }
   }
 
-  // Profile icon: derive from legacy iconUrl
-  if (out.iconUrl && out.profileIconSource === undefined) {
-    if (out.iconUrl.startsWith(ASSETS_PREFIX)) {
-      out.profileIconSource = "local";
-      out.profileIconLocal = out.iconUrl.slice(ASSETS_PREFIX.length);
-    } else {
-      out.profileIconSource = "web";
-      out.profileIconWeb = out.iconUrl;
+  // Profile icon triple → iconUrl (triple was used in an older version;
+  // the icon section now uses iconUrl directly).
+  if (!out.iconUrl && out.profileIconSource) {
+    if (out.profileIconSource === "web" && out.profileIconWeb) {
+      out.iconUrl = out.profileIconWeb;
+    } else if (out.profileIconSource === "local" && out.profileIconLocal) {
+      out.iconUrl = ASSETS_PREFIX + out.profileIconLocal;
     }
   }
 

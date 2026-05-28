@@ -662,6 +662,7 @@
 
   .kyso-asset-source-row {
     display: flex;
+    flex-direction: row;
     gap: 10px;
     align-items: center;
   }
@@ -691,4 +692,42 @@
   max-width: 160px;
   cursor: pointer;
   accent-color: var(--kyso-accent, #c8a040);
+}
+
+/* Collapsible asset block toggle */
+.kyso-asset-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.kyso-asset-block-header:hover .kyso-asset-block-title {
+  color: #f0d080;
+}
+
+.kyso-asset-block-toggle {
+  background: none;
+  border: none;
+  color: var(--kyso-accent, #c8a040);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.kyso-asset-block--collapsed .kyso-asset-block-toggle {
+  transform: rotate(-90deg);
+}
+
+.kyso-asset-block-body {
+  margin-top: 8px;
+}
+
+.kyso-asset-block--collapsed .kyso-asset-block-body {
+  display: none;
 }
