@@ -1341,34 +1341,33 @@ function applyTopNavbarHiddenState(hidden, showBlueEssence) {
   const btn = document.querySelector(".hide-top-navbar");
   const icon = document.querySelector(".hide-top-navbar-icon");
 
+  // Helper: set inline css with !important so Riot's class rules can't win.
+  const apply = (el, tx, opacity, pe) => {
+    if (!el) return;
+    el.style.setProperty("transform", `translateX(${tx}px)`, "important");
+    el.style.setProperty("opacity", String(opacity), "important");
+    el.style.setProperty("pointer-events", pe, "important");
+  };
+
   // Botão SEMPRE fica à esquerda (translateX 0). Não desloca com BE/RP.
-  if (btn) btn.style.cssText = `transform: translateX(0px);`;
+  if (btn) {
+    btn.style.setProperty("transform", "translateX(0px)", "important");
+    btn.style.setProperty("opacity", "1", "important");
+    btn.style.setProperty("pointer-events", "auto", "important");
+  }
 
   if (hidden) {
-    items.forEach((el) => {
-      el.style.cssText = `transform: translateX(${offset}px); opacity: 0; pointer-events: none;`;
-    });
-    rules.forEach((el) => {
-      el.style.cssText = `transform: translateX(${offset}px); opacity: 0; pointer-events: none;`;
-    });
+    items.forEach((el) => apply(el, offset, 0, "none"));
+    rules.forEach((el) => apply(el, offset, 0, "none"));
     if (wallet) {
-      if (showBlueEssence) {
-        wallet.style.cssText = `transform: translateX(0px); opacity: 1; pointer-events: auto;`;
-      } else {
-        wallet.style.cssText = `transform: translateX(${offset}px); opacity: 0; pointer-events: none;`;
-      }
+      if (showBlueEssence) apply(wallet, 0, 1, "auto");
+      else apply(wallet, offset, 0, "none");
     }
     if (icon) icon.textContent = "‹";
   } else {
-    items.forEach((el) => {
-      el.style.cssText = `transform: translateX(0px); opacity: 1; pointer-events: auto;`;
-    });
-    rules.forEach((el) => {
-      el.style.cssText = `transform: translateX(0px); opacity: 1; pointer-events: auto;`;
-    });
-    if (wallet) {
-      wallet.style.cssText = `transform: translateX(0px); opacity: 1; pointer-events: auto;`;
-    }
+    items.forEach((el) => apply(el, 0, 1, "auto"));
+    rules.forEach((el) => apply(el, 0, 1, "auto"));
+    if (wallet) apply(wallet, 0, 1, "auto");
     if (icon) icon.textContent = "›";
   }
 }

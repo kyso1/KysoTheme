@@ -61,6 +61,31 @@ function ensureStyleIn(root, id) {
   return style;
 }
 
+// Deep query: walks light DOM + every shadow root recursively, returns every
+// element matching `tagName`. Needed because regalia elements appear inside
+// at least: lol-regalia-profile-v2-element (profile page),
+// lol-social-summoner-hovercard (sidebar hover preview), and chat hover cards.
+function _findAllDeep(tagName, root = document) {
+  const results = [];
+  const visit = (node) => {
+    if (!node) return;
+    if (typeof node.querySelectorAll === "function") {
+      const matches = node.querySelectorAll(tagName);
+      for (const el of matches) results.push(el);
+    }
+    // Walk descendants searching for shadow roots
+    if (typeof node.createTreeWalker === "function") {
+      const walker = node.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
+      let n;
+      while ((n = walker.nextNode())) {
+        if (n.shadowRoot) visit(n.shadowRoot);
+      }
+    }
+  };
+  visit(root);
+  return results;
+}
+
 // applyProfileIcon — self-only. Touches profile page crest + sidebar avatar.
 // Empty URL → skip mutations (lets Riot default render).
 let _profileIconObserver = null;
@@ -108,32 +133,35 @@ export function applyProfileIcon(url) {
   _profileIconObserver.observe(document.body, { childList: true, subtree: true });
 }
 
-// applyBanner — injects override style into the banner element's shadow root.
-// Selectors are broad to survive minor Riot rendering changes.
+// applyBanner — injects override style into the shadow root of EVERY
+// lol-regalia-banner-v2-element currently mounted. Covers profile page,
+// sidebar profile hover card, chat hover cards — all banner surfaces.
 let _bannerObserver = null;
 let _currentBannerUrl = "";
 
+const BANNER_CSS = (url) => url
+  ? `:host, :host > div, .banner, [class*="banner"] {
+       background-image: url("${url}") !important;
+       background-size: cover !important;
+       background-position: center !important;
+     }
+     img {
+       content: url("${url}") !important;
+       width: 100% !important;
+       height: 100% !important;
+       object-fit: cover !important;
+       object-position: center !important;
+     }`
+  : "";
+
 function _updateBannerDom(url) {
-  const profile = document.querySelector("lol-regalia-profile-v2-element");
-  if (!profile || !profile.shadowRoot) return;
-  const banner = profile.shadowRoot.querySelector("lol-regalia-banner-v2-element");
-  if (!banner || !banner.shadowRoot) return;
-  const style = ensureStyleIn(banner.shadowRoot, "kyso-banner-override");
-  if (!style) return;
-  style.textContent = url
-    ? `:host, :host > div, .banner, [class*="banner"] {
-         background-image: url("${url}") !important;
-         background-size: cover !important;
-         background-position: center !important;
-       }
-       img {
-         content: url("${url}") !important;
-         width: 100% !important;
-         height: 100% !important;
-         object-fit: cover !important;
-         object-position: center !important;
-       }`
-    : "";
+  const banners = _findAllDeep("lol-regalia-banner-v2-element");
+  for (const banner of banners) {
+    if (!banner.shadowRoot) continue;
+    const style = ensureStyleIn(banner.shadowRoot, "kyso-banner-override");
+    if (!style) continue;
+    style.textContent = BANNER_CSS(url);
+  }
 }
 
 export function applyBanner(url) {
@@ -146,25 +174,31 @@ export function applyBanner(url) {
   _bannerObserver.observe(document.body, { childList: true, subtree: true });
 }
 
-// applyCrest — injects override style into the crest element's shadow root.
+// applyCrest — injects override style into the shadow root of EVERY
+// lol-regalia-crest-v2-element currently mounted (profile page + hover cards).
 let _crestObserver = null;
 let _currentCrestUrl = "";
 
+const CREST_CSS = (url) => url
+  ? `:host, :host > div, .crest, [class*="crest"] {
+       background-image: url("${url}") !important;
+       background-size: contain !important;
+       background-position: center !important;
+       background-repeat: no-repeat !important;
+     }
+     :host img, :host svg {
+       opacity: 0 !important;
+     }`
+  : "";
+
 function _updateCrestDom(url) {
-  const profile = document.querySelector("lol-regalia-profile-v2-element");
-  if (!profile || !profile.shadowRoot) return;
-  const crest = profile.shadowRoot.querySelector("lol-regalia-crest-v2-element");
-  if (!crest || !crest.shadowRoot) return;
-  const style = ensureStyleIn(crest.shadowRoot, "kyso-crest-override");
-  if (!style) return;
-  style.textContent = url
-    ? `:host, :host > div, .crest, [class*="crest"] {
-         background-image: url("${url}") !important;
-         background-size: contain !important;
-         background-position: center !important;
-         background-repeat: no-repeat !important;
-       }`
-    : "";
+  const crests = _findAllDeep("lol-regalia-crest-v2-element");
+  for (const crest of crests) {
+    if (!crest.shadowRoot) continue;
+    const style = ensureStyleIn(crest.shadowRoot, "kyso-crest-override");
+    if (!style) continue;
+    style.textContent = CREST_CSS(url);
+  }
 }
 
 export function applyCrest(url) {
