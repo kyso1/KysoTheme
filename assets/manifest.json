@@ -14,17 +14,17 @@
     ],
     "banners": [],
     "crests": [
-      { "label": "Iron",        "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-iron.png" },
-      { "label": "Bronze",      "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-bronze.png" },
-      { "label": "Silver",      "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-silver.png" },
-      { "label": "Gold",        "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-gold.png" },
-      { "label": "Platinum",    "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-platinum.png" },
-      { "label": "Emerald",     "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-emerald.png" },
-      { "label": "Diamond",     "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-diamond.png" },
-      { "label": "Master",      "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-master.png" },
-      { "label": "Grandmaster", "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-grandmaster.png" },
-      { "label": "Challenger",  "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-challenger.png" },
-      { "label": "Unranked",    "path": "//plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblems/emblem-unranked.png" }
+      { "label": "Iron",        "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/iron.svg" },
+      { "label": "Bronze",      "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/bronze.svg" },
+      { "label": "Silver",      "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/silver.svg" },
+      { "label": "Gold",        "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/gold.svg" },
+      { "label": "Platinum",    "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/platinum.svg" },
+      { "label": "Emerald",     "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/emerald.svg" },
+      { "label": "Diamond",     "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/diamond.svg" },
+      { "label": "Master",      "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/master.svg" },
+      { "label": "Grandmaster", "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/grandmaster.svg" },
+      { "label": "Challenger",  "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/challenger.svg" },
+      { "label": "Unranked",    "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.svg" }
     ],
     "profileIcons": [],
     "loadingBackgrounds": [

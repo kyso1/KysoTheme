@@ -38,6 +38,7 @@ const TRANSLATIONS = {
     sourceWeb: "Web",
     selectPlaceholder: "Choose...",
     noLocalAssets: "No local assets in manifest",
+    addImage: "Add image",
     resetToDefault: "Reset to default",
     webUrlPlaceholder: "https://example.com/image.png",
     applyAsset: "Apply",
@@ -147,6 +148,7 @@ const TRANSLATIONS = {
     sourceWeb: "Web",
     selectPlaceholder: "Escolher...",
     noLocalAssets: "Nenhum asset local no manifest",
+    addImage: "Adicionar imagem",
     resetToDefault: "Restaurar padrão",
     webUrlPlaceholder: "https://exemplo.com/imagem.png",
     applyAsset: "Aplicar",
@@ -256,6 +258,7 @@ const TRANSLATIONS = {
     sourceWeb: "Web",
     selectPlaceholder: "Elegir...",
     noLocalAssets: "Sin recursos locales en el manifest",
+    addImage: "Añadir imagen",
     resetToDefault: "Restablecer",
     webUrlPlaceholder: "https://ejemplo.com/imagen.png",
     applyAsset: "Aplicar",
@@ -366,6 +369,7 @@ const TRANSLATIONS = {
     sourceWeb: "Web",
     selectPlaceholder: "Auswählen...",
     noLocalAssets: "Keine lokalen Assets im Manifest",
+    addImage: "Bild hinzufügen",
     resetToDefault: "Auf Standard zurücksetzen",
     webUrlPlaceholder: "https://beispiel.de/bild.png",
     applyAsset: "Anwenden",
@@ -477,6 +481,7 @@ const TRANSLATIONS = {
     sourceWeb: "Web",
     selectPlaceholder: "選択...",
     noLocalAssets: "マニフェストにローカルアセットがありません",
+    addImage: "画像を追加",
     resetToDefault: "デフォルトに戻す",
     webUrlPlaceholder: "https://example.com/image.png",
     applyAsset: "適用",
@@ -584,6 +589,7 @@ const TRANSLATIONS = {
     sourceWeb: "웹",
     selectPlaceholder: "선택...",
     noLocalAssets: "매니페스트에 로컬 에셋 없음",
+    addImage: "이미지 추가",
     resetToDefault: "기본값으로 재설정",
     webUrlPlaceholder: "https://example.com/image.png",
     applyAsset: "적용",
@@ -903,25 +909,37 @@ function buildAssetBlock(cat, labelKey, manifestEntries, settings, opts = {}) {
   const extraControls = opts.extraControls || "";
   const headerIcon = opts.icon || ICONS.picture;
 
+  const thumbsHTML = manifestEntries
+    .map((e) => {
+      const sel = e.path === local ? " kyso-thumb--active" : "";
+      const safeLabel = String(e.label)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+      return `
+        <button class="kyso-thumb${sel}" type="button"
+                data-cat="${cat}" data-path="${e.path.replace(/"/g, "&quot;")}"
+                title="${safeLabel}">
+          <img class="kyso-thumb-img" src="${pluginAsset(e.path)}" alt="" loading="lazy" decoding="async">
+          <span class="kyso-thumb-label">${safeLabel}</span>
+        </button>`;
+    })
+    .join("");
+
+  // Upload tile — last slot in the grid, accepts an image file and
+  // applies it as a web dataURL. Always rendered so users can add a
+  // custom image even when the manifest list is empty.
+  const uploadTile = `
+    <label class="kyso-thumb kyso-thumb--upload" data-cat="${cat}" title="${t("addImage")}">
+      <input type="file" class="kyso-thumb-upload-input" accept="image/*" data-cat="${cat}" style="display:none;">
+      <div class="kyso-thumb-img kyso-thumb-img--upload" aria-hidden="true">+</div>
+      <span class="kyso-thumb-label">${t("addImage")}</span>
+    </label>`;
+
   const thumbs = manifestEntries.length
-    ? manifestEntries
-        .map((e) => {
-          const sel = e.path === local ? " kyso-thumb--active" : "";
-          const safeLabel = String(e.label)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;");
-          return `
-            <button class="kyso-thumb${sel}" type="button"
-                    data-cat="${cat}" data-path="${e.path.replace(/"/g, "&quot;")}"
-                    title="${safeLabel}">
-              <img class="kyso-thumb-img" src="${pluginAsset(e.path)}" alt="" loading="lazy" decoding="async">
-              <span class="kyso-thumb-label">${safeLabel}</span>
-            </button>`;
-        })
-        .join("")
-    : `<div class="kyso-thumb-empty">${t("noLocalAssets")}</div>`;
+    ? thumbsHTML + uploadTile
+    : `<div class="kyso-thumb-empty">${t("noLocalAssets")}</div>${uploadTile}`;
 
   return `
     <section class="kyso-settings-section kyso-asset-section" data-cat="${cat}">
@@ -2765,12 +2783,12 @@ async function buildAssetsPanel() {
       });
     }
 
-    // Thumbnail click → pick local + auto switch to local mode
-    block.querySelectorAll(".kyso-thumb").forEach((thumb) => {
+    // Thumbnail click → pick local + auto switch to local mode.
+    // Skip the upload tile — it's a <label> and triggers its own file input.
+    block.querySelectorAll(".kyso-thumb:not(.kyso-thumb--upload)").forEach((thumb) => {
       thumb.addEventListener("click", () => {
         const path = thumb.dataset.path;
         updateActiveThumb(cat, path, block);
-        // Force source = local on pick
         if (sourceToggle) sourceToggle.checked = false;
         updateSourceUI(cat, "local", block);
         const s = {
@@ -2782,6 +2800,39 @@ async function buildAssetsPanel() {
         apply(s);
       });
     });
+
+    // Upload tile (+) — read file as dataURL, save as web URL, switch to web mode.
+    const uploadInput = block.querySelector(".kyso-thumb-upload-input");
+    if (uploadInput) {
+      uploadInput.addEventListener("change", () => {
+        const file = uploadInput.files[0];
+        if (!file) return;
+        if (file.size > 4 * 1024 * 1024) {
+          showFeedback(panel, "File too large (>4MB)");
+          uploadInput.value = "";
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const dataUrl = ev.target.result;
+          const s = {
+            ...DEFAULTS, ...loadSettings(),
+            [cat + "Web"]: dataUrl,
+            [cat + "Source"]: "web",
+          };
+          saveSettings(s);
+          apply(s);
+          if (sourceToggle) sourceToggle.checked = true;
+          updateSourceUI(cat, "web", block);
+          updateActiveThumb(cat, "", block);
+          const webIn = block.querySelector(`#kyso-${cat}-web`);
+          if (webIn) webIn.value = dataUrl;
+          uploadInput.value = "";
+          showFeedback(panel, t("applyAsset"));
+        };
+        reader.readAsDataURL(file);
+      });
+    }
 
     // Web apply
     const webApply = block.querySelector(`.kyso-${cat}-apply`);

@@ -793,6 +793,33 @@
   width: 100%;
 }
 
+/* Upload tile (+) — last slot in every asset grid */
+.kyso-thumb--upload {
+  border-style: dashed;
+  border-color: rgba(200, 155, 60, 0.4);
+}
+
+.kyso-thumb--upload:hover {
+  border-color: #c8a040;
+  background: rgba(200, 155, 60, 0.08);
+}
+
+.kyso-thumb-img--upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 300;
+  color: #c8a040;
+  line-height: 1;
+  font-family: var(--font-display, "Beaufort for LOL", "Mulish", sans-serif);
+}
+
+.kyso-thumb--upload .kyso-thumb-label {
+  color: #c8a040;
+  font-weight: 600;
+}
+
 /* Asset section title — make it slightly more prominent inside the assets tab */
 .kyso-asset-section .kyso-settings-section-title {
   font-size: 14px;
