@@ -71,7 +71,7 @@ No external apps, no config files.
 
 ### 🎨 Player Assets
 
-A unified panel that lets you swap every visual asset the client renders for you — backgrounds, banners, crests, loading screens — from one place. Each asset has a **Local / Web** toggle: pick a file shipped with the theme, or paste any URL.
+A unified panel that lives in its **own settings tab** (sibling to KysoTheme) — swap every visual asset the client renders for you — backgrounds, banners, crests, loading screens, profile icon — from one place. Each asset has a **Local / Web** toggle: pick from a **thumbnail grid** of files shipped with the theme, or paste any URL.
 
 | Asset                  | What it does                                                                                         |
 | ---------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -82,7 +82,7 @@ A unified panel that lets you swap every visual asset the client renders for you
 | **Profile icon**       | Custom icon for your profile page + sidebar; optional "Apply to all players" mode                    |
 
 **Local / Web switch:**
-- **Local** — dropdown listing every file declared in `assets/manifest.json`. Drop a new file into the right folder, add a one-line manifest entry, reload — it shows up.
+- **Local** — thumbnail grid of every file declared in `assets/manifest.json`. Drop a new file into the right folder, add a one-line manifest entry, reload — it shows up as a clickable preview.
 - **Web** — paste any URL. Useful for icons hosted on Discord, Imgur, etc.
 
 **Manifest example** (`assets/manifest.json`):
@@ -114,6 +114,19 @@ Recolor the entire theme's accent with a single hex value — borders, icons, hi
 - 🤖 **Auto-extract** — samples the dominant color from the current background automatically
 - 🎛️ **Built-in presets** — one-click color options
 - 🔄 **Reset to white** — restore the default look at any time
+
+#### 🌫️ Visual Effects (CSS filters on background)
+
+Live sliders inside the Color Theme panel let you tweak the background container in real time:
+
+| Effect          | Range       |
+| --------------- | ----------- |
+| **Blur**        | 0 – 20 px   |
+| **Brightness**  | 50 – 200 %  |
+| **Saturation**  | 0 – 200 %   |
+| **Contrast**    | 50 – 200 %  |
+
+Each slider auto-saves; a single **Reset effects** button restores the defaults.
 
 ---
 

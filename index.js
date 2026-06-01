@@ -1,5 +1,5 @@
 /*
- * @name Kyso Theme v2.0
+ * @name Kyso Theme v3.0
  * @author Kyso
  * @description Kyso Clean theme for League of Legends (Pengu Loader)
  * @link https://github.com/kyso1/KysoTheme

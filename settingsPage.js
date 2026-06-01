@@ -110,6 +110,12 @@ const TRANSLATIONS = {
     rgbModeBlink: "Blink",
     rgbModePulse: "Pulse",
     rgbSpeed: "Speed",
+    filterEffects: "Visual Effects",
+    filterBlur: "Blur",
+    filterBrightness: "Brightness",
+    filterSaturate: "Saturation",
+    filterContrast: "Contrast",
+    filterReset: "Reset effects",
     saveAll: "Save all settings",
     saveAllDone: "Settings saved!",
   },
@@ -213,6 +219,12 @@ const TRANSLATIONS = {
     rgbModeBlink: "Piscar",
     rgbModePulse: "Pulsar",
     rgbSpeed: "Velocidade",
+    filterEffects: "Efeitos Visuais",
+    filterBlur: "Desfoque",
+    filterBrightness: "Brilho",
+    filterSaturate: "Saturação",
+    filterContrast: "Contraste",
+    filterReset: "Resetar efeitos",
     saveAll: "Salvar todas as configurações",
     saveAllDone: "Configurações salvas!",
   },
@@ -317,6 +329,12 @@ const TRANSLATIONS = {
     rgbModeBlink: "Parpadeo",
     rgbModePulse: "Pulso",
     rgbSpeed: "Velocidad",
+    filterEffects: "Efectos Visuales",
+    filterBlur: "Desenfoque",
+    filterBrightness: "Brillo",
+    filterSaturate: "Saturación",
+    filterContrast: "Contraste",
+    filterReset: "Restablecer efectos",
     saveAll: "Guardar configuración",
     saveAllDone: "¡Configuración guardada!",
   },
@@ -422,6 +440,12 @@ const TRANSLATIONS = {
     rgbModeBlink: "Blinken",
     rgbModePulse: "Puls",
     rgbSpeed: "Geschwindigkeit",
+    filterEffects: "Visuelle Effekte",
+    filterBlur: "Unschärfe",
+    filterBrightness: "Helligkeit",
+    filterSaturate: "Sättigung",
+    filterContrast: "Kontrast",
+    filterReset: "Effekte zurücksetzen",
     saveAll: "Alle Einstellungen speichern",
     saveAllDone: "Einstellungen gespeichert!",
   },
@@ -523,6 +547,12 @@ const TRANSLATIONS = {
     rgbModeBlink: "点滅",
     rgbModePulse: "パルス",
     rgbSpeed: "速度",
+    filterEffects: "ビジュアルエフェクト",
+    filterBlur: "ぼかし",
+    filterBrightness: "明るさ",
+    filterSaturate: "彩度",
+    filterContrast: "コントラスト",
+    filterReset: "エフェクトをリセット",
     saveAll: "すべての設定を保存",
     saveAllDone: "設定を保存しました！",
   },
@@ -625,6 +655,12 @@ const TRANSLATIONS = {
     rgbModeBlink: "깜박임",
     rgbModePulse: "펄스",
     rgbSpeed: "속도",
+    filterEffects: "비주얼 이펙트",
+    filterBlur: "블러",
+    filterBrightness: "밝기",
+    filterSaturate: "채도",
+    filterContrast: "대비",
+    filterReset: "이펙트 초기화",
     saveAll: "모든 설정 저장",
     saveAllDone: "설정이 저장되었습니다!",
   },
@@ -787,6 +823,11 @@ const DEFAULTS = {
   // Color accent
   accentColor: "",
   accentAuto: false,
+  // Background filters (CSS filter on #kyso-global-bg)
+  filterBlur: 0,        // px (0-20)
+  filterBrightness: 100, // % (50-200)
+  filterSaturate: 100,  // % (0-200)
+  filterContrast: 100,  // % (50-200)
   // RGB accent animation (PR C)
   rgbMode: "none",
   rgbSpeed: 3,
@@ -849,56 +890,69 @@ function resolveAsset(cat, settings) {
   return local ? pluginAsset(local) : "";
 }
 
-// Builds the HTML for one asset category block.
-// cat is the prefix used in DEFAULTS keys: e.g. "banner" → bannerSource/bannerLocal/bannerWeb.
-// labelKey is the i18n key for the section heading: e.g. "bannerLabel".
-// manifestEntries is the array from manifest.categories[<cat plural>].
-function buildAssetBlock(cat, labelKey, manifestEntries, settings, startCollapsed = true) {
+// Builds the HTML for one asset category section (no collapse — always expanded).
+// cat: prefix used in DEFAULTS keys (e.g. "banner" → bannerSource/bannerLocal/bannerWeb).
+// labelKey: i18n key for the section heading.
+// manifestEntries: array from manifest.categories[<cat plural>].
+// opts.extraControls: HTML inserted before the reset row (e.g. bg-type select, banner upload).
+// opts.icon: ICONS key (default ICONS.picture).
+function buildAssetBlock(cat, labelKey, manifestEntries, settings, opts = {}) {
   const source = settings[cat + "Source"] || "local";
   const local = settings[cat + "Local"] || "";
   const web = settings[cat + "Web"] || "";
+  const extraControls = opts.extraControls || "";
+  const headerIcon = opts.icon || ICONS.picture;
 
-  const options = manifestEntries.length
-    ? `<option value="">— ${t("selectPlaceholder")} —</option>` +
-      manifestEntries
-        .map(
-          (e) =>
-            `<option value="${e.path}" ${e.path === local ? "selected" : ""}>${e.label}</option>`,
-        )
+  const thumbs = manifestEntries.length
+    ? manifestEntries
+        .map((e) => {
+          const sel = e.path === local ? " kyso-thumb--active" : "";
+          const safeLabel = String(e.label)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+          return `
+            <button class="kyso-thumb${sel}" type="button"
+                    data-cat="${cat}" data-path="${e.path.replace(/"/g, "&quot;")}"
+                    title="${safeLabel}">
+              <img class="kyso-thumb-img" src="${pluginAsset(e.path)}" alt="" loading="lazy" decoding="async">
+              <span class="kyso-thumb-label">${safeLabel}</span>
+            </button>`;
+        })
         .join("")
-    : `<option value="">${t("noLocalAssets")}</option>`;
+    : `<div class="kyso-thumb-empty">${t("noLocalAssets")}</div>`;
 
   return `
-    <div class="kyso-asset-block ${startCollapsed ? "kyso-asset-block--collapsed" : ""}" data-cat="${cat}">
-      <div class="kyso-asset-block-header">
-        <h4 class="kyso-asset-block-title">${t(labelKey)}</h4>
-        <button class="kyso-asset-block-toggle" type="button" aria-label="toggle">▾</button>
+    <section class="kyso-settings-section kyso-asset-section" data-cat="${cat}">
+      <h3 class="kyso-settings-section-title">${headerIcon}<span>${t(labelKey)}</span></h3>
+
+      <div class="kyso-settings-row kyso-asset-source-row">
+        <span class="kyso-asset-source-label ${source === "local" ? "kyso-asset-source-label--active" : ""}">${t("sourceLocal")}</span>
+        <label class="kyso-toggle">
+          <input type="checkbox" id="kyso-${cat}-source-toggle" ${source === "web" ? "checked" : ""}>
+          <span class="kyso-toggle-slider"></span>
+        </label>
+        <span class="kyso-asset-source-label ${source === "web" ? "kyso-asset-source-label--active" : ""}">${t("sourceWeb")}</span>
       </div>
-      <div class="kyso-asset-block-body">
-        <div class="kyso-settings-row kyso-asset-source-row">
-          <span class="kyso-asset-source-label ${source === "local" ? "kyso-asset-source-label--active" : ""}">${t("sourceLocal")}</span>
-          <label class="kyso-toggle">
-            <input type="checkbox" id="kyso-${cat}-source-toggle" ${source === "web" ? "checked" : ""}>
-            <span class="kyso-toggle-slider"></span>
-          </label>
-          <span class="kyso-asset-source-label ${source === "web" ? "kyso-asset-source-label--active" : ""}">${t("sourceWeb")}</span>
-        </div>
-        <div class="kyso-settings-row kyso-asset-local-row" ${source === "local" ? "" : 'style="display:none"'}>
-          <select id="kyso-${cat}-local" class="kyso-select" data-cat="${cat}">
-            ${options}
-          </select>
-        </div>
-        <div class="kyso-settings-row kyso-asset-web-row" ${source === "web" ? "" : 'style="display:none"'}>
-          <input id="kyso-${cat}-web" class="kyso-input" type="text"
-                 placeholder="${t("webUrlPlaceholder")}"
-                 value="${web.replace(/"/g, "&quot;")}">
-          <button class="kyso-btn kyso-btn--primary kyso-${cat}-apply" data-cat="${cat}">${t("applyAsset")}</button>
-        </div>
-        <div class="kyso-settings-row">
-          <button class="kyso-btn kyso-btn--secondary kyso-${cat}-reset" data-cat="${cat}">${t("resetToDefault")}</button>
-        </div>
+
+      <div class="kyso-settings-row kyso-asset-local-row" ${source === "local" ? "" : 'style="display:none"'}>
+        <div class="kyso-thumb-grid">${thumbs}</div>
       </div>
-    </div>
+
+      <div class="kyso-settings-row kyso-asset-web-row" ${source === "web" ? "" : 'style="display:none"'}>
+        <input id="kyso-${cat}-web" class="kyso-input" type="text"
+               placeholder="${t("webUrlPlaceholder")}"
+               value="${web.replace(/"/g, "&quot;")}">
+        <button class="kyso-btn kyso-btn--primary kyso-${cat}-apply" data-cat="${cat}">${t("applyAsset")}</button>
+      </div>
+
+      ${extraControls}
+
+      <div class="kyso-settings-row">
+        <button class="kyso-btn kyso-btn--secondary kyso-${cat}-reset" data-cat="${cat}">${t("resetToDefault")}</button>
+      </div>
+    </section>
   `;
 }
 
@@ -1002,6 +1056,22 @@ function _toHexStr(r, g, b) {
     "#" +
     [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")
   );
+}
+
+/** Aplica filtros CSS no container de background (blur, brilho, saturação, contraste) */
+function applyBgFilters(settings) {
+  const blur = Number(settings.filterBlur) || 0;
+  const bright = Number(settings.filterBrightness) || 100;
+  const sat = Number(settings.filterSaturate) || 100;
+  const cont = Number(settings.filterContrast) || 100;
+  const container = ensureGlobalBgContainer();
+  if (!container) return;
+  const parts = [];
+  if (blur > 0) parts.push(`blur(${blur}px)`);
+  if (bright !== 100) parts.push(`brightness(${bright}%)`);
+  if (sat !== 100) parts.push(`saturate(${sat}%)`);
+  if (cont !== 100) parts.push(`contrast(${cont}%)`);
+  container.style.filter = parts.length ? parts.join(" ") : "";
 }
 
 /** Aplica a cor de acento nas CSS custom properties de :root */
@@ -1253,13 +1323,10 @@ function applyTopNavbarHiddenState(hidden, showBlueEssence) {
   const btn = document.querySelector(".hide-top-navbar");
   const icon = document.querySelector(".hide-top-navbar-icon");
 
+  // Botão SEMPRE fica à esquerda (translateX 0). Não desloca com BE/RP.
+  if (btn) btn.style.cssText = `transform: translateX(0px);`;
+
   if (hidden) {
-    // Quando BE visível, o botão para à esquerda do wallet em vez de ir até o fim
-    const btnOffset =
-      showBlueEssence && wallet && btn
-        ? Math.max(wallet.offsetLeft - btn.offsetWidth - 4, 0)
-        : offset;
-    if (btn) btn.style.cssText = `transform: translateX(${btnOffset}px);`;
     items.forEach((el) => {
       el.style.cssText = `transform: translateX(${offset}px); opacity: 0; pointer-events: none;`;
     });
@@ -1268,7 +1335,6 @@ function applyTopNavbarHiddenState(hidden, showBlueEssence) {
     });
     if (wallet) {
       if (showBlueEssence) {
-        // Mantém wallet visível e no lugar — só esconde o resto
         wallet.style.cssText = `transform: translateX(0px); opacity: 1; pointer-events: auto;`;
       } else {
         wallet.style.cssText = `transform: translateX(${offset}px); opacity: 0; pointer-events: none;`;
@@ -1276,7 +1342,6 @@ function applyTopNavbarHiddenState(hidden, showBlueEssence) {
     }
     if (icon) icon.textContent = "‹";
   } else {
-    if (btn) btn.style.cssText = `transform: translateX(0px);`;
     items.forEach((el) => {
       el.style.cssText = `transform: translateX(0px); opacity: 1; pointer-events: auto;`;
     });
@@ -1655,6 +1720,7 @@ export function applyAllSettings(settings) {
   });
   applyHideNavbarBtnSetting(merged);
   applyHideSocialBtnSetting(merged);
+  applyBgFilters(merged);
   // Color accent — still uses resolved bgUrl for auto-extraction
   if (merged.accentAuto) {
     const _gen = ++_accentAutoGen;
@@ -2009,46 +2075,8 @@ async function buildSettingsPanel() {
   panel.innerHTML = `
     <div class="kyso-settings-header">
       <span class="kyso-settings-title">KysoTheme</span>
-      <span class="kyso-settings-version">v2.0</span>
+      <span class="kyso-settings-version">v3.0</span>
     </div>
-
-    <!-- Player Assets -->
-    <section class="kyso-settings-section" id="kyso-assets-section">
-      <h3 class="kyso-settings-section-title">${ICONS.picture}<span>${t("assetsSection")}</span></h3>
-
-      ${buildAssetBlock("background", "bgSection", manifest.categories.backgrounds, settings)}
-
-      <!-- Background-specific extra: type override -->
-      <div class="kyso-settings-row kyso-asset-bg-type-row">
-        <label class="kyso-label" for="kyso-bg-type">${t("bgType")}</label>
-        <select id="kyso-bg-type" class="kyso-select">
-          <option value="auto" ${settings.backgroundType === "auto" ? "selected" : ""}>${t("bgTypeAuto")}</option>
-          <option value="image" ${settings.backgroundType === "image" ? "selected" : ""}>${t("bgTypeImage")}</option>
-          <option value="gif" ${settings.backgroundType === "gif" ? "selected" : ""}>${t("bgTypeGif")}</option>
-          <option value="video" ${settings.backgroundType === "video" ? "selected" : ""}>${t("bgTypeVideo")}</option>
-        </select>
-      </div>
-
-      ${buildAssetBlock("banner", "bannerLabel", manifest.categories.banners, settings)}
-
-      <div class="kyso-settings-row kyso-settings-row--upload">
-        <label class="kyso-label">${t("bgUpload")}</label>
-        <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
-          ${ICONS.folder}<span>${t("bgChoose")}</span>
-          <input id="kyso-banner-file" type="file" accept="image/*" style="display:none;">
-        </label>
-        <span id="kyso-banner-filename" class="kyso-filename">${t("noFile")}</span>
-      </div>
-      <div class="kyso-settings-row">
-        <button id="kyso-banner-crop" class="kyso-btn kyso-btn--secondary" disabled>
-          ${ICONS.scissors}<span>${t("bannerCropButton")}</span>
-        </button>
-      </div>
-
-      ${buildAssetBlock("crest", "crestLabel", manifest.categories.crests, settings)}
-      ${buildAssetBlock("loadingBg", "loadingBgLabel", manifest.categories.loadingBackgrounds, settings)}
-      ${buildAssetBlock("loadingIcon", "loadingIconLabel", manifest.categories.loadingIcons, settings)}
-    </section>
 
     <!-- Visibility -->
     <section class="kyso-settings-section">
@@ -2180,6 +2208,38 @@ async function buildSettingsPanel() {
           <span class="kyso-toggle-slider"></span>
         </label>
       </div>
+
+      <!-- Visual filters on background container -->
+      <div class="kyso-filter-divider"></div>
+      <div class="kyso-filter-title">${t("filterEffects")}</div>
+
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="kyso-filter-blur">${t("filterBlur")}</label>
+        <input type="range" id="kyso-filter-blur" class="kyso-range" min="0" max="20" step="1" value="${settings.filterBlur || 0}">
+        <span class="kyso-filter-value" id="kyso-filter-blur-value">${settings.filterBlur || 0}px</span>
+      </div>
+
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="kyso-filter-bright">${t("filterBrightness")}</label>
+        <input type="range" id="kyso-filter-bright" class="kyso-range" min="50" max="200" step="5" value="${settings.filterBrightness || 100}">
+        <span class="kyso-filter-value" id="kyso-filter-bright-value">${settings.filterBrightness || 100}%</span>
+      </div>
+
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="kyso-filter-sat">${t("filterSaturate")}</label>
+        <input type="range" id="kyso-filter-sat" class="kyso-range" min="0" max="200" step="5" value="${settings.filterSaturate || 100}">
+        <span class="kyso-filter-value" id="kyso-filter-sat-value">${settings.filterSaturate || 100}%</span>
+      </div>
+
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="kyso-filter-cont">${t("filterContrast")}</label>
+        <input type="range" id="kyso-filter-cont" class="kyso-range" min="50" max="200" step="5" value="${settings.filterContrast || 100}">
+        <span class="kyso-filter-value" id="kyso-filter-cont-value">${settings.filterContrast || 100}%</span>
+      </div>
+
+      <div class="kyso-settings-row">
+        <button id="kyso-filter-reset" class="kyso-btn kyso-btn--secondary">${t("filterReset")}</button>
+      </div>
     </section>
 
     <!-- RGB Effects -->
@@ -2237,47 +2297,6 @@ async function buildSettingsPanel() {
       </div>
     </section>
 
-    <!-- Icon -->
-    <section class="kyso-settings-section">
-      <h3 class="kyso-settings-section-title">${ICONS.wizard}<span>${t("iconSection")}</span></h3>
-
-      <div class="kyso-settings-row">
-        <label class="kyso-label" for="kyso-icon-url">${t("iconUrl")}</label>
-        <input id="kyso-icon-url" class="kyso-input" type="text"
-          placeholder="${t("iconUrlPlaceholder")}"
-          value="${settings.iconUrl || ""}">
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--upload">
-        <label class="kyso-label">${t("iconUpload")}</label>
-        <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
-          ${ICONS.folder}<span>${t("iconChoose")}</span>
-          <input id="kyso-icon-file" type="file" accept="image/*" style="display:none;">
-        </label>
-        <span id="kyso-icon-filename" class="kyso-filename">${t("noFile")}</span>
-      </div>
-
-      <div class="kyso-settings-row">
-        <span class="kyso-hint">${t("iconHint")}</span>
-      </div>
-
-      <div class="kyso-settings-row">
-        <button id="kyso-icon-crop" class="kyso-btn kyso-btn--secondary" ${settings.iconUrl ? "" : "disabled"}>${ICONS.scissors}<span>${t("cropButton")}</span></button>
-        <button id="kyso-icon-apply" class="kyso-btn kyso-btn--primary">${t("iconApply")}</button>
-        <button id="kyso-icon-reset" class="kyso-btn kyso-btn--danger">${t("iconRemove")}</button>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("iconAllPlayers")}
-          <span class="kyso-hint">${t("iconAllPlayersHint")}</span>
-        </label>
-        <label class="kyso-toggle">
-          <input id="kyso-icon-all-players" type="checkbox" ${settings.iconAllPlayers ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-    </section>
-
     <!-- Save -->
     <div class="kyso-settings-footer">
       <button id="kyso-save-all" class="kyso-btn kyso-btn--save">${ICONS.save}<span>${t("saveAll")}</span></button>
@@ -2286,179 +2305,7 @@ async function buildSettingsPanel() {
   `;
 
   // ── Wiring de eventos ──────────────────────────────
-  // Asset blocks — source switch, local select, web apply, reset.
-  const ASSET_CATS = ["background", "banner", "crest", "loadingBg", "loadingIcon"];
-
-  ASSET_CATS.forEach((cat) => {
-    // Source toggle (checkbox: unchecked = local, checked = web)
-    const sourceToggle = panel.querySelector(`#kyso-${cat}-source-toggle`);
-    if (sourceToggle) {
-      sourceToggle.addEventListener("change", (e) => {
-        const newSource = e.target.checked ? "web" : "local";
-        const block = panel.querySelector(`.kyso-asset-block[data-cat="${cat}"]`);
-        if (!block) return;
-        block.querySelector(".kyso-asset-local-row").style.display = newSource === "local" ? "" : "none";
-        block.querySelector(".kyso-asset-web-row").style.display = newSource === "web" ? "" : "none";
-        block.querySelectorAll(".kyso-asset-source-label").forEach((lbl, i) => {
-          lbl.classList.toggle("kyso-asset-source-label--active", i === (newSource === "local" ? 0 : 1));
-        });
-        const s = { ...DEFAULTS, ...loadSettings(), [cat + "Source"]: newSource };
-        saveSettings(s);
-        applyAllSettings(s);
-      });
-    }
-
-    // Local <select> — auto-apply on change
-    const localSelect = panel.querySelector(`#kyso-${cat}-local`);
-    if (localSelect) {
-      localSelect.addEventListener("change", (e) => {
-        const s = { ...DEFAULTS, ...loadSettings(), [cat + "Local"]: e.target.value };
-        saveSettings(s);
-        applyAllSettings(s);
-      });
-    }
-
-    // Web <input> + Apply button
-    const webApply = panel.querySelector(`.kyso-${cat}-apply`);
-    const webInput = panel.querySelector(`#kyso-${cat}-web`);
-    if (webApply && webInput) {
-      webApply.addEventListener("click", () => {
-        const s = { ...DEFAULTS, ...loadSettings(), [cat + "Web"]: webInput.value.trim() };
-        saveSettings(s);
-        applyAllSettings(s);
-      });
-    }
-
-    // Reset to default
-    const resetBtn = panel.querySelector(`.kyso-${cat}-reset`);
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        const s = {
-          ...DEFAULTS,
-          ...loadSettings(),
-          [cat + "Source"]: DEFAULTS[cat + "Source"],
-          [cat + "Local"]: DEFAULTS[cat + "Local"],
-          [cat + "Web"]: DEFAULTS[cat + "Web"],
-        };
-        saveSettings(s);
-        applyAllSettings(s);
-        // Re-render this block so UI reflects new state
-        const block = panel.querySelector(`.kyso-asset-block[data-cat="${cat}"]`);
-        const localRow = block?.querySelector(".kyso-asset-local-row");
-        const webRow = block?.querySelector(".kyso-asset-web-row");
-        const localSel = block?.querySelector(`#kyso-${cat}-local`);
-        const webIn = block?.querySelector(`#kyso-${cat}-web`);
-        const srcToggle = block?.querySelector(`#kyso-${cat}-source-toggle`);
-        const srcLabels = block?.querySelectorAll(".kyso-asset-source-label") || [];
-        const defSource = DEFAULTS[cat + "Source"];
-        if (localSel) localSel.value = DEFAULTS[cat + "Local"];
-        if (webIn) webIn.value = DEFAULTS[cat + "Web"];
-        if (srcToggle) srcToggle.checked = defSource === "web";
-        srcLabels.forEach((lbl, i) => {
-          lbl.classList.toggle("kyso-asset-source-label--active", i === (defSource === "local" ? 0 : 1));
-        });
-        if (localRow) localRow.style.display = defSource === "local" ? "" : "none";
-        if (webRow) webRow.style.display = defSource === "web" ? "" : "none";
-      });
-    }
-  });
-
-  // Asset block collapse toggle — delegated on panel
-  panel.addEventListener("click", (e) => {
-    const toggle = e.target.closest(".kyso-asset-block-toggle");
-    if (!toggle) return;
-    const block = toggle.closest(".kyso-asset-block");
-    if (block) block.classList.toggle("kyso-asset-block--collapsed");
-  });
-
-  // ── Icon section handlers ────────────────────────────────────────────────
-  const iconUrlInput = panel.querySelector("#kyso-icon-url");
-  const iconFileInput = panel.querySelector("#kyso-icon-file");
-  const iconFilename = panel.querySelector("#kyso-icon-filename");
-  const iconCropBtn = panel.querySelector("#kyso-icon-crop");
-  const iconApplyBtn = panel.querySelector("#kyso-icon-apply");
-  const iconResetBtn = panel.querySelector("#kyso-icon-reset");
-  const iconAllPlayersChk = panel.querySelector("#kyso-icon-all-players");
-  let _iconPendingUrl = "";
-
-  function _enableIconCrop() {
-    iconCropBtn.disabled = !(iconUrlInput.value.trim() || _iconPendingUrl);
-  }
-
-  iconUrlInput.addEventListener("input", _enableIconCrop);
-
-  iconFileInput.addEventListener("change", () => {
-    const file = iconFileInput.files[0];
-    if (!file) return;
-    iconFilename.textContent = file.name;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      _iconPendingUrl = ev.target.result;
-      iconUrlInput.value = "";
-      _enableIconCrop();
-    };
-    reader.readAsDataURL(file);
-  });
-
-  iconCropBtn.addEventListener("click", () => {
-    const src = _iconPendingUrl || iconUrlInput.value.trim();
-    if (!src) return;
-    openIconCropModal(src, (dataUrl) => {
-      _iconPendingUrl = "";
-      iconFilename.textContent = t("noFile");
-      iconUrlInput.value = dataUrl;
-      _enableIconCrop();
-      const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
-      const s = { ...DEFAULTS, ...loadSettings(), iconUrl: dataUrl, iconAllPlayers: allPlayers };
-      saveSettings(s);
-      applyIcon(dataUrl, allPlayers);
-      assetReplacers.applyProfileIcon(dataUrl);
-      showFeedback(panel, t("iconApplied"));
-    });
-  });
-
-  iconApplyBtn.addEventListener("click", () => {
-    const url = iconUrlInput.value.trim();
-    const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
-    const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
-    saveSettings(s);
-    applyIcon(url, allPlayers);
-    assetReplacers.applyProfileIcon(url);
-    showFeedback(panel, t("iconApplied"));
-  });
-
-  iconResetBtn.addEventListener("click", () => {
-    iconUrlInput.value = "";
-    _iconPendingUrl = "";
-    iconFilename.textContent = t("noFile");
-    iconCropBtn.disabled = true;
-    const s = { ...DEFAULTS, ...loadSettings(), iconUrl: "", iconAllPlayers: false };
-    if (iconAllPlayersChk) iconAllPlayersChk.checked = false;
-    saveSettings(s);
-    applyIcon("", false);
-    assetReplacers.applyProfileIcon("");
-    showFeedback(panel, t("iconRemove"));
-  });
-
-  if (iconAllPlayersChk) {
-    iconAllPlayersChk.addEventListener("change", () => {
-      const url = iconUrlInput.value.trim();
-      const allPlayers = iconAllPlayersChk.checked;
-      const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
-      saveSettings(s);
-      applyIcon(url, allPlayers);
-    });
-  }
-
-  // Background type select — standalone handler
-  const bgTypeSel = panel.querySelector("#kyso-bg-type");
-  if (bgTypeSel) {
-    bgTypeSel.addEventListener("change", (e) => {
-      const s = { ...DEFAULTS, ...loadSettings(), backgroundType: e.target.value };
-      saveSettings(s);
-      applyAllSettings(s);
-    });
-  }
+  // (Asset / Icon / Banner / Background-type handlers live in buildAssetsPanel.)
 
   // Toggles – persistência em tempo real
   const toggles = [
@@ -2675,54 +2522,48 @@ async function buildSettingsPanel() {
     showFeedback(panel, t("fontRemoved"));
   });
 
-  // Banner — upload + crop (4:1 / 960×240)
-  const bannerFileInput = panel.querySelector("#kyso-banner-file");
-  const bannerFilename = panel.querySelector("#kyso-banner-filename");
-  const bannerCropBtn = panel.querySelector("#kyso-banner-crop");
-  let _bannerPendingUrl = "";
+  // ── Background filter sliders (blur/brightness/saturate/contrast) ───────
+  const filterRanges = [
+    { id: "kyso-filter-blur",   key: "filterBlur",       valueId: "kyso-filter-blur-value",   unit: "px" },
+    { id: "kyso-filter-bright", key: "filterBrightness", valueId: "kyso-filter-bright-value", unit: "%"  },
+    { id: "kyso-filter-sat",    key: "filterSaturate",   valueId: "kyso-filter-sat-value",    unit: "%"  },
+    { id: "kyso-filter-cont",   key: "filterContrast",   valueId: "kyso-filter-cont-value",   unit: "%"  },
+  ];
 
-  bannerFileInput.addEventListener("change", () => {
-    const file = bannerFileInput.files[0];
-    if (!file) return;
-    bannerFilename.textContent = file.name;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      _bannerPendingUrl = ev.target.result;
-      bannerCropBtn.disabled = false;
-    };
-    reader.readAsDataURL(file);
+  filterRanges.forEach(({ id, key, valueId, unit }) => {
+    const input = panel.querySelector(`#${id}`);
+    const display = panel.querySelector(`#${valueId}`);
+    if (!input) return;
+    input.addEventListener("input", () => {
+      const v = Number(input.value) || 0;
+      if (display) display.textContent = `${v}${unit}`;
+      const s = { ...DEFAULTS, ...loadSettings(), [key]: v };
+      saveSettings(s);
+      applyBgFilters(s);
+    });
   });
 
-  bannerCropBtn.addEventListener("click", () => {
-    if (!_bannerPendingUrl) return;
-    openBannerCropModal(_bannerPendingUrl, (dataUrl) => {
+  const filterResetBtn = panel.querySelector("#kyso-filter-reset");
+  if (filterResetBtn) {
+    filterResetBtn.addEventListener("click", () => {
       const s = {
         ...DEFAULTS,
         ...loadSettings(),
-        bannerWeb: dataUrl,
-        bannerSource: "web",
+        filterBlur: DEFAULTS.filterBlur,
+        filterBrightness: DEFAULTS.filterBrightness,
+        filterSaturate: DEFAULTS.filterSaturate,
+        filterContrast: DEFAULTS.filterContrast,
       };
       saveSettings(s);
-      applyAllSettings(s);
-      // Sync the banner block UI to "web" mode
-      const block = panel.querySelector('.kyso-asset-block[data-cat="banner"]');
-      if (block) {
-        block.querySelector(".kyso-asset-local-row").style.display = "none";
-        block.querySelector(".kyso-asset-web-row").style.display = "";
-        const webIn = block.querySelector("#kyso-banner-web");
-        if (webIn) webIn.value = dataUrl;
-        const srcToggle = block.querySelector("#kyso-banner-source-toggle");
-        if (srcToggle) srcToggle.checked = true;
-        block.querySelectorAll(".kyso-asset-source-label").forEach((lbl, i) => {
-          lbl.classList.toggle("kyso-asset-source-label--active", i === 1);
-        });
-      }
-      bannerFilename.textContent = t("noFile");
-      bannerCropBtn.disabled = true;
-      _bannerPendingUrl = "";
-      showFeedback(panel, t("saveAllDone"));
+      applyBgFilters(s);
+      filterRanges.forEach(({ id, key, valueId, unit }) => {
+        const inp = panel.querySelector(`#${id}`);
+        const disp = panel.querySelector(`#${valueId}`);
+        if (inp) inp.value = String(DEFAULTS[key]);
+        if (disp) disp.textContent = `${DEFAULTS[key]}${unit}`;
+      });
     });
-  });
+  }
 
   // RGB Effects — mode selector + speed slider
   const rgbModeSelect = panel.querySelector("#kyso-rgb-mode");
@@ -2746,12 +2587,11 @@ async function buildSettingsPanel() {
     applyRgbEffect(s.rgbMode || "none", speed, s.accentColor || "");
   });
 
-  // Salvar tudo
+  // Salvar tudo (apenas valores controlados por este painel — assets ficam na aba Player Assets)
   panel.querySelector("#kyso-save-all").addEventListener("click", () => {
     const prev = { ...DEFAULTS, ...loadSettings() };
     const s = {
       ...prev,
-      backgroundType: panel.querySelector("#kyso-bg-type").value,
       hideRP: panel.querySelector("#kyso-hide-rp").checked,
       hideHoverElements: panel.querySelector("#kyso-show-hover").checked,
       hideTFT: panel.querySelector("#kyso-hide-tft").checked,
@@ -2769,6 +2609,10 @@ async function buildSettingsPanel() {
       enableHideSocialBtn: panel.querySelector("#kyso-enable-hide-social-btn")
         .checked,
       socialHidden: prev.socialHidden,
+      filterBlur:       Number(panel.querySelector("#kyso-filter-blur").value)   || 0,
+      filterBrightness: Number(panel.querySelector("#kyso-filter-bright").value) || 100,
+      filterSaturate:   Number(panel.querySelector("#kyso-filter-sat").value)    || 100,
+      filterContrast:   Number(panel.querySelector("#kyso-filter-cont").value)   || 100,
       rgbMode: panel.querySelector("#kyso-rgb-mode").value,
       rgbSpeed: parseInt(panel.querySelector("#kyso-rgb-speed").value, 10) || 3,
     };
@@ -2776,6 +2620,340 @@ async function buildSettingsPanel() {
     applyAllSettings(s);
     showFeedback(panel, t("saveAllDone"));
   });
+
+  return panel;
+}
+
+// ─────────────────────────────────────────────
+//  Player Assets — painel dedicado (sibling tab da KysoTheme)
+// ─────────────────────────────────────────────
+async function buildAssetsPanel() {
+  const settings = { ...DEFAULTS, ...loadSettings() };
+  const manifest = await assetReplacers.loadManifest();
+
+  const panel = document.createElement("div");
+  panel.className = "kyso-settings-panel kyso-assets-panel";
+
+  // Background extra controls — type override select
+  const bgExtra = `
+    <div class="kyso-settings-row kyso-asset-bg-type-row">
+      <label class="kyso-label" for="kyso-bg-type">${t("bgType")}</label>
+      <select id="kyso-bg-type" class="kyso-select">
+        <option value="auto" ${settings.backgroundType === "auto" ? "selected" : ""}>${t("bgTypeAuto")}</option>
+        <option value="image" ${settings.backgroundType === "image" ? "selected" : ""}>${t("bgTypeImage")}</option>
+        <option value="gif" ${settings.backgroundType === "gif" ? "selected" : ""}>${t("bgTypeGif")}</option>
+        <option value="video" ${settings.backgroundType === "video" ? "selected" : ""}>${t("bgTypeVideo")}</option>
+      </select>
+    </div>`;
+
+  // Banner extra controls — upload + crop 4:1
+  const bannerExtra = `
+    <div class="kyso-settings-row kyso-settings-row--upload">
+      <label class="kyso-label">${t("bgUpload")}</label>
+      <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
+        ${ICONS.folder}<span>${t("bgChoose")}</span>
+        <input id="kyso-banner-file" type="file" accept="image/*" style="display:none;">
+      </label>
+      <span id="kyso-banner-filename" class="kyso-filename">${t("noFile")}</span>
+    </div>
+    <div class="kyso-settings-row">
+      <button id="kyso-banner-crop" class="kyso-btn kyso-btn--secondary" disabled>
+        ${ICONS.scissors}<span>${t("bannerCropButton")}</span>
+      </button>
+    </div>`;
+
+  panel.innerHTML = `
+    <div class="kyso-settings-header">
+      <span class="kyso-settings-title">${t("assetsSection")}</span>
+      <span class="kyso-settings-version">v3.0</span>
+    </div>
+
+    ${buildAssetBlock("background", "bgSection", manifest.categories.backgrounds, settings, { extraControls: bgExtra, icon: ICONS.picture })}
+
+    ${buildAssetBlock("banner", "bannerLabel", manifest.categories.banners, settings, { extraControls: bannerExtra, icon: ICONS.picture })}
+
+    ${buildAssetBlock("crest", "crestLabel", manifest.categories.crests, settings, { icon: ICONS.palette })}
+
+    <!-- Profile Icon — own section (uses iconUrl / iconAllPlayers, not the source/local/web triple) -->
+    <section class="kyso-settings-section" id="kyso-icon-section">
+      <h3 class="kyso-settings-section-title">${ICONS.wizard}<span>${t("iconSection")}</span></h3>
+
+      <div class="kyso-settings-row">
+        <label class="kyso-label" for="kyso-icon-url">${t("iconUrl")}</label>
+        <input id="kyso-icon-url" class="kyso-input" type="text"
+          placeholder="${t("iconUrlPlaceholder")}"
+          value="${(settings.iconUrl || "").replace(/"/g, "&quot;")}">
+      </div>
+
+      <div class="kyso-settings-row kyso-settings-row--upload">
+        <label class="kyso-label">${t("iconUpload")}</label>
+        <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
+          ${ICONS.folder}<span>${t("iconChoose")}</span>
+          <input id="kyso-icon-file" type="file" accept="image/*" style="display:none;">
+        </label>
+        <span id="kyso-icon-filename" class="kyso-filename">${t("noFile")}</span>
+      </div>
+
+      <div class="kyso-settings-row">
+        <span class="kyso-hint">${t("iconHint")}</span>
+      </div>
+
+      <div class="kyso-settings-row">
+        <button id="kyso-icon-crop" class="kyso-btn kyso-btn--secondary" ${settings.iconUrl ? "" : "disabled"}>${ICONS.scissors}<span>${t("cropButton")}</span></button>
+        <button id="kyso-icon-apply" class="kyso-btn kyso-btn--primary">${t("iconApply")}</button>
+        <button id="kyso-icon-reset" class="kyso-btn kyso-btn--danger">${t("iconRemove")}</button>
+      </div>
+
+      <div class="kyso-settings-row kyso-settings-row--toggle">
+        <label class="kyso-label">${t("iconAllPlayers")}
+          <span class="kyso-hint">${t("iconAllPlayersHint")}</span>
+        </label>
+        <label class="kyso-toggle">
+          <input id="kyso-icon-all-players" type="checkbox" ${settings.iconAllPlayers ? "checked" : ""}>
+          <span class="kyso-toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    ${buildAssetBlock("loadingBg", "loadingBgLabel", manifest.categories.loadingBackgrounds, settings, { icon: ICONS.picture })}
+
+    ${buildAssetBlock("loadingIcon", "loadingIconLabel", manifest.categories.loadingIcons, settings, { icon: ICONS.picture })}
+
+    <div class="kyso-settings-footer">
+      <span id="kyso-save-feedback" class="kyso-save-feedback"></span>
+    </div>
+  `;
+
+  // ── Per-category handlers: source toggle, thumb click, web apply, reset.
+  // Each asset uses its targeted apply* so we don't redo full applyAllSettings on every click.
+  const ASSET_APPLIERS = {
+    background: (s) => applyBackground(resolveAsset("background", s), s.backgroundType),
+    banner:     (s) => assetReplacers.applyBanner(resolveAsset("banner", s)),
+    crest:      (s) => assetReplacers.applyCrest(resolveAsset("crest", s)),
+    loadingBg:  (s) => assetReplacers.applyLoadingScreen({ bgUrl: resolveAsset("loadingBg", s), iconUrl: resolveAsset("loadingIcon", s) }),
+    loadingIcon:(s) => assetReplacers.applyLoadingScreen({ bgUrl: resolveAsset("loadingBg", s), iconUrl: resolveAsset("loadingIcon", s) }),
+  };
+
+  function updateActiveThumb(cat, path, block) {
+    block.querySelectorAll(".kyso-thumb").forEach((t) => {
+      t.classList.toggle("kyso-thumb--active", t.dataset.path === path);
+    });
+  }
+
+  function updateSourceUI(cat, newSource, block) {
+    block.querySelector(".kyso-asset-local-row").style.display = newSource === "local" ? "" : "none";
+    block.querySelector(".kyso-asset-web-row").style.display = newSource === "web" ? "" : "none";
+    block.querySelectorAll(".kyso-asset-source-label").forEach((lbl, i) => {
+      lbl.classList.toggle("kyso-asset-source-label--active", i === (newSource === "local" ? 0 : 1));
+    });
+  }
+
+  Object.keys(ASSET_APPLIERS).forEach((cat) => {
+    const apply = ASSET_APPLIERS[cat];
+    const block = panel.querySelector(`.kyso-asset-section[data-cat="${cat}"]`);
+    if (!block) return;
+
+    // Source toggle
+    const sourceToggle = block.querySelector(`#kyso-${cat}-source-toggle`);
+    if (sourceToggle) {
+      sourceToggle.addEventListener("change", (e) => {
+        const newSource = e.target.checked ? "web" : "local";
+        updateSourceUI(cat, newSource, block);
+        const s = { ...DEFAULTS, ...loadSettings(), [cat + "Source"]: newSource };
+        saveSettings(s);
+        apply(s);
+      });
+    }
+
+    // Thumbnail click → pick local + auto switch to local mode
+    block.querySelectorAll(".kyso-thumb").forEach((thumb) => {
+      thumb.addEventListener("click", () => {
+        const path = thumb.dataset.path;
+        updateActiveThumb(cat, path, block);
+        // Force source = local on pick
+        if (sourceToggle) sourceToggle.checked = false;
+        updateSourceUI(cat, "local", block);
+        const s = {
+          ...DEFAULTS, ...loadSettings(),
+          [cat + "Local"]: path,
+          [cat + "Source"]: "local",
+        };
+        saveSettings(s);
+        apply(s);
+      });
+    });
+
+    // Web apply
+    const webApply = block.querySelector(`.kyso-${cat}-apply`);
+    const webInput = block.querySelector(`#kyso-${cat}-web`);
+    if (webApply && webInput) {
+      webApply.addEventListener("click", () => {
+        const s = {
+          ...DEFAULTS, ...loadSettings(),
+          [cat + "Web"]: webInput.value.trim(),
+          [cat + "Source"]: "web",
+        };
+        if (sourceToggle) sourceToggle.checked = true;
+        updateSourceUI(cat, "web", block);
+        saveSettings(s);
+        apply(s);
+      });
+    }
+
+    // Reset
+    const resetBtn = block.querySelector(`.kyso-${cat}-reset`);
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        const s = {
+          ...DEFAULTS, ...loadSettings(),
+          [cat + "Source"]: DEFAULTS[cat + "Source"],
+          [cat + "Local"]: DEFAULTS[cat + "Local"],
+          [cat + "Web"]: DEFAULTS[cat + "Web"],
+        };
+        saveSettings(s);
+        apply(s);
+        const defSource = DEFAULTS[cat + "Source"];
+        if (sourceToggle) sourceToggle.checked = defSource === "web";
+        if (webInput) webInput.value = DEFAULTS[cat + "Web"];
+        updateSourceUI(cat, defSource, block);
+        updateActiveThumb(cat, DEFAULTS[cat + "Local"], block);
+      });
+    }
+  });
+
+  // Background-type override
+  const bgTypeSel = panel.querySelector("#kyso-bg-type");
+  if (bgTypeSel) {
+    bgTypeSel.addEventListener("change", (e) => {
+      const s = { ...DEFAULTS, ...loadSettings(), backgroundType: e.target.value };
+      saveSettings(s);
+      applyBackground(resolveAsset("background", s), s.backgroundType);
+    });
+  }
+
+  // Banner upload + 4:1 crop
+  const bannerFileInput = panel.querySelector("#kyso-banner-file");
+  const bannerFilename  = panel.querySelector("#kyso-banner-filename");
+  const bannerCropBtn   = panel.querySelector("#kyso-banner-crop");
+  let _bannerPendingUrl = "";
+
+  if (bannerFileInput && bannerCropBtn) {
+    bannerFileInput.addEventListener("change", () => {
+      const file = bannerFileInput.files[0];
+      if (!file) return;
+      bannerFilename.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        _bannerPendingUrl = ev.target.result;
+        bannerCropBtn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    bannerCropBtn.addEventListener("click", () => {
+      if (!_bannerPendingUrl) return;
+      openBannerCropModal(_bannerPendingUrl, (dataUrl) => {
+        const s = {
+          ...DEFAULTS, ...loadSettings(),
+          bannerWeb: dataUrl,
+          bannerSource: "web",
+        };
+        saveSettings(s);
+        assetReplacers.applyBanner(resolveAsset("banner", s));
+        const block = panel.querySelector('.kyso-asset-section[data-cat="banner"]');
+        if (block) {
+          updateSourceUI("banner", "web", block);
+          const webIn = block.querySelector("#kyso-banner-web");
+          if (webIn) webIn.value = dataUrl;
+          const srcToggle = block.querySelector("#kyso-banner-source-toggle");
+          if (srcToggle) srcToggle.checked = true;
+        }
+        bannerFilename.textContent = t("noFile");
+        bannerCropBtn.disabled = true;
+        _bannerPendingUrl = "";
+        showFeedback(panel, t("saveAllDone"));
+      });
+    });
+  }
+
+  // Profile Icon section handlers
+  const iconUrlInput     = panel.querySelector("#kyso-icon-url");
+  const iconFileInput    = panel.querySelector("#kyso-icon-file");
+  const iconFilename     = panel.querySelector("#kyso-icon-filename");
+  const iconCropBtn      = panel.querySelector("#kyso-icon-crop");
+  const iconApplyBtn     = panel.querySelector("#kyso-icon-apply");
+  const iconResetBtn     = panel.querySelector("#kyso-icon-reset");
+  const iconAllPlayersChk = panel.querySelector("#kyso-icon-all-players");
+  let _iconPendingUrl = "";
+
+  function _enableIconCrop() {
+    iconCropBtn.disabled = !(iconUrlInput.value.trim() || _iconPendingUrl);
+  }
+
+  iconUrlInput.addEventListener("input", _enableIconCrop);
+
+  iconFileInput.addEventListener("change", () => {
+    const file = iconFileInput.files[0];
+    if (!file) return;
+    iconFilename.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      _iconPendingUrl = ev.target.result;
+      iconUrlInput.value = "";
+      _enableIconCrop();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  iconCropBtn.addEventListener("click", () => {
+    const src = _iconPendingUrl || iconUrlInput.value.trim();
+    if (!src) return;
+    openIconCropModal(src, (dataUrl) => {
+      _iconPendingUrl = "";
+      iconFilename.textContent = t("noFile");
+      iconUrlInput.value = dataUrl;
+      _enableIconCrop();
+      const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
+      const s = { ...DEFAULTS, ...loadSettings(), iconUrl: dataUrl, iconAllPlayers: allPlayers };
+      saveSettings(s);
+      applyIcon(dataUrl, allPlayers);
+      assetReplacers.applyProfileIcon(dataUrl);
+      showFeedback(panel, t("iconApplied"));
+    });
+  });
+
+  iconApplyBtn.addEventListener("click", () => {
+    const url = iconUrlInput.value.trim();
+    const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
+    const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
+    saveSettings(s);
+    applyIcon(url, allPlayers);
+    assetReplacers.applyProfileIcon(url);
+    showFeedback(panel, t("iconApplied"));
+  });
+
+  iconResetBtn.addEventListener("click", () => {
+    iconUrlInput.value = "";
+    _iconPendingUrl = "";
+    iconFilename.textContent = t("noFile");
+    iconCropBtn.disabled = true;
+    const s = { ...DEFAULTS, ...loadSettings(), iconUrl: "", iconAllPlayers: false };
+    if (iconAllPlayersChk) iconAllPlayersChk.checked = false;
+    saveSettings(s);
+    applyIcon("", false);
+    assetReplacers.applyProfileIcon("");
+    showFeedback(panel, t("iconRemoved"));
+  });
+
+  if (iconAllPlayersChk) {
+    iconAllPlayersChk.addEventListener("change", () => {
+      const url = iconUrlInput.value.trim();
+      const allPlayers = iconAllPlayersChk.checked;
+      const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
+      saveSettings(s);
+      applyIcon(url, allPlayers);
+    });
+  }
 
   return panel;
 }
@@ -2810,7 +2988,7 @@ async function tryInjectSettingsTab() {
   const navPlugin = document.querySelector(SETTINGS_SENTINEL);
   if (!navPlugin) return;
 
-  // Verifica se já existe nossa aba
+  // Verifica se já existe alguma aba nossa
   if (document.querySelector(".kyso-nav-item")) return;
 
   // Encontra a segunda lol-uikit-navigation-bar (a de seções, não a de abas)
@@ -2818,64 +2996,86 @@ async function tryInjectSettingsTab() {
   if (!scrollable) return;
 
   const navBars = scrollable.querySelectorAll("lol-uikit-navigation-bar");
-  // Usa a última barra de nav encontrada (a que contém os itens de seção)
   const navBar = navBars[navBars.length - 1] ?? navBars[0];
   if (!navBar) return;
 
   const settingsContent = document.querySelector(".lol-settings-content");
   if (!settingsContent) return;
 
-  // Retorna sempre os filhos DIRETOS que não são o nav plugin nem nosso painel.
+  // Retorna filhos DIRETOS que não são o nav plugin nem nossos painéis.
   const getNativeChildren = () =>
     Array.from(settingsContent.children).filter(
       (el) =>
         el.tagName.toLowerCase() !== "settings-plugin-navigation-bar" &&
-        el.id !== "kyso-settings-content",
+        el.id !== "kyso-settings-content" &&
+        el.id !== "kyso-assets-content",
     );
 
-  // ── Cria o item de navegação ──
+  // Build both panels in parallel so the second tab opens instantly after the first
+  const [kysoPanel, assetsPanel] = await Promise.all([
+    buildSettingsPanel(),
+    buildAssetsPanel(),
+  ]);
+
+  // ── Painel KysoTheme ──
   const kysoNavItem = document.createElement("lol-uikit-navigation-item");
   kysoNavItem.className = "kyso-nav-item";
   kysoNavItem.setAttribute("data-id", "kyso-theme");
-
-  const navLabel = document.createElement("div");
-  navLabel.className = "kyso-nav-label";
-  navLabel.textContent = "KysoTheme";
-  kysoNavItem.appendChild(navLabel);
-
+  const kysoLabel = document.createElement("div");
+  kysoLabel.className = "kyso-nav-label";
+  kysoLabel.textContent = "KysoTheme";
+  kysoNavItem.appendChild(kysoLabel);
   navBar.appendChild(kysoNavItem);
 
-  // ── Cria o painel de conteúdo como filho DIRETO de settingsContent ──
   const kysoContent = document.createElement("div");
   kysoContent.id = "kyso-settings-content";
   kysoContent.className = "kyso-settings-content-wrapper";
   kysoContent.style.display = "none";
-  kysoContent.appendChild(await buildSettingsPanel());
+  kysoContent.appendChild(kysoPanel);
   settingsContent.appendChild(kysoContent);
 
-  kysoNavItem.addEventListener("click", () => {
+  // ── Painel Player Assets ──
+  const assetsNavItem = document.createElement("lol-uikit-navigation-item");
+  assetsNavItem.className = "kyso-nav-item kyso-assets-nav-item";
+  assetsNavItem.setAttribute("data-id", "kyso-assets");
+  const assetsLabel = document.createElement("div");
+  assetsLabel.className = "kyso-nav-label";
+  assetsLabel.textContent = t("assetsSection");
+  assetsNavItem.appendChild(assetsLabel);
+  navBar.appendChild(assetsNavItem);
+
+  const assetsContent = document.createElement("div");
+  assetsContent.id = "kyso-assets-content";
+  assetsContent.className = "kyso-settings-content-wrapper";
+  assetsContent.style.display = "none";
+  assetsContent.appendChild(assetsPanel);
+  settingsContent.appendChild(assetsContent);
+
+  // ── Switching logic ──
+  function showKysoPanel(which) {
     navBar.querySelectorAll("lol-uikit-navigation-item").forEach((item) => {
       item.removeAttribute("active");
     });
-    kysoNavItem.setAttribute("active", "");
+    getNativeChildren().forEach((el) => { el.style.display = "none"; });
+    kysoContent.style.display = which === "kyso" ? "flex" : "none";
+    assetsContent.style.display = which === "assets" ? "flex" : "none";
+    if (which === "kyso") kysoNavItem.setAttribute("active", "");
+    else assetsNavItem.setAttribute("active", "");
+  }
 
-    // Esconde TODOS os filhos diretos nativos e exibe o nosso
-    getNativeChildren().forEach((el) => {
-      el.style.display = "none";
-    });
-    kysoContent.style.display = "flex";
-  });
+  kysoNavItem.addEventListener("click", () => showKysoPanel("kyso"));
+  assetsNavItem.addEventListener("click", () => showKysoPanel("assets"));
 
-  // Quando qualquer outro item for clicado, restaura o conteúdo nativo
+  // Quando qualquer item nativo é clicado, esconde nossos painéis
   navBar
     .querySelectorAll("lol-uikit-navigation-item:not(.kyso-nav-item)")
     .forEach((item) => {
       item.addEventListener("click", () => {
         kysoNavItem.removeAttribute("active");
+        assetsNavItem.removeAttribute("active");
         kysoContent.style.display = "none";
-        getNativeChildren().forEach((el) => {
-          el.style.display = "";
-        });
+        assetsContent.style.display = "none";
+        getNativeChildren().forEach((el) => { el.style.display = ""; });
       });
     });
 
