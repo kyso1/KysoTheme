@@ -2518,7 +2518,7 @@ async function buildSettingsPanel() {
 
     <!-- Interface -->
     <section class="kyso-settings-section" id="kyso-interface-section">
-      <h3 class="kyso-section-title">${t("interfaceSection")}</h3>
+      <h3 class="kyso-settings-section-title">${t("interfaceSection")}</h3>
 
       <div class="kyso-settings-row kyso-settings-row--toggle">
         <label class="kyso-label">${t("iconSyncNavbar")}</label>
