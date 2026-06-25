@@ -94,10 +94,14 @@ window.addEventListener("load", () => {
  * CSS nativo do client, mesmo com seletores mais específicos.
  */
 function initBlurScrubber() {
-  const BLUR_TARGETS = [
-    ".lol-social-sidebar",
+  // Always hard-kill blur on these (chrome/navbar/frame):
+  const KILL_TARGETS = [
     "lol-uikit-navigation-bar",
     ".rcp-fe-lol-uikit-frame",
+  ];
+  // Social surfaces: blur driven by the user's socialBlur slider.
+  const SOCIAL_TARGETS = [
+    ".lol-social-sidebar",
     ".lol-social-lower-pane-container",
     ".lol-social-roster",
     ".parties-view",
@@ -105,20 +109,39 @@ function initBlurScrubber() {
     ".parties-content",
   ];
 
+  // Seed from saved settings so blur is correct before the settings UI loads.
+  try {
+    const raw = DataStore.get("KysoTheme.settings");
+    const s = raw ? JSON.parse(raw) : {};
+    window.__kysoSocialBlur = Number(s.socialBlur) || 0;
+  } catch {
+    window.__kysoSocialBlur = 0;
+  }
+
   const scrub = () => {
-    for (const sel of BLUR_TARGETS) {
+    for (const sel of KILL_TARGETS) {
       document.querySelectorAll(sel).forEach((el) => {
         el.style.setProperty("backdrop-filter", "none", "important");
         el.style.setProperty("-webkit-backdrop-filter", "none", "important");
-        // Não toca em filter geral (drop-shadow etc.), só se for blur
         const cur = getComputedStyle(el).filter;
-        if (cur && cur.includes("blur")) {
-          el.style.setProperty("filter", "none", "important");
+        if (cur && cur.includes("blur")) el.style.setProperty("filter", "none", "important");
+      });
+    }
+    const px = Number(window.__kysoSocialBlur) || 0;
+    for (const sel of SOCIAL_TARGETS) {
+      document.querySelectorAll(sel).forEach((el) => {
+        if (px > 0) {
+          el.style.setProperty("backdrop-filter", `blur(${px}px)`, "important");
+          el.style.setProperty("-webkit-backdrop-filter", `blur(${px}px)`, "important");
+        } else {
+          el.style.setProperty("backdrop-filter", "none", "important");
+          el.style.setProperty("-webkit-backdrop-filter", "none", "important");
         }
       });
     }
   };
 
+  window.__kysoRescrub = scrub;
   scrub();
   new MutationObserver(scrub).observe(document.documentElement, {
     childList: true,

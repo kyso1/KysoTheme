@@ -1945,6 +1945,12 @@ function applyInterfaceToggles(settings) {
   style.textContent = without + block;
 }
 
+// Bridges the social-blur slider to index.js's blur scrubber.
+function applySocialBlur(px) {
+  window.__kysoSocialBlur = Math.max(0, Math.min(20, Number(px) || 0));
+  if (typeof window.__kysoRescrub === "function") window.__kysoRescrub();
+}
+
 export function applyAllSettings(settings) {
   const merged = { ...DEFAULTS, ...settings };
   const bgUrl = resolveAsset("background", merged);
@@ -1952,6 +1958,7 @@ export function applyAllSettings(settings) {
   applyFont(merged.fontUrl, merged.fontFamily);
   applyHideOptions(merged);
   applyInterfaceToggles(merged);
+  applySocialBlur(merged.socialBlur);
   // Asset replacers — self-only profile icon (shadow DOM), CSS icon injection
   assetReplacers.applyBanner(resolveAsset("banner", merged));
   assetReplacers.applyBannerVisibility(merged.bannerHidden);
