@@ -1949,6 +1949,7 @@ export function applyAllSettings(settings) {
   // Asset replacers — self-only profile icon (shadow DOM), CSS icon injection
   assetReplacers.applyBanner(resolveAsset("banner", merged));
   assetReplacers.applyCrest(resolveAsset("crest", merged));
+  assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";
   const _iconAll = merged.iconAllPlayers || false;
   applyIcon(_iconUrl, _iconAll);

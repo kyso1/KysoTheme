@@ -249,3 +249,37 @@ export function applyLoadingScreen({ bgUrl, iconUrl }) {
   }
   style.textContent = parts.join("\n");
 }
+
+// applyProfileBgTransparent — hides the profile-page champion-splash background
+// so a custom #kyso-global-bg shows through. Deep-injects into every
+// lol-regalia-profile-v2-element shadow root.
+let _profileBgObserver = null;
+let _profileBgHidden = false;
+
+const PROFILE_BG_CSS = (hidden) => hidden
+  ? `:host, [class*="background"], [class*="splash"], [class*="banner-image"] {
+       background: transparent !important;
+       background-image: none !important;
+     }
+     img[class*="background"], img[class*="splash"] { opacity: 0 !important; }`
+  : "";
+
+function _updateProfileBgDom(hidden) {
+  const profiles = _findAllDeep("lol-regalia-profile-v2-element");
+  for (const p of profiles) {
+    if (!p.shadowRoot) continue;
+    const style = ensureStyleIn(p.shadowRoot, "kyso-profilebg-override");
+    if (!style) continue;
+    style.textContent = PROFILE_BG_CSS(hidden);
+  }
+}
+
+export function applyProfileBgTransparent(hidden) {
+  _profileBgHidden = !!hidden;
+  if (_profileBgObserver) _profileBgObserver.disconnect();
+  _updateProfileBgDom(_profileBgHidden);
+  _profileBgObserver = new MutationObserver(() => {
+    _updateProfileBgDom(_profileBgHidden);
+  });
+  _profileBgObserver.observe(document.body, { childList: true, subtree: true });
+}
