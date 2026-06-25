@@ -1948,6 +1948,7 @@ export function applyAllSettings(settings) {
   applyInterfaceToggles(merged);
   // Asset replacers — self-only profile icon (shadow DOM), CSS icon injection
   assetReplacers.applyBanner(resolveAsset("banner", merged));
+  assetReplacers.applyBannerVisibility(merged.bannerHidden);
   assetReplacers.applyCrest(resolveAsset("crest", merged));
   assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";

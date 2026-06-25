@@ -283,3 +283,29 @@ export function applyProfileBgTransparent(hidden) {
   });
   _profileBgObserver.observe(document.body, { childList: true, subtree: true });
 }
+
+// applyBannerVisibility — fully hides the profile banner across all surfaces
+// (profile page, hover cards). Separate style id from applyBanner so the
+// image-override and the hide can coexist; hide wins.
+let _bannerHideObserver = null;
+let _bannerHidden = false;
+
+function _updateBannerHideDom(hidden) {
+  const banners = _findAllDeep("lol-regalia-banner-v2-element");
+  for (const banner of banners) {
+    if (!banner.shadowRoot) continue;
+    const style = ensureStyleIn(banner.shadowRoot, "kyso-banner-hide");
+    if (!style) continue;
+    style.textContent = hidden ? `:host { display: none !important; }` : "";
+  }
+}
+
+export function applyBannerVisibility(hidden) {
+  _bannerHidden = !!hidden;
+  if (_bannerHideObserver) _bannerHideObserver.disconnect();
+  _updateBannerHideDom(_bannerHidden);
+  _bannerHideObserver = new MutationObserver(() => {
+    _updateBannerHideDom(_bannerHidden);
+  });
+  _bannerHideObserver.observe(document.body, { childList: true, subtree: true });
+}
