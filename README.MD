@@ -1,6 +1,6 @@
 <div align="center">
 
-# KysoTheme
+# Kyso UI Editor
 
 ![image](https://github.com/user-attachments/assets/b0932804-79ab-458e-b8cc-dc776ef4258a)
 

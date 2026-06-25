@@ -2399,8 +2399,8 @@ async function buildSettingsPanel() {
   panel.className = "kyso-settings-panel";
   panel.innerHTML = `
     <div class="kyso-settings-header">
-      <span class="kyso-settings-title">KysoTheme</span>
-      <span class="kyso-settings-version">v3.0</span>
+      <span class="kyso-settings-title">Kyso UI Editor</span>
+      <span class="kyso-settings-version">v3.1</span>
     </div>
 
     <!-- Visibility -->
@@ -3077,7 +3077,7 @@ async function buildAssetsPanel() {
   panel.innerHTML = `
     <div class="kyso-settings-header">
       <span class="kyso-settings-title">${t("assetsSection")}</span>
-      <span class="kyso-settings-version">v3.0</span>
+      <span class="kyso-settings-version">v3.1</span>
     </div>
 
     ${buildAssetBlock("background", "bgSection", manifest.categories.backgrounds, settings, { extraControls: bgExtra, icon: ICONS.picture })}

@@ -1,7 +1,7 @@
 /*
- * @name Kyso Theme v3.0
+ * @name Kyso UI Editor v3.1
  * @author Kyso
- * @description Kyso Clean theme for League of Legends (Pengu Loader)
+ * @description Kyso UI Editor — customizable clean theme for League of Legends (Pengu Loader)
  * @link https://github.com/kyso1/KysoTheme
  */
 
