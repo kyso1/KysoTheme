@@ -1879,12 +1879,73 @@ function updateIconInDOM(url, allPlayers = false) {
   }
 }
 
+// Builds the themed play-button CSS (relocated from theme.css). When the user
+// chooses vanilla, this is omitted entirely so the client's own art returns.
+function _playButtonThemedCss(opacity, blur) {
+  const alpha = Math.max(0, Math.min(100, Number(opacity) || 0)) / 100;
+  const b = Math.max(0, Math.min(20, Number(blur) || 0));
+  const bgRule = alpha > 0 ? `background: rgba(0,0,0,${alpha}) !important;` : `background: transparent !important;`;
+  const blurRule = b > 0 ? `backdrop-filter: blur(${b}px) !important; -webkit-backdrop-filter: blur(${b}px) !important;` : "";
+  return `
+.play-button-frame { background-image: none !important; }
+.play-button-content { left: 30px !important; width: calc(100% - 52px) !important; }
+.play-button-container {
+  ${bgRule}
+  ${blurRule}
+  border-radius: 50px !important;
+  border: 1px solid var(--kyso-accent) !important;
+  filter: drop-shadow(1px 1px 8px var(--kyso-accent-glow)) !important;
+  transition: 0.2s !important;
+  cursor: pointer;
+}
+.play-button-container:hover { filter: drop-shadow(1px 1px 15px var(--kyso-accent-glow)) !important; transition: 0.2s !important; }
+.play-button-text { color: var(--kyso-accent) !important; font-family: "Open Sans", sans-serif !important; content: "▶" !important; visibility: hidden; z-index: 0 !important; }
+.play-button-text:after { content: "▶"; visibility: visible; display: block; position: absolute; left: 28px; }
+#rcp-fe-viewport-root > .rcp-fe-viewport-overlay > .screen-root[style*="visibility: hidden;"] ~ .play-button-text:after { visibility: hidden !important; }
+.play-button-component[style*="visibility: hidden;"] ~ .play-button-text:after { visibility: hidden !important; }
+.play-button-component[style*="visibility: hidden;"] + .play-button-text:after { visibility: hidden !important; }
+.play-button-component[style*="visibility: hidden;"] .play-button-text:after { visibility: hidden !important; }
+.screen-root[style*="visibility: hidden;"] .play-button-text:after { visibility: hidden !important; }
+.screen-root[style*="visibility: hidden;"] ~ .play-button-text:after { visibility: hidden !important; }
+.screen-root[style*="visibility: hidden;"] + .play-button-text:after { visibility: hidden !important; }
+.champion-select-main-container:not(:hidden) ~ .play-button-text:after { display: none !important; visibility: hidden !important; }
+.champion-select-main-container:visible .play-button-text:after { display: none !important; }
+.play-button-container:hover .play-button-text:after { color: #c7c7c7 !important; }
+.play-button-container:active .play-button-text:after { color: #c7c7c7 !important; }
+`;
+}
+
+// Injects the KYSO-INTERFACE delimited block: play button (themed unless
+// vanilla), gear/LoR always-visible overrides.
+function applyInterfaceToggles(settings) {
+  const style = getOrCreateDynamicStyle();
+  let block = "/* KYSO-INTERFACE-START */\n";
+  if (!settings.playVanilla) {
+    block += _playButtonThemedCss(settings.playBgOpacity, settings.playBgBlur);
+  }
+  if (settings.gearAlwaysVisible) {
+    block += `.style-profile-skin-picker-button { opacity: 1 !important; }\n`;
+  }
+  if (settings.lorAlwaysVisible) {
+    block += `.launch-lor-button-container, .deep-links-promo { opacity: 1 !important; }\n`;
+  }
+  block += "/* KYSO-INTERFACE-END */\n";
+
+  const current = style.textContent || "";
+  const without = current.replace(
+    /\/\* KYSO-INTERFACE-START \*\/[\s\S]*?\/\* KYSO-INTERFACE-END \*\//g,
+    "",
+  );
+  style.textContent = without + block;
+}
+
 export function applyAllSettings(settings) {
   const merged = { ...DEFAULTS, ...settings };
   const bgUrl = resolveAsset("background", merged);
   applyBackground(bgUrl, merged.backgroundType);
   applyFont(merged.fontUrl, merged.fontFamily);
   applyHideOptions(merged);
+  applyInterfaceToggles(merged);
   // Asset replacers — self-only profile icon (shadow DOM), CSS icon injection
   assetReplacers.applyBanner(resolveAsset("banner", merged));
   assetReplacers.applyCrest(resolveAsset("crest", merged));

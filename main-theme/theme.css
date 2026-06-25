@@ -255,9 +255,6 @@
 .league-logo {
   display: none !important;
 }
-.play-button-frame {
-  background-image: none !important;
-}
 lol-uikit-video-state-machine {
   display: none !important;
 }
@@ -364,79 +361,6 @@ lol-uikit-video-state-machine {
   opacity: 0 !important;
 }
 
-/* Creates the play button and hides the older one */
-
-/* Fix to only |> display, you can change this if you want another thing
-   written on the play button */
-.play-button-content {
-  left: 30px !important;
-}
-.play-button-container {
-  background: transparent !important;
-  border-radius: 50px !important;
-  border: 1px solid var(--kyso-accent) !important;
-  filter: drop-shadow(1px 1px 8px var(--kyso-accent-glow)) !important;
-  transition: 0.2s !important;
-  cursor: pointer;
-}
-.play-button-container:hover {
-  filter: drop-shadow(1px 1px 15px var(--kyso-accent-glow)) !important;
-  transition: 0.2s !important;
-}
-.play-button-content {
-  width: calc(100% - 52px) !important;
-}
-.play-button-text {
-  color: var(--kyso-accent) !important;
-  font-family: "Open Sans", sans-serif !important;
-  content: "▶" !important;
-  visibility: hidden;
-  z-index: 0 !important;
-}
-.play-button-text:after {
-  content: "▶";
-  visibility: visible;
-  display: block;
-  position: absolute;
-  left: 28px;
-}
-#rcp-fe-viewport-root
-  > .rcp-fe-viewport-overlay
-  > .screen-root[style*="visibility: hidden;"]
-  ~ .play-button-text:after {
-  visibility: hidden !important;
-}
-.play-button-component[style*="visibility: hidden;"] ~ .play-button-text:after {
-  visibility: hidden !important;
-}
-.play-button-component[style*="visibility: hidden;"] + .play-button-text:after {
-  visibility: hidden !important;
-}
-.play-button-component[style*="visibility: hidden;"] .play-button-text:after {
-  visibility: hidden !important;
-}
-.screen-root[style*="visibility: hidden;"] .play-button-text:after {
-  visibility: hidden !important;
-}
-.screen-root[style*="visibility: hidden;"] ~ .play-button-text:after {
-  visibility: hidden !important;
-}
-.screen-root[style*="visibility: hidden;"] + .play-button-text:after {
-  visibility: hidden !important;
-}
-.champion-select-main-container:not(:hidden) ~ .play-button-text:after {
-  display: none !important;
-  visibility: hidden !important;
-}
-.champion-select-main-container:visible .play-button-text:after {
-  display: none !important;
-}
-.play-button-container:hover .play-button-text:after {
-  color: #c7c7c7 !important;
-}
-.play-button-container:active .play-button-text:after {
-  color: #c7c7c7 !important;
-}
 /* Loading screen configs */
 
 /* Loading screen background + icon are now injected at runtime by
