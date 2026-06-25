@@ -1819,7 +1819,7 @@ function applyHideOptions(settings) {
     withoutHide + `/* KYSO-HIDE-START */\n${css}/* KYSO-HIDE-END */\n`;
 }
 
-function applyIcon(url, allPlayers = false) {
+function applyIcon(url, allPlayers = false, syncNavbar = false) {
   const style = getOrCreateDynamicStyle();
   let iconBlock;
   if (!url) {
@@ -1829,7 +1829,13 @@ function applyIcon(url, allPlayers = false) {
     iconBlock = `/* KYSO-ICON-START */\n.icon-image.has-icon,\n.top > .icon-image.has-icon,\n.summoner-level-icon .icon-image {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nsummoner-icon,\nimg.icon-image.has-icon,\n.style-profile-champion-icon-masked > img {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
   } else {
     // Modo "só eu": escopo restrito ao avatar próprio na barra lateral
-    iconBlock = `/* KYSO-ICON-START */\nlol-social-avatar .icon-image.has-icon,\nlol-social-avatar .summoner-level-icon .icon-image {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nlol-social-avatar img.icon-image.has-icon,\nlol-social-avatar summoner-icon {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
+    const navbarSel = syncNavbar
+      ? ",\n.top > .icon-image.has-icon,\n.main-navigation .icon-image.has-icon"
+      : "";
+    const navbarContentSel = syncNavbar
+      ? ",\n.style-profile-champion-icon-masked > img"
+      : "";
+    iconBlock = `/* KYSO-ICON-START */\nlol-social-avatar .icon-image.has-icon,\nlol-social-avatar .summoner-level-icon .icon-image${navbarSel} {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nlol-social-avatar img.icon-image.has-icon,\nlol-social-avatar summoner-icon${navbarContentSel} {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
   }
 
   const current = style.textContent || "";
@@ -1953,7 +1959,7 @@ export function applyAllSettings(settings) {
   assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";
   const _iconAll = merged.iconAllPlayers || false;
-  applyIcon(_iconUrl, _iconAll);
+  applyIcon(_iconUrl, _iconAll, merged.iconSyncNavbar);
   assetReplacers.applyProfileIcon(_iconUrl);
   assetReplacers.applyLoadingScreen({
     bgUrl: resolveAsset("loadingBg", merged),
