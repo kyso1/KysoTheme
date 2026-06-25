@@ -1991,34 +1991,79 @@ function showWelcomeModal() {
     </div>`;
   document.body.appendChild(overlay);
 
+  // Harden against LCU stacking / pointer-events quirks: a layer the client
+  // mounts AFTER us can otherwise paint over the overlay or swallow the click.
+  // Inline !important beats any stylesheet load-order/specificity issue.
+  overlay.style.setProperty("position", "fixed", "important");
+  overlay.style.setProperty("inset", "0", "important");
+  overlay.style.setProperty("z-index", "2147483647", "important");
+  overlay.style.setProperty("pointer-events", "auto", "important");
+
   const sv = overlay.querySelector("#kyso-w-social");
   const svVal = overlay.querySelector("#kyso-w-social-val");
-  sv.addEventListener("input", () => { svVal.textContent = `${sv.value}px`; });
+  if (sv && svVal) {
+    sv.addEventListener("input", () => {
+      svVal.textContent = `${sv.value}px`;
+    });
+  }
 
   const close = () => overlay.remove();
 
-  overlay.querySelector("#kyso-w-skip").addEventListener("click", () => {
-    const next = { ...DEFAULTS, ...loadSettings(), hasSeenWelcome: true };
-    saveSettings(next);
-    close();
-  });
+  const skipChoices = () => {
+    // try/finally: the modal MUST close even if saveSettings throws.
+    try {
+      saveSettings({ ...DEFAULTS, ...loadSettings(), hasSeenWelcome: true });
+    } finally {
+      close();
+    }
+  };
 
-  overlay.querySelector("#kyso-w-apply").addEventListener("click", () => {
-    const buttonsAlways = overlay.querySelector("#kyso-w-buttons").checked;
+  const applyChoices = () => {
+    const checked = (id) => {
+      const el = overlay.querySelector(id);
+      return !!(el && el.checked);
+    };
+    const buttonsAlways = checked("#kyso-w-buttons");
     const next = {
-      ...DEFAULTS, ...loadSettings(),
-      playVanilla: overlay.querySelector("#kyso-w-play").checked,
-      bannerHidden: overlay.querySelector("#kyso-w-banner").checked,
+      ...DEFAULTS,
+      ...loadSettings(),
+      playVanilla: checked("#kyso-w-play"),
+      bannerHidden: checked("#kyso-w-banner"),
       gearAlwaysVisible: buttonsAlways,
       lorAlwaysVisible: buttonsAlways,
-      profileBgTransparent: overlay.querySelector("#kyso-w-profilebg").checked,
-      socialBlur: Number(sv.value) || 0,
+      profileBgTransparent: checked("#kyso-w-profilebg"),
+      socialBlur: sv ? Number(sv.value) || 0 : 0,
       hasSeenWelcome: true,
     };
-    saveSettings(next);
-    applyAllSettings(next);
-    close();
-  });
+    try {
+      saveSettings(next);
+      applyAllSettings(next);
+    } finally {
+      close();
+    }
+  };
+
+  // Capture-phase delegation on the overlay itself. The overlay is an ancestor
+  // of both buttons, so this fires during capture (before the target) — it
+  // works even if a later-mounted LCU layer stops bubble-phase propagation,
+  // and it can't collide with the settings-panel handlers (scoped to overlay).
+  overlay.addEventListener(
+    "click",
+    (e) => {
+      const t = e.target;
+      if (!t || !t.closest) return;
+      if (t.closest("#kyso-w-apply")) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyChoices();
+      } else if (t.closest("#kyso-w-skip")) {
+        e.preventDefault();
+        e.stopPropagation();
+        skipChoices();
+      }
+    },
+    true,
+  );
 }
 
 export function applyAllSettings(settings) {
