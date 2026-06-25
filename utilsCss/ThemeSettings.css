@@ -372,6 +372,34 @@
   border-color: #c8a040;
 }
 
+/* ── Kyso UI Editor welcome modal ─────────────────────────────────────── */
+#kyso-welcome-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+.kyso-welcome-card {
+  background: #0a1428; color: #f0e6d2;
+  border: 1px solid var(--kyso-accent, #c89b3c);
+  border-radius: 8px; padding: 24px 28px; width: 420px; max-width: 90vw;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  font-family: "Open Sans", sans-serif;
+}
+.kyso-welcome-title { margin: 0 0 4px; font-size: 20px; color: var(--kyso-accent, #c89b3c); }
+.kyso-welcome-sub { margin: 0 0 18px; font-size: 12px; opacity: 0.8; }
+.kyso-welcome-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.kyso-welcome-row > span { flex: 1; font-size: 13px; }
+.kyso-welcome-row > small { width: 90px; font-size: 11px; opacity: 0.7; text-align: right; }
+.kyso-welcome-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+.kyso-welcome-actions .kyso-btn {
+  padding: 8px 18px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--kyso-accent, #c89b3c); background: transparent; color: #f0e6d2;
+}
+.kyso-welcome-actions .kyso-btn--primary { background: var(--kyso-accent, #c89b3c); color: #0a1428; }
+
 .kyso-toggle input:checked + .kyso-toggle-slider::before {
   transform: translateX(20px) translateY(-50%);
   background: #f0d080;

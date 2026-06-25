@@ -1951,6 +1951,77 @@ function applySocialBlur(px) {
   if (typeof window.__kysoRescrub === "function") window.__kysoRescrub();
 }
 
+function showWelcomeModal() {
+  if (document.querySelector("#kyso-welcome-overlay")) return;
+  const s = { ...DEFAULTS, ...loadSettings() };
+  const overlay = document.createElement("div");
+  overlay.id = "kyso-welcome-overlay";
+  overlay.innerHTML = `
+    <div class="kyso-welcome-card">
+      <h2 class="kyso-welcome-title">${t("welcomeTitle")}</h2>
+      <p class="kyso-welcome-sub">${t("welcomeSubtitle")}</p>
+      <div class="kyso-welcome-row">
+        <span>${t("welcomePlay")}</span>
+        <label class="kyso-toggle"><input id="kyso-w-play" type="checkbox"><span class="kyso-toggle-slider"></span></label>
+        <small>${t("playVanilla")}</small>
+      </div>
+      <div class="kyso-welcome-row">
+        <span>${t("welcomeBanner")}</span>
+        <label class="kyso-toggle"><input id="kyso-w-banner" type="checkbox"><span class="kyso-toggle-slider"></span></label>
+        <small>${t("bannerHidden")}</small>
+      </div>
+      <div class="kyso-welcome-row">
+        <span>${t("welcomeButtons")}</span>
+        <label class="kyso-toggle"><input id="kyso-w-buttons" type="checkbox"><span class="kyso-toggle-slider"></span></label>
+        <small>${t("welcomeAlways")}</small>
+      </div>
+      <div class="kyso-welcome-row">
+        <span>${t("welcomeProfileBg")}</span>
+        <label class="kyso-toggle"><input id="kyso-w-profilebg" type="checkbox"><span class="kyso-toggle-slider"></span></label>
+        <small>${t("welcomeTransparent")}</small>
+      </div>
+      <div class="kyso-welcome-row">
+        <span>${t("socialBlur")}</span>
+        <input type="range" id="kyso-w-social" class="kyso-range" min="0" max="20" step="1" value="0">
+        <small id="kyso-w-social-val">0px</small>
+      </div>
+      <div class="kyso-welcome-actions">
+        <button id="kyso-w-skip" class="kyso-btn">${t("welcomeSkip")}</button>
+        <button id="kyso-w-apply" class="kyso-btn kyso-btn--primary">${t("welcomeApply")}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const sv = overlay.querySelector("#kyso-w-social");
+  const svVal = overlay.querySelector("#kyso-w-social-val");
+  sv.addEventListener("input", () => { svVal.textContent = `${sv.value}px`; });
+
+  const close = () => overlay.remove();
+
+  overlay.querySelector("#kyso-w-skip").addEventListener("click", () => {
+    const next = { ...DEFAULTS, ...loadSettings(), hasSeenWelcome: true };
+    saveSettings(next);
+    close();
+  });
+
+  overlay.querySelector("#kyso-w-apply").addEventListener("click", () => {
+    const buttonsAlways = overlay.querySelector("#kyso-w-buttons").checked;
+    const next = {
+      ...DEFAULTS, ...loadSettings(),
+      playVanilla: overlay.querySelector("#kyso-w-play").checked,
+      bannerHidden: overlay.querySelector("#kyso-w-banner").checked,
+      gearAlwaysVisible: buttonsAlways,
+      lorAlwaysVisible: buttonsAlways,
+      profileBgTransparent: overlay.querySelector("#kyso-w-profilebg").checked,
+      socialBlur: Number(sv.value) || 0,
+      hasSeenWelcome: true,
+    };
+    saveSettings(next);
+    applyAllSettings(next);
+    close();
+  });
+}
+
 export function applyAllSettings(settings) {
   const merged = { ...DEFAULTS, ...settings };
   const bgUrl = resolveAsset("background", merged);
@@ -3525,6 +3596,13 @@ export function initSettingsPage() {
   }
 
   applyAllSettings(saved);
+
+  const _s = { ...DEFAULTS, ...loadSettings() };
+  if (!_s.hasSeenWelcome) {
+    // Defer until body is ready so the overlay mounts visibly.
+    if (document.body) showWelcomeModal();
+    else window.addEventListener("load", showWelcomeModal, { once: true });
+  }
 
   // Pré-aquece o manifest pra a primeira abertura de settings já achar cache
   assetReplacers.loadManifest().catch(() => {});
