@@ -276,11 +276,10 @@ function _updateProfileBgDom(hidden) {
 
 export function applyProfileBgTransparent(hidden) {
   _profileBgHidden = !!hidden;
-  if (_profileBgObserver) _profileBgObserver.disconnect();
+  if (_profileBgObserver) { _profileBgObserver.disconnect(); _profileBgObserver = null; }
   _updateProfileBgDom(_profileBgHidden);
-  _profileBgObserver = new MutationObserver(() => {
-    _updateProfileBgDom(_profileBgHidden);
-  });
+  if (!_profileBgHidden) return;
+  _profileBgObserver = new MutationObserver(() => { _updateProfileBgDom(_profileBgHidden); });
   _profileBgObserver.observe(document.body, { childList: true, subtree: true });
 }
 
@@ -302,10 +301,9 @@ function _updateBannerHideDom(hidden) {
 
 export function applyBannerVisibility(hidden) {
   _bannerHidden = !!hidden;
-  if (_bannerHideObserver) _bannerHideObserver.disconnect();
+  if (_bannerHideObserver) { _bannerHideObserver.disconnect(); _bannerHideObserver = null; }
   _updateBannerHideDom(_bannerHidden);
-  _bannerHideObserver = new MutationObserver(() => {
-    _updateBannerHideDom(_bannerHidden);
-  });
+  if (!_bannerHidden) return;
+  _bannerHideObserver = new MutationObserver(() => { _updateBannerHideDom(_bannerHidden); });
   _bannerHideObserver.observe(document.body, { childList: true, subtree: true });
 }

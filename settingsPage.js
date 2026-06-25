@@ -1953,7 +1953,6 @@ function applySocialBlur(px) {
 
 function showWelcomeModal() {
   if (document.querySelector("#kyso-welcome-overlay")) return;
-  const s = { ...DEFAULTS, ...loadSettings() };
   const overlay = document.createElement("div");
   overlay.id = "kyso-welcome-overlay";
   overlay.innerHTML = `
