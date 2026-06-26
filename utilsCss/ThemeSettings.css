@@ -399,6 +399,15 @@
   border: 1px solid var(--kyso-accent, #c89b3c); background: transparent; color: #f0e6d2;
 }
 .kyso-welcome-actions .kyso-btn--primary { background: var(--kyso-accent, #c89b3c); color: #0a1428; }
+.kyso-welcome-card .kyso-w-opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; padding: 10px 12px; margin: 6px 0;
+  background: rgba(255, 255, 255, 0.04); color: #f0e6d2;
+  border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px;
+  cursor: pointer; font-size: 13px; text-align: left; font-family: inherit;
+}
+.kyso-welcome-card .kyso-w-opt:hover { background: rgba(200, 155, 60, 0.15); }
+.kyso-welcome-card .kyso-w-opt > b { color: var(--kyso-accent, #c89b3c); font-size: 12px; font-weight: 600; }
 
 .kyso-toggle input:checked + .kyso-toggle-slider::before {
   transform: translateX(20px) translateY(-50%);

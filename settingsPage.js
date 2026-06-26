@@ -1953,64 +1953,66 @@ function applySocialBlur(px) {
 
 function showWelcomeModal() {
   if (document.querySelector("#kyso-welcome-overlay")) return;
+
+  // Quick-setup state. The League client (CEF/rcp) does NOT reliably deliver
+  // clicks to a plain document.body overlay: it can paint a transparent layer
+  // above it and/or stop event propagation, which defeats normal listeners AND
+  // capture-phase delegation on the overlay (confirmed: both failed in-client).
+  //
+  // Robust solution: decouple interaction from DOM stacking entirely. Hold the
+  // choices in this state object and drive ALL interaction from a WINDOW-level
+  // capture pointerup/click that hit-tests pointer COORDINATES against each
+  // control's bounding rect. window-capture fires before any client listener,
+  // and coordinate hit-testing works even if another element is the real
+  // event target (an opaque/transparent layer on top). The overlay's z-index
+  // then only governs visibility, not whether the buttons "work".
+  const state = {
+    playVanilla: false,
+    bannerHidden: false,
+    buttonsAlways: false,
+    profileBgTransparent: false,
+    socialBlur: 0,
+  };
+  const onOff = (b) => (b ? t("welcomeOn") : t("welcomeOff"));
+  const blurLabel = (n) => (n <= 0 ? t("welcomeOff") : `${n}px`);
+
   const overlay = document.createElement("div");
   overlay.id = "kyso-welcome-overlay";
   overlay.innerHTML = `
     <div class="kyso-welcome-card">
       <h2 class="kyso-welcome-title">${t("welcomeTitle")}</h2>
       <p class="kyso-welcome-sub">${t("welcomeSubtitle")}</p>
-      <div class="kyso-welcome-row">
-        <span>${t("welcomePlay")}</span>
-        <label class="kyso-toggle"><input id="kyso-w-play" type="checkbox"><span class="kyso-toggle-slider"></span></label>
-        <small>${t("playVanilla")}</small>
-      </div>
-      <div class="kyso-welcome-row">
-        <span>${t("welcomeBanner")}</span>
-        <label class="kyso-toggle"><input id="kyso-w-banner" type="checkbox"><span class="kyso-toggle-slider"></span></label>
-        <small>${t("bannerHidden")}</small>
-      </div>
-      <div class="kyso-welcome-row">
-        <span>${t("welcomeButtons")}</span>
-        <label class="kyso-toggle"><input id="kyso-w-buttons" type="checkbox"><span class="kyso-toggle-slider"></span></label>
-        <small>${t("welcomeAlways")}</small>
-      </div>
-      <div class="kyso-welcome-row">
-        <span>${t("welcomeProfileBg")}</span>
-        <label class="kyso-toggle"><input id="kyso-w-profilebg" type="checkbox"><span class="kyso-toggle-slider"></span></label>
-        <small>${t("welcomeTransparent")}</small>
-      </div>
-      <div class="kyso-welcome-row">
-        <span>${t("socialBlur")}</span>
-        <input type="range" id="kyso-w-social" class="kyso-range" min="0" max="20" step="1" value="0">
-        <small id="kyso-w-social-val">0px</small>
-      </div>
+      <button class="kyso-w-opt" data-act="toggle:playVanilla"><span>${t("welcomePlay")} — ${t("playVanilla")}</span><b data-val="playVanilla">${onOff(state.playVanilla)}</b></button>
+      <button class="kyso-w-opt" data-act="toggle:bannerHidden"><span>${t("welcomeBanner")} — ${t("bannerHidden")}</span><b data-val="bannerHidden">${onOff(state.bannerHidden)}</b></button>
+      <button class="kyso-w-opt" data-act="toggle:buttonsAlways"><span>${t("welcomeButtons")} — ${t("welcomeAlways")}</span><b data-val="buttonsAlways">${onOff(state.buttonsAlways)}</b></button>
+      <button class="kyso-w-opt" data-act="toggle:profileBgTransparent"><span>${t("welcomeProfileBg")} — ${t("welcomeTransparent")}</span><b data-val="profileBgTransparent">${onOff(state.profileBgTransparent)}</b></button>
+      <button class="kyso-w-opt" data-act="cycle:socialBlur"><span>${t("socialBlur")}</span><b data-val="socialBlur">${blurLabel(state.socialBlur)}</b></button>
       <div class="kyso-welcome-actions">
-        <button id="kyso-w-skip" class="kyso-btn">${t("welcomeSkip")}</button>
-        <button id="kyso-w-apply" class="kyso-btn kyso-btn--primary">${t("welcomeApply")}</button>
+        <button class="kyso-btn" data-act="skip">${t("welcomeSkip")}</button>
+        <button class="kyso-btn kyso-btn--primary" data-act="apply">${t("welcomeApply")}</button>
       </div>
+      <div id="kyso-w-diag" style="margin-top:10px;font-size:10px;opacity:.45;text-align:center;">tap a row…</div>
     </div>`;
   document.body.appendChild(overlay);
 
-  // Harden against LCU stacking / pointer-events quirks: a layer the client
-  // mounts AFTER us can otherwise paint over the overlay or swallow the click.
-  // Inline !important beats any stylesheet load-order/specificity issue.
+  // Visibility hardening (NOT interaction — interaction is coordinate-based).
   overlay.style.setProperty("position", "fixed", "important");
   overlay.style.setProperty("inset", "0", "important");
   overlay.style.setProperty("z-index", "2147483647", "important");
   overlay.style.setProperty("pointer-events", "auto", "important");
 
-  const sv = overlay.querySelector("#kyso-w-social");
-  const svVal = overlay.querySelector("#kyso-w-social-val");
-  if (sv && svVal) {
-    sv.addEventListener("input", () => {
-      svVal.textContent = `${sv.value}px`;
-    });
-  }
+  const diag = overlay.querySelector("#kyso-w-diag");
+  let closed = false;
+  let lastFire = 0;
 
-  const close = () => overlay.remove();
+  const close = () => {
+    closed = true;
+    window.removeEventListener("pointerup", onUp, true);
+    window.removeEventListener("click", onUp, true);
+    overlay.remove();
+  };
 
   const skipChoices = () => {
-    // try/finally: the modal MUST close even if saveSettings throws.
     try {
       saveSettings({ ...DEFAULTS, ...loadSettings(), hasSeenWelcome: true });
     } finally {
@@ -2019,20 +2021,15 @@ function showWelcomeModal() {
   };
 
   const applyChoices = () => {
-    const checked = (id) => {
-      const el = overlay.querySelector(id);
-      return !!(el && el.checked);
-    };
-    const buttonsAlways = checked("#kyso-w-buttons");
     const next = {
       ...DEFAULTS,
       ...loadSettings(),
-      playVanilla: checked("#kyso-w-play"),
-      bannerHidden: checked("#kyso-w-banner"),
-      gearAlwaysVisible: buttonsAlways,
-      lorAlwaysVisible: buttonsAlways,
-      profileBgTransparent: checked("#kyso-w-profilebg"),
-      socialBlur: sv ? Number(sv.value) || 0 : 0,
+      playVanilla: state.playVanilla,
+      bannerHidden: state.bannerHidden,
+      gearAlwaysVisible: state.buttonsAlways,
+      lorAlwaysVisible: state.buttonsAlways,
+      profileBgTransparent: state.profileBgTransparent,
+      socialBlur: state.socialBlur,
       hasSeenWelcome: true,
     };
     try {
@@ -2043,27 +2040,60 @@ function showWelcomeModal() {
     }
   };
 
-  // Capture-phase delegation on the overlay itself. The overlay is an ancestor
-  // of both buttons, so this fires during capture (before the target) — it
-  // works even if a later-mounted LCU layer stops bubble-phase propagation,
-  // and it can't collide with the settings-panel handlers (scoped to overlay).
-  overlay.addEventListener(
-    "click",
-    (e) => {
-      const t = e.target;
-      if (!t || !t.closest) return;
-      if (t.closest("#kyso-w-apply")) {
-        e.preventDefault();
-        e.stopPropagation();
-        applyChoices();
-      } else if (t.closest("#kyso-w-skip")) {
-        e.preventDefault();
-        e.stopPropagation();
-        skipChoices();
+  const refresh = (key) => {
+    const el = overlay.querySelector(`[data-val="${key}"]`);
+    if (!el) return;
+    el.textContent = key === "socialBlur" ? blurLabel(state.socialBlur) : onOff(state[key]);
+  };
+
+  const runAction = (act) => {
+    if (!act || closed) return;
+    if (act === "skip") return skipChoices();
+    if (act === "apply") return applyChoices();
+    if (act.indexOf("toggle:") === 0) {
+      const key = act.slice(7);
+      state[key] = !state[key];
+      refresh(key);
+    } else if (act === "cycle:socialBlur") {
+      state.socialBlur = state.socialBlur <= 0 ? 6 : state.socialBlur <= 6 ? 12 : 0;
+      refresh("socialBlur");
+    }
+  };
+
+  // Single coordinate hit-test handler, bound to BOTH pointerup and click on
+  // window/capture (covers either event being suppressed). lastFire dedupes the
+  // two events fired by one physical tap.
+  const onUp = (e) => {
+    if (closed) return;
+    let hitAct = null;
+    let hitDesc = "miss";
+    overlay.querySelectorAll("[data-act]").forEach((el) => {
+      if (hitAct) return;
+      const r = el.getBoundingClientRect();
+      if (
+        e.clientX >= r.left &&
+        e.clientX <= r.right &&
+        e.clientY >= r.top &&
+        e.clientY <= r.bottom
+      ) {
+        hitAct = el.getAttribute("data-act");
+        hitDesc = hitAct;
       }
-    },
-    true,
-  );
+    });
+    if (diag) {
+      diag.textContent = `${e.type} ${Math.round(e.clientX)},${Math.round(e.clientY)} → ${hitDesc}`;
+    }
+    if (!hitAct) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const now = Date.now();
+    if (now - lastFire < 350) return; // dedupe pointerup+click of one tap
+    lastFire = now;
+    runAction(hitAct);
+  };
+
+  window.addEventListener("pointerup", onUp, true);
+  window.addEventListener("click", onUp, true);
 }
 
 export function applyAllSettings(settings) {
