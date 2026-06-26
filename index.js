@@ -19,9 +19,12 @@ import {
   backgroundImages,
   currentBackgroundIndex,
 } from "./backgroundSelector.js";
-import ProfileSkinUnlocker from "./profileskinunlocker.js";
-import HideFriends from "./hidefriends.js";
-import AutoAccept from "./autoaccept.js";
+// MTZ plugins — these self-register with window.MTZ as a side effect of being
+// imported. Their default export is an empty object (rollup/commonjs artifact),
+// NOT a constructor, so they must NOT be `new`-ed. Import for side effects only.
+import "./profileskinunlocker.js";
+import "./hidefriends.js";
+import "./autoaccept.js";
 import "./main-theme/theme.css";
 import { initSettingsPage } from "./settingsPage.js";
 // import { initializeDodgeButton } from './dodgeButton.js';
@@ -73,11 +76,11 @@ window.addEventListener("load", () => {
   // Inicializa a página de configurações do tema (aplica settings salvas + observa DOM)
   initSettingsPage();
 
-  if (window.MTZ) {
-    new ProfileSkinUnlocker();
-    new HideFriends();
-    new AutoAccept();
-  } else {
+  // ProfileSkinUnlocker / HideFriends / AutoAccept já se registraram no MTZ via
+  // import (efeito colateral). NÃO instanciar: o default export é objeto vazio,
+  // e `new X()` lança "is not a constructor", abortando todo este handler de
+  // load — o que antes matava initBlurScrubber e o patch do botão hide abaixo.
+  if (!window.MTZ) {
     console.error("Framework not found!");
   }
 
