@@ -48,6 +48,15 @@ const TRANSLATIONS = {
     hideRP: "Hide RP (store currency)",
     showHover: "Always show hover elements",
     showHoverHint: "(missions, chat, profile, status…)",
+    alwaysShowChat: "Always show chat",
+    alwaysShowInvite: "Always show invite panel",
+    alwaysShowNotifications: "Always show notifications button",
+    alwaysShowXpRing: "Always show XP ring",
+    alwaysShowStatus: "Always show status / availability",
+    alwaysShowSocialActions: "Always show social action buttons",
+    alwaysShowVersion: "Always show patch version",
+    uiEditorSection: "UI Editor",
+    hoverGroupTitle: "Hover elements",
     hideTFT: "Hide TFT (hover mode)",
     hideSocialOnly: "Hide social panel only (hover)",
     hideSocialPanel: "Hide social + right nav (hover)",
@@ -183,6 +192,15 @@ const TRANSLATIONS = {
     hideRP: "Ocultar RP (moeda da loja)",
     showHover: "Exibir elementos hover sempre visíveis",
     showHoverHint: "(missions, chat, perfil, status…)",
+    alwaysShowChat: "Sempre mostrar o chat",
+    alwaysShowInvite: "Sempre mostrar painel de convite",
+    alwaysShowNotifications: "Sempre mostrar botão de notificações",
+    alwaysShowXpRing: "Sempre mostrar anel de XP",
+    alwaysShowStatus: "Sempre mostrar status / disponibilidade",
+    alwaysShowSocialActions: "Sempre mostrar botões de ação social",
+    alwaysShowVersion: "Sempre mostrar versão do patch",
+    uiEditorSection: "UI Editor",
+    hoverGroupTitle: "Elementos hover",
     hideTFT: "Ocultar TFT (modo hover)",
     hideSocialOnly: "Ocultar somente painel social (hover)",
     hideSocialPanel: "Ocultar painel social + nav direita (hover)",
@@ -963,7 +981,17 @@ const DEFAULTS = {
   loadingIconWeb: "",
   // Visibility / hide features
   hideRP: false,
-  hideHoverElements: false,
+  hideHoverElements: false, // legacy bundle (OR'd with the granular flags below)
+  // Granular "always show" toggles — split out of hideHoverElements so each
+  // hover-faded element is its own option. false → fades until hover (legacy
+  // default); true → always visible.
+  alwaysShowChat: false,
+  alwaysShowInvite: false,
+  alwaysShowNotifications: false,
+  alwaysShowXpRing: false,
+  alwaysShowStatus: false,
+  alwaysShowSocialActions: false,
+  alwaysShowVersion: false,
   hideTFT: false,
   hideSocialOnly: false,
   hideSocialPanel: false,
@@ -1731,35 +1759,45 @@ function applyHideOptions(settings) {
     css += `.currency-rp-container-top-up-enabled { display: none !important; }\n`;
   }
 
-  // Hover-fade rules: aplicados APENAS quando o toggle "Always show hover
-  // elements" está DESLIGADO. Quando ligado, nenhuma regra é injetada e
-  // os elementos permanecem 100% visíveis (estado natural do cliente).
-  if (!settings.hideHoverElements) {
-    css += `
-.alpha-version-panel { opacity: 0 !important; transition: 0.2s !important; }
+  // Per-element hover-fade. Each element fades until hover UNLESS its own
+  // granular "always show" flag is set (or the legacy hideHoverElements bundle
+  // is still on — kept for back-compat with older saves).
+  const _showAll = !!settings.hideHoverElements;
+  if (!(settings.alwaysShowVersion || _showAll)) {
+    css += `.alpha-version-panel { opacity: 0 !important; transition: 0.2s !important; }
 .alpha-version-panel:hover { opacity: 1 !important; transition: 0.2s !important; }
-
-.v2-footer-component .left-container .chat-container {
+`;
+  }
+  if (!(settings.alwaysShowChat || _showAll)) {
+    css += `.v2-footer-component .left-container .chat-container {
   opacity: 0 !important; transition: 0.2s !important; pointer-events: auto !important;
 }
 .v2-footer-component .left-container .chat-container:hover {
   opacity: 1 !important; transition: 0.2s !important;
 }
-
-.invite-info-panel-container {
+`;
+  }
+  if (!(settings.alwaysShowInvite || _showAll)) {
+    css += `.invite-info-panel-container {
   opacity: 0 !important; transition: 0.2s !important; pointer-events: auto !important;
 }
 .invite-info-panel-container:hover { opacity: 1 !important; transition: 0.2s !important; }
-
-.xp-ring { opacity: 0 !important; transition: 0.2s !important; }
+`;
+  }
+  if (!(settings.alwaysShowXpRing || _showAll)) {
+    css += `.xp-ring { opacity: 0 !important; transition: 0.2s !important; }
 .identity-icon:hover > .summoner-level-icon > .xp-ring {
   opacity: 1 !important; transition: 0.2s !important;
 }
-
-.notifications-button { opacity: 0 !important; transition: 0.2s !important; }
+`;
+  }
+  if (!(settings.alwaysShowNotifications || _showAll)) {
+    css += `.notifications-button { opacity: 0 !important; transition: 0.2s !important; }
 .notifications-button:hover { opacity: 1 !important; transition: 0.2s !important; }
-
-.lower-details > .status,
+`;
+  }
+  if (!(settings.alwaysShowStatus || _showAll)) {
+    css += `.lower-details > .status,
 .lower-details > lol-social-availability-hitbox {
   opacity: 0 !important; transition: 0.2s !important;
 }
@@ -1767,8 +1805,10 @@ function applyHideOptions(settings) {
 .lower-details:hover > lol-social-availability-hitbox {
   opacity: 1 !important; transition: 0.2s !important;
 }
-
-.lol-social-actions-bar > .actions-bar > buttons:not(:first-child) {
+`;
+  }
+  if (!(settings.alwaysShowSocialActions || _showAll)) {
+    css += `.lol-social-actions-bar > .actions-bar > buttons:not(:first-child) {
   opacity: 0; transition: 0.2s !important;
 }
 .lol-social-actions-bar:hover > .actions-bar > buttons:not(:first-child) {
@@ -2477,80 +2517,7 @@ async function buildSettingsPanel() {
       <span class="kyso-settings-version">v3.1</span>
     </div>
 
-    <!-- Visibility -->
-    <section class="kyso-settings-section">
-      <h3 class="kyso-settings-section-title">${ICONS.eye}<span>${t("visSection")}</span></h3>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("hideRP")}</label>
-        <label class="kyso-toggle">
-          <input id="kyso-hide-rp" type="checkbox" ${settings.hideRP ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("showHover")}
-          <span class="kyso-hint">${t("showHoverHint")}</span>
-        </label>
-        <label class="kyso-toggle">
-          <input id="kyso-show-hover" type="checkbox" ${settings.hideHoverElements ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("hideTFT")}</label>
-        <label class="kyso-toggle">
-          <input id="kyso-hide-tft" type="checkbox" ${settings.hideTFT ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("hideSocialOnly")}</label>
-        <label class="kyso-toggle">
-          <input id="kyso-hide-social-only" type="checkbox" ${settings.hideSocialOnly ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("hideSocialPanel")}</label>
-        <label class="kyso-toggle">
-          <input id="kyso-hide-social" type="checkbox" ${settings.hideSocialPanel ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("enableHideNavbarBtn")}
-          <span class="kyso-hint">${t("enableHideNavbarBtnHint")}</span>
-        </label>
-        <label class="kyso-toggle">
-          <input id="kyso-enable-hide-navbar" type="checkbox" ${settings.enableHideNavbarBtn ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle kyso-settings-row--sub" id="kyso-blue-essence-row" ${settings.enableHideNavbarBtn ? "" : 'style="display:none"'}>
-        <label class="kyso-label">${t("showBlueEssence")}</label>
-        <label class="kyso-toggle">
-          <input id="kyso-show-blue-essence" type="checkbox" ${settings.showBlueEssenceOnHide ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("enableHideSocialBtn")}
-          <span class="kyso-hint">${t("enableHideSocialBtnHint")}</span>
-        </label>
-        <label class="kyso-toggle">
-          <input id="kyso-enable-hide-social-btn" type="checkbox" ${settings.enableHideSocialBtn ? "checked" : ""}>
-          <span class="kyso-toggle-slider"></span>
-        </label>
-      </div>
-    </section>
+    <!-- Visibility section moved to the dedicated UI Editor tab. -->
 
     <!-- Color Theme -->
     <section class="kyso-settings-section" id="kyso-color-section">
@@ -2661,50 +2628,8 @@ async function buildSettingsPanel() {
       </div>
     </section>
 
-    <!-- Interface -->
-    <section class="kyso-settings-section" id="kyso-interface-section">
-      <h3 class="kyso-settings-section-title">${t("interfaceSection")}</h3>
-
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("iconSyncNavbar")}</label>
-        <label class="kyso-toggle"><input id="kyso-icon-navbar" type="checkbox" ${settings.iconSyncNavbar ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("bannerHidden")}</label>
-        <label class="kyso-toggle"><input id="kyso-banner-hidden" type="checkbox" ${settings.bannerHidden ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("profileBgTransparent")}</label>
-        <label class="kyso-toggle"><input id="kyso-profilebg" type="checkbox" ${settings.profileBgTransparent ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("gearAlwaysVisible")}</label>
-        <label class="kyso-toggle"><input id="kyso-gear-always" type="checkbox" ${settings.gearAlwaysVisible ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("lorAlwaysVisible")}</label>
-        <label class="kyso-toggle"><input id="kyso-lor-always" type="checkbox" ${settings.lorAlwaysVisible ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("playVanilla")}</label>
-        <label class="kyso-toggle"><input id="kyso-play-vanilla" type="checkbox" ${settings.playVanilla ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-filter-row">
-        <label class="kyso-label" for="kyso-play-opacity">${t("playBgOpacity")}</label>
-        <input type="range" id="kyso-play-opacity" class="kyso-range" min="0" max="100" step="1" value="${settings.playBgOpacity || 0}">
-        <span class="kyso-filter-value" id="kyso-play-opacity-value">${settings.playBgOpacity || 0}%</span>
-      </div>
-      <div class="kyso-settings-row kyso-filter-row">
-        <label class="kyso-label" for="kyso-play-blur">${t("playBgBlur")}</label>
-        <input type="range" id="kyso-play-blur" class="kyso-range" min="0" max="20" step="1" value="${settings.playBgBlur || 0}">
-        <span class="kyso-filter-value" id="kyso-play-blur-value">${settings.playBgBlur || 0}px</span>
-      </div>
-      <div class="kyso-settings-row kyso-filter-row">
-        <label class="kyso-label" for="kyso-social-blur">${t("socialBlur")}</label>
-        <input type="range" id="kyso-social-blur" class="kyso-range" min="0" max="20" step="1" value="${settings.socialBlur || 0}">
-        <span class="kyso-filter-value" id="kyso-social-blur-value">${settings.socialBlur || 0}px</span>
-      </div>
-    </section>
+    <!-- Interface controls (icon-navbar + play/banner/profilebg/gear/lor/blur)
+         moved to the dedicated UI Editor tab. -->
 
     <!-- Font -->
     <section class="kyso-settings-section">
@@ -2768,7 +2693,9 @@ async function buildSettingsPanel() {
     { id: "kyso-play-vanilla", key: "playVanilla" },
   ];
   toggles.forEach(({ id, key }) => {
-    panel.querySelector(`#${id}`).addEventListener("change", (e) => {
+    const _ctrl = panel.querySelector(`#${id}`);
+    if (!_ctrl) return; // control may live in another panel (moved to UI Editor)
+    _ctrl.addEventListener("change", (e) => {
       const s = { ...DEFAULTS, ...loadSettings(), [key]: e.target.checked };
 
       // Mutex: hideSocialOnly e hideSocialPanel não coexistem entre si.
@@ -3067,40 +2994,42 @@ async function buildSettingsPanel() {
   // Salvar tudo (apenas valores controlados por este painel — assets ficam na aba Player Assets)
   panel.querySelector("#kyso-save-all").addEventListener("click", () => {
     const prev = { ...DEFAULTS, ...loadSettings() };
+    // Null-safe readers: many controls moved to the UI Editor panel and are
+    // absent here — keep the previously saved value for those.
+    const boolOf = (sel, def) => { const el = panel.querySelector(sel); return el ? el.checked : def; };
+    const valOf = (sel, def) => { const el = panel.querySelector(sel); return el ? el.value : def; };
+    const numOf = (sel, def) => { const el = panel.querySelector(sel); if (!el) return def; const n = Number(el.value); return Number.isFinite(n) ? n : def; };
     const s = {
       ...prev,
-      hideRP: panel.querySelector("#kyso-hide-rp").checked,
-      hideHoverElements: panel.querySelector("#kyso-show-hover").checked,
-      hideTFT: panel.querySelector("#kyso-hide-tft").checked,
-      hideSocialOnly: panel.querySelector("#kyso-hide-social-only").checked,
-      hideSocialPanel: panel.querySelector("#kyso-hide-social").checked,
-      fontUrl: panel.querySelector("#kyso-font-url").value.trim(),
-      fontFamily: panel.querySelector("#kyso-font-family").value.trim(),
-      enableHideNavbarBtn: panel.querySelector("#kyso-enable-hide-navbar")
-        .checked,
+      hideRP: boolOf("#kyso-hide-rp", prev.hideRP),
+      hideHoverElements: boolOf("#kyso-show-hover", prev.hideHoverElements),
+      hideTFT: boolOf("#kyso-hide-tft", prev.hideTFT),
+      hideSocialOnly: boolOf("#kyso-hide-social-only", prev.hideSocialOnly),
+      hideSocialPanel: boolOf("#kyso-hide-social", prev.hideSocialPanel),
+      fontUrl: valOf("#kyso-font-url", prev.fontUrl).trim(),
+      fontFamily: valOf("#kyso-font-family", prev.fontFamily).trim(),
+      enableHideNavbarBtn: boolOf("#kyso-enable-hide-navbar", prev.enableHideNavbarBtn),
       navbarHidden: prev.navbarHidden, // preserva estado de runtime
-      showBlueEssenceOnHide: panel.querySelector("#kyso-show-blue-essence")
-        .checked,
-      accentColor: panel.querySelector("#kyso-accent-input").value,
-      accentAuto: panel.querySelector("#kyso-color-auto").checked,
-      enableHideSocialBtn: panel.querySelector("#kyso-enable-hide-social-btn")
-        .checked,
+      showBlueEssenceOnHide: boolOf("#kyso-show-blue-essence", prev.showBlueEssenceOnHide),
+      accentColor: valOf("#kyso-accent-input", prev.accentColor),
+      accentAuto: boolOf("#kyso-color-auto", prev.accentAuto),
+      enableHideSocialBtn: boolOf("#kyso-enable-hide-social-btn", prev.enableHideSocialBtn),
       socialHidden: prev.socialHidden,
-      filterBlur:       Number(panel.querySelector("#kyso-filter-blur").value)   || 0,
-      filterBrightness: Number(panel.querySelector("#kyso-filter-bright").value) || 100,
-      filterSaturate:   Number(panel.querySelector("#kyso-filter-sat").value)    || 100,
-      filterContrast:   Number(panel.querySelector("#kyso-filter-cont").value)   || 100,
-      iconSyncNavbar: panel.querySelector("#kyso-icon-navbar").checked,
-      bannerHidden: panel.querySelector("#kyso-banner-hidden").checked,
-      profileBgTransparent: panel.querySelector("#kyso-profilebg").checked,
-      gearAlwaysVisible: panel.querySelector("#kyso-gear-always").checked,
-      lorAlwaysVisible: panel.querySelector("#kyso-lor-always").checked,
-      playVanilla: panel.querySelector("#kyso-play-vanilla").checked,
-      playBgOpacity: Number(panel.querySelector("#kyso-play-opacity").value) || 0,
-      playBgBlur: Number(panel.querySelector("#kyso-play-blur").value) || 0,
-      socialBlur: Number(panel.querySelector("#kyso-social-blur").value) || 0,
-      rgbMode: panel.querySelector("#kyso-rgb-mode").value,
-      rgbSpeed: parseInt(panel.querySelector("#kyso-rgb-speed").value, 10) || 3,
+      filterBlur:       numOf("#kyso-filter-blur",   prev.filterBlur),
+      filterBrightness: numOf("#kyso-filter-bright", prev.filterBrightness),
+      filterSaturate:   numOf("#kyso-filter-sat",    prev.filterSaturate),
+      filterContrast:   numOf("#kyso-filter-cont",   prev.filterContrast),
+      iconSyncNavbar: boolOf("#kyso-icon-navbar", prev.iconSyncNavbar),
+      bannerHidden: boolOf("#kyso-banner-hidden", prev.bannerHidden),
+      profileBgTransparent: boolOf("#kyso-profilebg", prev.profileBgTransparent),
+      gearAlwaysVisible: boolOf("#kyso-gear-always", prev.gearAlwaysVisible),
+      lorAlwaysVisible: boolOf("#kyso-lor-always", prev.lorAlwaysVisible),
+      playVanilla: boolOf("#kyso-play-vanilla", prev.playVanilla),
+      playBgOpacity: numOf("#kyso-play-opacity", prev.playBgOpacity),
+      playBgBlur: numOf("#kyso-play-blur", prev.playBgBlur),
+      socialBlur: numOf("#kyso-social-blur", prev.socialBlur),
+      rgbMode: valOf("#kyso-rgb-mode", prev.rgbMode),
+      rgbSpeed: parseInt(valOf("#kyso-rgb-speed", String(prev.rgbSpeed)), 10) || prev.rgbSpeed || 3,
     };
     saveSettings(s);
     applyAllSettings(s);
@@ -3503,44 +3432,54 @@ function buildUIEditorPanel() {
   const settings = { ...DEFAULTS, ...loadSettings() };
   const panel = document.createElement("div");
   panel.className = "kyso-settings-panel kyso-ui-editor-panel";
+
+  const tog = (id, key, sub = false) => `
+      <div class="kyso-settings-row kyso-settings-row--toggle${sub ? " kyso-settings-row--sub" : ""}"${sub ? ` id="${id}-row"${settings[key] ? "" : ' style="display:none"'}` : ""}>
+        <label class="kyso-label">${t(key)}</label>
+        <label class="kyso-toggle"><input id="${id}" type="checkbox" ${settings[key] ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      </div>`;
+  const rng = (id, key, max, unit) => `
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="${id}">${t(key)}</label>
+        <input type="range" id="${id}" class="kyso-range" min="0" max="${max}" step="1" value="${settings[key] || 0}">
+        <span class="kyso-filter-value" id="${id}-value">${settings[key] || 0}${unit}</span>
+      </div>`;
+
   panel.innerHTML = `
     <section class="kyso-settings-section">
-      <h3 class="kyso-settings-section-title"><span>UI Editor</span></h3>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("playVanilla")}</label>
-        <label class="kyso-toggle"><input id="kyso-ue-play-vanilla" type="checkbox" ${settings.playVanilla ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      <h3 class="kyso-settings-section-title"><span>${t("interfaceSection")}</span></h3>
+      ${tog("kyso-ue-icon-navbar", "iconSyncNavbar")}
+      ${tog("kyso-ue-play-vanilla", "playVanilla")}
+      ${rng("kyso-ue-play-opacity", "playBgOpacity", 100, "%")}
+      ${rng("kyso-ue-play-blur", "playBgBlur", 20, "px")}
+      ${tog("kyso-ue-banner-hidden", "bannerHidden")}
+      ${tog("kyso-ue-profilebg", "profileBgTransparent")}
+      ${tog("kyso-ue-gear-always", "gearAlwaysVisible")}
+      ${tog("kyso-ue-lor-always", "lorAlwaysVisible")}
+      ${rng("kyso-ue-social-blur", "socialBlur", 20, "px")}
+    </section>
+    <section class="kyso-settings-section">
+      <h3 class="kyso-settings-section-title"><span>${t("visSection")}</span></h3>
+      ${tog("kyso-ue-hide-rp", "hideRP")}
+      ${tog("kyso-ue-hide-tft", "hideTFT")}
+      ${tog("kyso-ue-hide-social-only", "hideSocialOnly")}
+      ${tog("kyso-ue-hide-social", "hideSocialPanel")}
+      ${tog("kyso-ue-enable-hide-navbar", "enableHideNavbarBtn")}
+      <div class="kyso-settings-row kyso-settings-row--toggle kyso-settings-row--sub" id="kyso-ue-show-blue-essence-row" ${settings.enableHideNavbarBtn ? "" : 'style="display:none"'}>
+        <label class="kyso-label">${t("showBlueEssence")}</label>
+        <label class="kyso-toggle"><input id="kyso-ue-show-blue-essence" type="checkbox" ${settings.showBlueEssenceOnHide ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
       </div>
-      <div class="kyso-settings-row kyso-filter-row">
-        <label class="kyso-label" for="kyso-ue-play-opacity">${t("playBgOpacity")}</label>
-        <input type="range" id="kyso-ue-play-opacity" class="kyso-range" min="0" max="100" step="1" value="${settings.playBgOpacity || 0}">
-        <span class="kyso-filter-value" id="kyso-ue-play-opacity-value">${settings.playBgOpacity || 0}%</span>
-      </div>
-      <div class="kyso-settings-row kyso-filter-row">
-        <label class="kyso-label" for="kyso-ue-play-blur">${t("playBgBlur")}</label>
-        <input type="range" id="kyso-ue-play-blur" class="kyso-range" min="0" max="20" step="1" value="${settings.playBgBlur || 0}">
-        <span class="kyso-filter-value" id="kyso-ue-play-blur-value">${settings.playBgBlur || 0}px</span>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("bannerHidden")}</label>
-        <label class="kyso-toggle"><input id="kyso-ue-banner-hidden" type="checkbox" ${settings.bannerHidden ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("profileBgTransparent")}</label>
-        <label class="kyso-toggle"><input id="kyso-ue-profilebg" type="checkbox" ${settings.profileBgTransparent ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("gearAlwaysVisible")}</label>
-        <label class="kyso-toggle"><input id="kyso-ue-gear-always" type="checkbox" ${settings.gearAlwaysVisible ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-settings-row--toggle">
-        <label class="kyso-label">${t("lorAlwaysVisible")}</label>
-        <label class="kyso-toggle"><input id="kyso-ue-lor-always" type="checkbox" ${settings.lorAlwaysVisible ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
-      </div>
-      <div class="kyso-settings-row kyso-filter-row">
-        <label class="kyso-label" for="kyso-ue-social-blur">${t("socialBlur")}</label>
-        <input type="range" id="kyso-ue-social-blur" class="kyso-range" min="0" max="20" step="1" value="${settings.socialBlur || 0}">
-        <span class="kyso-filter-value" id="kyso-ue-social-blur-value">${settings.socialBlur || 0}px</span>
-      </div>
+      ${tog("kyso-ue-enable-hide-social-btn", "enableHideSocialBtn")}
+    </section>
+    <section class="kyso-settings-section">
+      <h3 class="kyso-settings-section-title"><span>${t("hoverGroupTitle")}</span></h3>
+      ${tog("kyso-ue-always-chat", "alwaysShowChat")}
+      ${tog("kyso-ue-always-invite", "alwaysShowInvite")}
+      ${tog("kyso-ue-always-notifications", "alwaysShowNotifications")}
+      ${tog("kyso-ue-always-xpring", "alwaysShowXpRing")}
+      ${tog("kyso-ue-always-status", "alwaysShowStatus")}
+      ${tog("kyso-ue-always-social-actions", "alwaysShowSocialActions")}
+      ${tog("kyso-ue-always-version", "alwaysShowVersion")}
     </section>
   `;
 
@@ -3554,22 +3493,83 @@ function buildUIEditorPanel() {
     if (!el) return;
     el.addEventListener("change", () => apply(persist({ [key]: el.checked })));
   };
-  const bindRange = (id, valId, key, unit, apply) => {
+  const bindRange = (id, key, unit, apply) => {
     const el = panel.querySelector(id);
-    const out = panel.querySelector(valId);
+    const out = panel.querySelector(`${id}-value`);
     if (!el) return;
     el.addEventListener("input", () => { if (out) out.textContent = el.value + unit; });
     el.addEventListener("change", () => apply(persist({ [key]: Number(el.value) })));
   };
 
+  // ── Interface ──
+  bindToggle("#kyso-ue-icon-navbar", "iconSyncNavbar", (s) => applyIcon(s.iconUrl || "", s.iconAllPlayers || false, s.iconSyncNavbar));
   bindToggle("#kyso-ue-play-vanilla", "playVanilla", (s) => applyInterfaceToggles(s));
-  bindRange("#kyso-ue-play-opacity", "#kyso-ue-play-opacity-value", "playBgOpacity", "%", (s) => applyInterfaceToggles(s));
-  bindRange("#kyso-ue-play-blur", "#kyso-ue-play-blur-value", "playBgBlur", "px", (s) => applyInterfaceToggles(s));
+  bindRange("#kyso-ue-play-opacity", "playBgOpacity", "%", (s) => applyInterfaceToggles(s));
+  bindRange("#kyso-ue-play-blur", "playBgBlur", "px", (s) => applyInterfaceToggles(s));
   bindToggle("#kyso-ue-banner-hidden", "bannerHidden", (s) => assetReplacers.applyBannerVisibility(s.bannerHidden));
   bindToggle("#kyso-ue-profilebg", "profileBgTransparent", (s) => assetReplacers.applyProfileBgTransparent(s.profileBgTransparent));
   bindToggle("#kyso-ue-gear-always", "gearAlwaysVisible", (s) => applyInterfaceToggles(s));
   bindToggle("#kyso-ue-lor-always", "lorAlwaysVisible", (s) => applyInterfaceToggles(s));
-  bindRange("#kyso-ue-social-blur", "#kyso-ue-social-blur-value", "socialBlur", "px", (s) => applySocialBlur(s.socialBlur));
+  bindRange("#kyso-ue-social-blur", "socialBlur", "px", (s) => applySocialBlur(s.socialBlur));
+
+  // ── Visibility (simple) ──
+  bindToggle("#kyso-ue-hide-rp", "hideRP", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-hide-tft", "hideTFT", (s) => applyHideOptions(s));
+
+  // ── Granular hover toggles ──
+  bindToggle("#kyso-ue-always-chat", "alwaysShowChat", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-always-invite", "alwaysShowInvite", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-always-notifications", "alwaysShowNotifications", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-always-xpring", "alwaysShowXpRing", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-always-status", "alwaysShowStatus", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-always-social-actions", "alwaysShowSocialActions", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-always-version", "alwaysShowVersion", (s) => applyHideOptions(s));
+
+  // ── Social hover toggles (mutex) + sliding-door buttons (conflict w/ hover) ──
+  const soEl = panel.querySelector("#kyso-ue-hide-social-only");
+  const spEl = panel.querySelector("#kyso-ue-hide-social");
+  const navEl = panel.querySelector("#kyso-ue-enable-hide-navbar");
+  const socEl = panel.querySelector("#kyso-ue-enable-hide-social-btn");
+  const beRow = panel.querySelector("#kyso-ue-show-blue-essence-row");
+
+  if (soEl) soEl.addEventListener("change", () => {
+    const patch = { hideSocialOnly: soEl.checked };
+    if (soEl.checked && spEl) { spEl.checked = false; patch.hideSocialPanel = false; }
+    applyHideOptions(persist(patch));
+  });
+  if (spEl) spEl.addEventListener("change", () => {
+    const patch = { hideSocialPanel: spEl.checked };
+    if (spEl.checked && soEl) { soEl.checked = false; patch.hideSocialOnly = false; }
+    applyHideOptions(persist(patch));
+  });
+  if (navEl) navEl.addEventListener("change", () => {
+    const patch = { enableHideNavbarBtn: navEl.checked };
+    if (navEl.checked) {
+      patch.hideSocialOnly = false; patch.hideSocialPanel = false;
+      if (soEl) soEl.checked = false;
+      if (spEl) spEl.checked = false;
+    }
+    if (beRow) beRow.style.display = navEl.checked ? "" : "none";
+    const s = persist(patch);
+    applyHideNavbarBtnSetting(s);
+    applyHideOptions(s);
+  });
+  if (socEl) socEl.addEventListener("change", () => {
+    const patch = { enableHideSocialBtn: socEl.checked };
+    if (socEl.checked) {
+      patch.hideSocialOnly = false; patch.hideSocialPanel = false;
+      if (soEl) soEl.checked = false;
+      if (spEl) spEl.checked = false;
+    }
+    const s = persist(patch);
+    applyHideSocialBtnSetting(s);
+    applyHideOptions(s);
+  });
+  const beEl = panel.querySelector("#kyso-ue-show-blue-essence");
+  if (beEl) beEl.addEventListener("change", () => {
+    const s = persist({ showBlueEssenceOnHide: beEl.checked });
+    applyTopNavbarHiddenState(s.navbarHidden, s.showBlueEssenceOnHide);
+  });
 
   return panel;
 }
