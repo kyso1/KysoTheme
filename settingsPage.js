@@ -1951,8 +1951,31 @@ function applySocialBlur(px) {
   if (typeof window.__kysoRescrub === "function") window.__kysoRescrub();
 }
 
+// ── TEMP DIAGNOSTICS (remove after debugging) ───────────────────────────
+// Beacons to a local server the developer runs at 127.0.0.1:8799 so live
+// in-client behavior can be observed without CDP. Uses Image (img-src) +
+// fetch fallback; both are no-throw.
+const KYSO_BUILD = "diag-1";
+function _kysoBeacon(msg) {
+  try {
+    const u =
+      "http://127.0.0.1:8799/b?t=" +
+      Date.now() +
+      "&m=" +
+      encodeURIComponent(String(msg));
+    try {
+      const img = new Image();
+      img.src = u;
+    } catch (e) {}
+    try {
+      fetch(u, { mode: "no-cors" });
+    } catch (e) {}
+  } catch (e) {}
+}
+
 function showWelcomeModal() {
   if (document.querySelector("#kyso-welcome-overlay")) return;
+  _kysoBeacon("modal-open build=" + KYSO_BUILD);
 
   // Quick-setup state. The League client (CEF/rcp) does NOT reliably deliver
   // clicks to a plain document.body overlay: it can paint a transparent layer
@@ -2000,6 +2023,36 @@ function showWelcomeModal() {
   overlay.style.setProperty("inset", "0", "important");
   overlay.style.setProperty("z-index", "2147483647", "important");
   overlay.style.setProperty("pointer-events", "auto", "important");
+
+  // DIAGNOSTIC: report what element actually sits on top at each control's
+  // centre. If it is NOT inside our overlay, a layer is intercepting clicks.
+  setTimeout(() => {
+    overlay.querySelectorAll("[data-act]").forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const cx = Math.round(r.left + r.width / 2);
+      const cy = Math.round(r.top + r.height / 2);
+      const top = document.elementFromPoint(cx, cy);
+      const desc = top
+        ? top.tagName +
+          "#" +
+          (top.id || "") +
+          "." +
+          String(top.className || "").slice(0, 30)
+        : "null";
+      _kysoBeacon(
+        "probe act=" +
+          el.getAttribute("data-act") +
+          " @" +
+          cx +
+          "," +
+          cy +
+          " top=" +
+          desc +
+          " inOverlay=" +
+          (top ? overlay.contains(top) : false),
+      );
+    });
+  }, 350);
 
   const diag = overlay.querySelector("#kyso-w-diag");
   let closed = false;
@@ -2083,6 +2136,9 @@ function showWelcomeModal() {
     if (diag) {
       diag.textContent = `${e.type} ${Math.round(e.clientX)},${Math.round(e.clientY)} → ${hitDesc}`;
     }
+    _kysoBeacon(
+      "up " + e.type + " " + Math.round(e.clientX) + "," + Math.round(e.clientY) + " hit=" + hitDesc,
+    );
     if (!hitAct) return;
     e.preventDefault();
     e.stopPropagation();
@@ -3641,6 +3697,23 @@ function migrateSettings(saved) {
 //  Inicialização
 // ─────────────────────────────────────────────
 export function initSettingsPage() {
+  // DIAGNOSTIC: global error hook + load beacon (confirms new build loaded).
+  if (!window.__kysoErrHook) {
+    window.__kysoErrHook = true;
+    window.addEventListener(
+      "error",
+      (e) =>
+        _kysoBeacon(
+          "ERROR " + (e.message || "") + " @ " + (e.filename || "") + ":" + (e.lineno || ""),
+        ),
+      true,
+    );
+    window.addEventListener("unhandledrejection", (e) =>
+      _kysoBeacon("REJECT " + (e && e.reason && e.reason.message ? e.reason.message : e && e.reason)),
+    );
+  }
+  _kysoBeacon("init-start build=" + KYSO_BUILD);
+
   // Aplica configurações (merged com DEFAULTS) — sempre, mesmo sem settings
   // salvas, p/ garantir bg default + botão navbar conforme toggle.
   let saved = loadSettings();
@@ -3669,7 +3742,12 @@ export function initSettingsPage() {
     saved = _migrated;
   }
 
-  applyAllSettings(saved);
+  try {
+    applyAllSettings(saved);
+    _kysoBeacon("applied-ok hasSeenWelcome=" + !!{ ...DEFAULTS, ...loadSettings() }.hasSeenWelcome);
+  } catch (err) {
+    _kysoBeacon("applyAllSettings-THREW " + (err && err.message ? err.message : err));
+  }
 
   const _s = { ...DEFAULTS, ...loadSettings() };
   if (!_s.hasSeenWelcome) {
