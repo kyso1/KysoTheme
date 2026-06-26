@@ -2001,12 +2001,9 @@ function showWelcomeModal() {
   overlay.style.setProperty("pointer-events", "auto", "important");
 
   let closed = false;
-  let lastFire = 0;
 
   const close = () => {
     closed = true;
-    window.removeEventListener("pointerup", onUp, true);
-    window.removeEventListener("click", onUp, true);
     overlay.remove();
   };
 
@@ -2058,33 +2055,18 @@ function showWelcomeModal() {
     }
   };
 
-  // Single coordinate hit-test handler, bound to BOTH pointerup and click on
-  // window/capture (covers either event being suppressed). lastFire dedupes the
-  // two events fired by one physical tap.
-  const onUp = (e) => {
-    if (closed) return;
-    // Resolve the control from the REAL event target, not coordinate math.
-    // The League client scales its UI with CSS `zoom`, which desyncs pointer
-    // clientX/Y from getBoundingClientRect() — manual rect hit-testing always
-    // "missed". e.target is the element the browser itself resolved under the
-    // pointer (zoom-immune); elementFromPoint is a fallback.
-    let el = e.target && e.target.closest ? e.target.closest("[data-act]") : null;
-    if (!el && typeof document.elementFromPoint === "function") {
-      const p = document.elementFromPoint(e.clientX, e.clientY);
-      el = p && p.closest ? p.closest("[data-act]") : null;
-    }
-    const hitAct = el && overlay.contains(el) ? el.getAttribute("data-act") : null;
-    if (!hitAct) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const now = Date.now();
-    if (now - lastFire < 350) return; // dedupe pointerup+click of one tap
-    lastFire = now;
-    runAction(hitAct);
-  };
-
-  window.addEventListener("pointerup", onUp, true);
-  window.addEventListener("click", onUp, true);
+  // Direct per-control click handlers — inline-onclick style, as used by other
+  // League client themes (e.g. Elaina). A real click on a button fires its OWN
+  // onclick handler regardless of the client's CSS `zoom` (which desyncs
+  // pointer coords) or any window-level event quirks. Each control owns exactly
+  // one handler; nothing lingers on window, so there are no stale listeners.
+  overlay.querySelectorAll("[data-act]").forEach((el) => {
+    el.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      runAction(el.getAttribute("data-act"));
+    };
+  });
 }
 
 export function applyAllSettings(settings) {
