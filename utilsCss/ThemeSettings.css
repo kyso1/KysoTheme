@@ -409,6 +409,65 @@
 .kyso-welcome-card .kyso-w-opt:hover { background: rgba(200, 155, 60, 0.15); }
 .kyso-welcome-card .kyso-w-opt > b { color: var(--kyso-accent, #c89b3c); font-size: 12px; font-weight: 600; }
 
+/* ── Kyso UI animations ──────────────────────────────────────────────── */
+@keyframes kyso-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes kyso-card-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes kyso-row-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes kyso-title-shimmer {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  50% { filter: drop-shadow(0 0 8px var(--kyso-accent, #c89b3c)); }
+}
+
+#kyso-welcome-overlay { animation: kyso-overlay-in 0.22s ease both; }
+.kyso-welcome-card { animation: kyso-card-in 0.34s cubic-bezier(0.2, 0.85, 0.25, 1) both; }
+.kyso-welcome-title { animation: kyso-title-shimmer 3.5s ease-in-out infinite; }
+
+/* Staggered entrance for the option rows */
+.kyso-welcome-card .kyso-w-opt { animation: kyso-row-in 0.4s ease both; }
+.kyso-welcome-card .kyso-w-opt:nth-of-type(1) { animation-delay: 0.06s; }
+.kyso-welcome-card .kyso-w-opt:nth-of-type(2) { animation-delay: 0.12s; }
+.kyso-welcome-card .kyso-w-opt:nth-of-type(3) { animation-delay: 0.18s; }
+.kyso-welcome-card .kyso-w-opt:nth-of-type(4) { animation-delay: 0.24s; }
+.kyso-welcome-card .kyso-w-opt:nth-of-type(5) { animation-delay: 0.30s; }
+
+/* Interaction feedback */
+.kyso-welcome-card .kyso-w-opt {
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+}
+.kyso-welcome-card .kyso-w-opt:hover { transform: translateX(3px); border-color: rgba(200, 155, 60, 0.5); }
+.kyso-welcome-card .kyso-w-opt:active { transform: scale(0.985); }
+.kyso-welcome-card .kyso-w-opt > b { transition: color 0.18s ease, transform 0.18s ease; }
+.kyso-welcome-actions .kyso-btn {
+  transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.2s ease, color 0.18s ease;
+}
+.kyso-welcome-actions .kyso-btn:hover { transform: translateY(-1px); }
+.kyso-welcome-actions .kyso-btn:active { transform: translateY(0) scale(0.97); }
+.kyso-welcome-actions .kyso-btn--primary:hover { box-shadow: 0 4px 18px rgba(200, 155, 60, 0.5); }
+
+/* Settings panel polish — section + row entrance and hover */
+@keyframes kyso-section-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.kyso-settings-section { animation: kyso-section-in 0.35s ease both; }
+.kyso-settings-row {
+  transition: background 0.16s ease, padding-left 0.16s ease;
+  border-radius: 6px;
+}
+.kyso-settings-row:hover { background: rgba(200, 155, 60, 0.07); padding-left: 4px; }
+.kyso-toggle-slider, .kyso-toggle-slider::before { transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.kyso-range::-webkit-slider-thumb { transition: transform 0.12s ease, box-shadow 0.18s ease; }
+.kyso-range::-webkit-slider-thumb:hover { transform: scale(1.2); box-shadow: 0 0 8px var(--kyso-accent, #c89b3c); }
+
 .kyso-toggle input:checked + .kyso-toggle-slider::before {
   transform: translateX(20px) translateY(-50%);
   background: #f0d080;
