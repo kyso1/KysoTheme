@@ -2118,27 +2118,20 @@ function showWelcomeModal() {
   // two events fired by one physical tap.
   const onUp = (e) => {
     if (closed) return;
-    let hitAct = null;
-    let hitDesc = "miss";
-    overlay.querySelectorAll("[data-act]").forEach((el) => {
-      if (hitAct) return;
-      const r = el.getBoundingClientRect();
-      if (
-        e.clientX >= r.left &&
-        e.clientX <= r.right &&
-        e.clientY >= r.top &&
-        e.clientY <= r.bottom
-      ) {
-        hitAct = el.getAttribute("data-act");
-        hitDesc = hitAct;
-      }
-    });
-    if (diag) {
-      diag.textContent = `${e.type} ${Math.round(e.clientX)},${Math.round(e.clientY)} → ${hitDesc}`;
+    // Resolve the control from the REAL event target, not coordinate math.
+    // The League client scales its UI with CSS `zoom`, which desyncs pointer
+    // clientX/Y from getBoundingClientRect() — manual rect hit-testing always
+    // "missed". e.target is the element the browser itself resolved under the
+    // pointer (zoom-immune); elementFromPoint is a fallback.
+    let el = e.target && e.target.closest ? e.target.closest("[data-act]") : null;
+    if (!el && typeof document.elementFromPoint === "function") {
+      const p = document.elementFromPoint(e.clientX, e.clientY);
+      el = p && p.closest ? p.closest("[data-act]") : null;
     }
-    _kysoBeacon(
-      "up " + e.type + " " + Math.round(e.clientX) + "," + Math.round(e.clientY) + " hit=" + hitDesc,
-    );
+    const hitAct = el && overlay.contains(el) ? el.getAttribute("data-act") : null;
+    if (diag) {
+      diag.textContent = `${e.type} → ${hitAct || "miss"}`;
+    }
     if (!hitAct) return;
     e.preventDefault();
     e.stopPropagation();
