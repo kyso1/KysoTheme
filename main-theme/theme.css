@@ -229,12 +229,9 @@
 .navigation-status-ticker.has-incidents {
   visibility: hidden !important;
 }
-.main-navigation-menu-item .menu_item_navbar_event_hub .ember-view {
-  left: -338px !important;
-}
-.main-navigation-menu-item .menu_item_navbar_competitive .ember-view {
-  left: -448px !important;
-}
+/* Top-nav layout (play button position, nav-item offsets) is now applied from
+   settingsPage.js (_themedNavCss) and OMITTED when "Vanilla play button" is on,
+   so the play button returns to its original position. */
 .right-nav-vertical-rule {
   visibility: hidden !important;
 }
@@ -242,19 +239,10 @@
   z-index: 10 !important;
   filter: hue-rotate(0deg) !important;
 }
-.basic-button {
-  left: 32vw !important;
-  height: 48px !important;
-  width: 122px !important;
-  top: 15px !important;
-}
-.left-nav-menu {
-  position: relative !important;
-  margin-left: -200px !important;
-}
-.league-logo {
-  display: none !important;
-}
+/* .basic-button (top-nav play button) and .left-nav-menu offsets relocated to
+   settingsPage.js _themedNavCss (gated by !playVanilla).
+   .league-logo display:none removed — the League logo now shows in its original
+   (uncropped) form. */
 lol-uikit-video-state-machine {
   display: none !important;
 }

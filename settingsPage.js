@@ -1921,13 +1921,27 @@ function _playButtonThemedCss(opacity, blur) {
 `;
 }
 
-// Injects the KYSO-INTERFACE delimited block: play button (themed unless
-// vanilla), gear/LoR always-visible overrides.
+// Themed top-navigation layout (relocated from theme.css). Repositions the
+// play button (.basic-button) and the nav items to build the centered themed
+// nav. Omitted entirely in vanilla mode so the play button and nav return to
+// their original positions.
+function _themedNavCss() {
+  return `
+.main-navigation-menu-item .menu_item_navbar_event_hub .ember-view { left: -338px !important; }
+.main-navigation-menu-item .menu_item_navbar_competitive .ember-view { left: -448px !important; }
+.basic-button { left: 32vw !important; height: 48px !important; width: 122px !important; top: 15px !important; }
+.left-nav-menu { position: relative !important; margin-left: -200px !important; }
+`;
+}
+
+// Injects the KYSO-INTERFACE delimited block: play button + nav layout (themed
+// unless vanilla), gear/LoR always-visible overrides.
 function applyInterfaceToggles(settings) {
   const style = getOrCreateDynamicStyle();
   let block = "/* KYSO-INTERFACE-START */\n";
   if (!settings.playVanilla) {
     block += _playButtonThemedCss(settings.playBgOpacity, settings.playBgBlur);
+    block += _themedNavCss();
   }
   if (settings.gearAlwaysVisible) {
     block += `.style-profile-skin-picker-button { opacity: 1 !important; }\n`;
@@ -3481,6 +3495,85 @@ function showFeedback(panel, msg) {
 // ─────────────────────────────────────────────
 // Seletor sentinela: detecta quando o painel de configurações está aberto.
 // Não usa o ID #emberXXXX porque ele é gerado dinamicamente e muda a cada sessão.
+// Dedicated "UI Editor" panel — gathers the welcome-modal quick options plus a
+// bit more (play opacity/blur, gear/LoR split). Controls read/write the same
+// DataStore keys as the welcome modal and the KysoTheme panel, so everything
+// stays in sync. Self-contained: each control persists + applies on change.
+function buildUIEditorPanel() {
+  const settings = { ...DEFAULTS, ...loadSettings() };
+  const panel = document.createElement("div");
+  panel.className = "kyso-settings-panel kyso-ui-editor-panel";
+  panel.innerHTML = `
+    <section class="kyso-settings-section">
+      <h3 class="kyso-settings-section-title"><span>UI Editor</span></h3>
+      <div class="kyso-settings-row kyso-settings-row--toggle">
+        <label class="kyso-label">${t("playVanilla")}</label>
+        <label class="kyso-toggle"><input id="kyso-ue-play-vanilla" type="checkbox" ${settings.playVanilla ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      </div>
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="kyso-ue-play-opacity">${t("playBgOpacity")}</label>
+        <input type="range" id="kyso-ue-play-opacity" class="kyso-range" min="0" max="100" step="1" value="${settings.playBgOpacity || 0}">
+        <span class="kyso-filter-value" id="kyso-ue-play-opacity-value">${settings.playBgOpacity || 0}%</span>
+      </div>
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="kyso-ue-play-blur">${t("playBgBlur")}</label>
+        <input type="range" id="kyso-ue-play-blur" class="kyso-range" min="0" max="20" step="1" value="${settings.playBgBlur || 0}">
+        <span class="kyso-filter-value" id="kyso-ue-play-blur-value">${settings.playBgBlur || 0}px</span>
+      </div>
+      <div class="kyso-settings-row kyso-settings-row--toggle">
+        <label class="kyso-label">${t("bannerHidden")}</label>
+        <label class="kyso-toggle"><input id="kyso-ue-banner-hidden" type="checkbox" ${settings.bannerHidden ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      </div>
+      <div class="kyso-settings-row kyso-settings-row--toggle">
+        <label class="kyso-label">${t("profileBgTransparent")}</label>
+        <label class="kyso-toggle"><input id="kyso-ue-profilebg" type="checkbox" ${settings.profileBgTransparent ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      </div>
+      <div class="kyso-settings-row kyso-settings-row--toggle">
+        <label class="kyso-label">${t("gearAlwaysVisible")}</label>
+        <label class="kyso-toggle"><input id="kyso-ue-gear-always" type="checkbox" ${settings.gearAlwaysVisible ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      </div>
+      <div class="kyso-settings-row kyso-settings-row--toggle">
+        <label class="kyso-label">${t("lorAlwaysVisible")}</label>
+        <label class="kyso-toggle"><input id="kyso-ue-lor-always" type="checkbox" ${settings.lorAlwaysVisible ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      </div>
+      <div class="kyso-settings-row kyso-filter-row">
+        <label class="kyso-label" for="kyso-ue-social-blur">${t("socialBlur")}</label>
+        <input type="range" id="kyso-ue-social-blur" class="kyso-range" min="0" max="20" step="1" value="${settings.socialBlur || 0}">
+        <span class="kyso-filter-value" id="kyso-ue-social-blur-value">${settings.socialBlur || 0}px</span>
+      </div>
+    </section>
+  `;
+
+  const persist = (patch) => {
+    const s = { ...DEFAULTS, ...loadSettings(), ...patch };
+    saveSettings(s);
+    return s;
+  };
+  const bindToggle = (id, key, apply) => {
+    const el = panel.querySelector(id);
+    if (!el) return;
+    el.addEventListener("change", () => apply(persist({ [key]: el.checked })));
+  };
+  const bindRange = (id, valId, key, unit, apply) => {
+    const el = panel.querySelector(id);
+    const out = panel.querySelector(valId);
+    if (!el) return;
+    el.addEventListener("input", () => { if (out) out.textContent = el.value + unit; });
+    el.addEventListener("change", () => apply(persist({ [key]: Number(el.value) })));
+  };
+
+  bindToggle("#kyso-ue-play-vanilla", "playVanilla", (s) => applyInterfaceToggles(s));
+  bindRange("#kyso-ue-play-opacity", "#kyso-ue-play-opacity-value", "playBgOpacity", "%", (s) => applyInterfaceToggles(s));
+  bindRange("#kyso-ue-play-blur", "#kyso-ue-play-blur-value", "playBgBlur", "px", (s) => applyInterfaceToggles(s));
+  bindToggle("#kyso-ue-banner-hidden", "bannerHidden", (s) => assetReplacers.applyBannerVisibility(s.bannerHidden));
+  bindToggle("#kyso-ue-profilebg", "profileBgTransparent", (s) => assetReplacers.applyProfileBgTransparent(s.profileBgTransparent));
+  bindToggle("#kyso-ue-gear-always", "gearAlwaysVisible", (s) => applyInterfaceToggles(s));
+  bindToggle("#kyso-ue-lor-always", "lorAlwaysVisible", (s) => applyInterfaceToggles(s));
+  bindRange("#kyso-ue-social-blur", "#kyso-ue-social-blur-value", "socialBlur", "px", (s) => applySocialBlur(s.socialBlur));
+
+  return panel;
+}
+
 const SETTINGS_SENTINEL =
   "div.lol-settings-content > settings-plugin-navigation-bar";
 
@@ -3513,7 +3606,8 @@ async function tryInjectSettingsTab() {
       (el) =>
         el.tagName.toLowerCase() !== "settings-plugin-navigation-bar" &&
         el.id !== "kyso-settings-content" &&
-        el.id !== "kyso-assets-content",
+        el.id !== "kyso-assets-content" &&
+        el.id !== "kyso-uieditor-content",
     );
 
   // Build both panels in parallel so the second tab opens instantly after the first
@@ -3521,6 +3615,7 @@ async function tryInjectSettingsTab() {
     buildSettingsPanel(),
     buildAssetsPanel(),
   ]);
+  const uiEditorPanel = buildUIEditorPanel();
 
   // ── Painel KysoTheme ──
   const kysoNavItem = document.createElement("lol-uikit-navigation-item");
@@ -3556,6 +3651,23 @@ async function tryInjectSettingsTab() {
   assetsContent.appendChild(assetsPanel);
   settingsContent.appendChild(assetsContent);
 
+  // ── Painel UI Editor (abaixo de Player Assets) ──
+  const uiEditorNavItem = document.createElement("lol-uikit-navigation-item");
+  uiEditorNavItem.className = "kyso-nav-item kyso-uieditor-nav-item";
+  uiEditorNavItem.setAttribute("data-id", "kyso-uieditor");
+  const uiEditorLabel = document.createElement("div");
+  uiEditorLabel.className = "kyso-nav-label";
+  uiEditorLabel.textContent = "UI Editor";
+  uiEditorNavItem.appendChild(uiEditorLabel);
+  navBar.appendChild(uiEditorNavItem);
+
+  const uiEditorContent = document.createElement("div");
+  uiEditorContent.id = "kyso-uieditor-content";
+  uiEditorContent.className = "kyso-settings-content-wrapper";
+  uiEditorContent.style.display = "none";
+  uiEditorContent.appendChild(uiEditorPanel);
+  settingsContent.appendChild(uiEditorContent);
+
   // ── Switching logic ──
   function showKysoPanel(which) {
     navBar.querySelectorAll("lol-uikit-navigation-item").forEach((item) => {
@@ -3564,12 +3676,15 @@ async function tryInjectSettingsTab() {
     getNativeChildren().forEach((el) => { el.style.display = "none"; });
     kysoContent.style.display = which === "kyso" ? "flex" : "none";
     assetsContent.style.display = which === "assets" ? "flex" : "none";
+    uiEditorContent.style.display = which === "uieditor" ? "flex" : "none";
     if (which === "kyso") kysoNavItem.setAttribute("active", "");
-    else assetsNavItem.setAttribute("active", "");
+    else if (which === "assets") assetsNavItem.setAttribute("active", "");
+    else uiEditorNavItem.setAttribute("active", "");
   }
 
   kysoNavItem.addEventListener("click", () => showKysoPanel("kyso"));
   assetsNavItem.addEventListener("click", () => showKysoPanel("assets"));
+  uiEditorNavItem.addEventListener("click", () => showKysoPanel("uieditor"));
 
   // Quando qualquer item nativo é clicado, esconde nossos painéis
   navBar
@@ -3578,8 +3693,10 @@ async function tryInjectSettingsTab() {
       item.addEventListener("click", () => {
         kysoNavItem.removeAttribute("active");
         assetsNavItem.removeAttribute("active");
+        uiEditorNavItem.removeAttribute("active");
         kysoContent.style.display = "none";
         assetsContent.style.display = "none";
+        uiEditorContent.style.display = "none";
         getNativeChildren().forEach((el) => { el.style.display = ""; });
       });
     });
