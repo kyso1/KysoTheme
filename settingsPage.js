@@ -1954,18 +1954,22 @@ function applySocialBlur(px) {
 function showWelcomeModal() {
   if (document.querySelector("#kyso-welcome-overlay")) return;
 
-  // Quick-setup state. The League client (CEF/rcp) does NOT reliably deliver
-  // clicks to a plain document.body overlay: it can paint a transparent layer
-  // above it and/or stop event propagation, which defeats normal listeners AND
-  // capture-phase delegation on the overlay (confirmed: both failed in-client).
+  // CRITICAL — why interaction lives on `document`, not on the overlay:
+  // After we append this overlay to <body>, the League client (CEF/rcp/Ember)
+  // CLONES the subtree and swaps our node for a fresh copy. The clone keeps
+  // attributes (id, class, data-*) but DROPS every JS-attached handler —
+  // `el.onclick` AND `el.addEventListener` alike. Verified in-client:
+  // immediately after build the skip button has onclick=function; a moment
+  // later the live node is a different element (===) with onclick=null but the
+  // same data-* attributes. So ANY handler bound to the overlay or its children
+  // dies, which is why every previous approach (inline onclick, per-element
+  // listeners, window-coordinate hit-testing) failed.
   //
-  // Robust solution: decouple interaction from DOM stacking entirely. Hold the
-  // choices in this state object and drive ALL interaction from a WINDOW-level
-  // capture pointerup/click that hit-tests pointer COORDINATES against each
-  // control's bounding rect. window-capture fires before any client listener,
-  // and coordinate hit-testing works even if another element is the real
-  // event target (an opaque/transparent layer on top). The overlay's z-index
-  // then only governs visibility, not whether the buttons "work".
+  // Robust fix: one capture-phase `click` listener on `document` (which is
+  // never cloned). On each click we resolve the control via
+  // `e.target.closest("[data-act]")` — no coordinate math, so the client's CSS
+  // `zoom` is irrelevant — and act on the LIVE overlay (re-queried by id every
+  // time), never the captured-but-detached `overlay` reference.
   const state = {
     playVanilla: false,
     bannerHidden: false,
@@ -1994,7 +1998,7 @@ function showWelcomeModal() {
     </div>`;
   document.body.appendChild(overlay);
 
-  // Visibility hardening (NOT interaction — interaction is coordinate-based).
+  // Visibility hardening (interaction is handled by the document listener).
   overlay.style.setProperty("position", "fixed", "important");
   overlay.style.setProperty("inset", "0", "important");
   overlay.style.setProperty("z-index", "2147483647", "important");
@@ -2002,9 +2006,15 @@ function showWelcomeModal() {
 
   let closed = false;
 
+  // Always operate on the LIVE overlay — the original `overlay` node may have
+  // been cloned-and-replaced by the client by the time the user clicks.
+  const live = () => document.getElementById("kyso-welcome-overlay");
+
   const close = () => {
     closed = true;
-    overlay.remove();
+    document.removeEventListener("click", onDocClick, true);
+    const el = live();
+    if (el) el.remove();
   };
 
   const skipChoices = () => {
@@ -2036,7 +2046,9 @@ function showWelcomeModal() {
   };
 
   const refresh = (key) => {
-    const el = overlay.querySelector(`[data-val="${key}"]`);
+    const root = live();
+    if (!root) return;
+    const el = root.querySelector(`[data-val="${key}"]`);
     if (!el) return;
     el.textContent = key === "socialBlur" ? blurLabel(state.socialBlur) : onOff(state[key]);
   };
@@ -2055,18 +2067,19 @@ function showWelcomeModal() {
     }
   };
 
-  // Direct per-control click handlers — inline-onclick style, as used by other
-  // League client themes (e.g. Elaina). A real click on a button fires its OWN
-  // onclick handler regardless of the client's CSS `zoom` (which desyncs
-  // pointer coords) or any window-level event quirks. Each control owns exactly
-  // one handler; nothing lingers on window, so there are no stale listeners.
-  overlay.querySelectorAll("[data-act]").forEach((el) => {
-    el.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      runAction(el.getAttribute("data-act"));
-    };
-  });
+  // Single capture-phase listener on `document` (survives the overlay being
+  // cloned). Resolve the clicked control by DOM ancestry, not coordinates.
+  function onDocClick(e) {
+    const root = live();
+    if (!root) return;
+    const ctrl =
+      e.target && e.target.closest ? e.target.closest("[data-act]") : null;
+    if (!ctrl || !root.contains(ctrl)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    runAction(ctrl.getAttribute("data-act"));
+  }
+  document.addEventListener("click", onDocClick, true);
 }
 
 export function applyAllSettings(settings) {
