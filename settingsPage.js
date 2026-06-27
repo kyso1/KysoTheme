@@ -174,6 +174,7 @@ const TRANSLATIONS = {
     saveAllDone: "Settings saved!",
     interfaceSection: "Interface",
     iconSyncNavbar: "Profile icon in top bar",
+    iconSwapMastery: "Swap mastery icon with profile icon",
     bannerHidden: "Hide profile banner",
     profileBgTransparent: "Transparent profile background",
     gearAlwaysVisible: "Always show settings button (profile page)",
@@ -362,6 +363,7 @@ const TRANSLATIONS = {
     saveAllDone: "Configurações salvas!",
     interfaceSection: "Interface",
     iconSyncNavbar: "Ícone de perfil na barra superior",
+    iconSwapMastery: "Trocar ícone de maestria pelo ícone de perfil",
     bannerHidden: "Ocultar banner do perfil",
     profileBgTransparent: "Fundo do perfil transparente",
     gearAlwaysVisible: "Sempre mostrar botão de config. (página de perfil)",
@@ -498,6 +500,7 @@ const TRANSLATIONS = {
     saveAllDone: "¡Configuración guardada!",
     interfaceSection: "Interfaz",
     iconSyncNavbar: "Icono de perfil en barra superior",
+    iconSwapMastery: "Cambiar icono de maestría por el de perfil",
     bannerHidden: "Ocultar banner de perfil",
     profileBgTransparent: "Fondo de perfil transparente",
     gearAlwaysVisible: "Mostrar siempre botón de ajustes",
@@ -635,6 +638,7 @@ const TRANSLATIONS = {
     saveAllDone: "Einstellungen gespeichert!",
     interfaceSection: "Oberfläche",
     iconSyncNavbar: "Profilsymbol in oberer Leiste",
+    iconSwapMastery: "Meisterschaftssymbol durch Profilsymbol ersetzen",
     bannerHidden: "Profilbanner ausblenden",
     profileBgTransparent: "Profilhintergrund transparent",
     gearAlwaysVisible: "Einstellungsknopf immer zeigen",
@@ -768,6 +772,7 @@ const TRANSLATIONS = {
     saveAllDone: "設定を保存しました！",
     interfaceSection: "インターフェース",
     iconSyncNavbar: "トップバーにプロフィールアイコン",
+    iconSwapMastery: "マスタリーアイコンをプロフィールアイコンに置換",
     bannerHidden: "プロフィールバナーを隠す",
     profileBgTransparent: "プロフィール背景を透明に",
     gearAlwaysVisible: "設定ボタンを常に表示",
@@ -902,6 +907,7 @@ const TRANSLATIONS = {
     saveAllDone: "설정이 저장되었습니다!",
     interfaceSection: "인터페이스",
     iconSyncNavbar: "상단 바에 프로필 아이콘",
+    iconSwapMastery: "프로필 아이콘으로 숙련도 아이콘 교체",
     bannerHidden: "프로필 배너 숨기기",
     profileBgTransparent: "프로필 배경 투명하게",
     gearAlwaysVisible: "설정 버튼 항상 표시",
@@ -4009,6 +4015,7 @@ function buildUIEditorPanel() {
     <section class="kyso-settings-section">
       <h3 class="kyso-settings-section-title"><span>${t("interfaceSection")}</span></h3>
       ${tog("kyso-ue-icon-navbar", "iconSyncNavbar")}
+      ${tog("kyso-ue-icon-swap-mastery", "iconSwapMastery")}
       ${tog("kyso-ue-play-vanilla", "playVanilla")}
       ${rng("kyso-ue-play-opacity", "playBgOpacity", 100, "%")}
       ${rng("kyso-ue-play-blur", "playBgBlur", 20, "px")}
@@ -4091,6 +4098,7 @@ function buildUIEditorPanel() {
 
   // ── Interface ──
   bindToggle("#kyso-ue-icon-navbar", "iconSyncNavbar", (s) => applyIcon(s.iconUrl || "", s.iconAllPlayers || false, s.iconSyncNavbar, s.iconSwapMastery));
+  bindToggle("#kyso-ue-icon-swap-mastery", "iconSwapMastery", (s) => applyIcon(s.iconUrl || "", s.iconAllPlayers || false, s.iconSyncNavbar, s.iconSwapMastery));
   bindToggle("#kyso-ue-play-vanilla", "playVanilla", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-play-opacity", "playBgOpacity", "%", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-play-blur", "playBgBlur", "px", (s) => applyInterfaceToggles(s));
