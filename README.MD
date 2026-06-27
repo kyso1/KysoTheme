@@ -9,7 +9,7 @@ Built for [Pengu Loader](https://pengu.lol) — configure everything without tou
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-3.0-blue?style=for-the-badge&logo=github)](https://github.com/kyso1/KysoTheme/releases)
+[![Version](https://img.shields.io/badge/version-3.3-blue?style=for-the-badge&logo=github)](https://github.com/kyso1/KysoTheme/releases)
 [![Pengu Loader](https://img.shields.io/badge/Pengu%20Loader-0.5.0%2B-purple?style=for-the-badge)](https://pengu.lol)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -19,9 +19,38 @@ Built for [Pengu Loader](https://pengu.lol) — configure everything without tou
 
 ## ✨ Overview
 
-KysoTheme transforms the League of Legends client into a cleaner, more personal experience. Version 3.0 ships with a fully-featured **native settings panel** — backgrounds, colors, fonts, icons, and layout tweaks, all in one place.
+KysoTheme transforms the League of Legends client into a cleaner, more personal experience. The **v3.x line** ships a fully-featured **native settings panel** plus a dedicated **UI Editor** and **Player Assets** tab — backgrounds, colors, fonts, icons, layout tweaks, granular show/hide controls, and rank/regalia overrides, all in one place. Every behavior is a toggle or a control; nothing is hardcoded.
 
 > **No file editing. No restarts. Just open Settings → KysoTheme.**
+
+---
+
+## 🆕 What's New in v3.3
+
+The v3.x releases turned every fixed theme behavior into a user control and added two new tabs.
+
+### v3.1 — Kyso UI Editor
+- Renamed to **Kyso UI Editor** with a **first-run welcome modal**.
+- Turned previously hardcoded behaviors into switches: themed/vanilla **play button**, **banner**, **gear & LoR buttons**, **profile background transparency**, a **social blur slider**, and **profile-icon placement / navbar sync**.
+
+### v3.2 — UI Editor tab + Player Assets expansion
+- **UI Editor tab** with a **live search bar** that filters controls by label.
+- **Granular show/hide toggles** (each previously hover-faded element is now its own switch): chat, invite, notifications, XP ring, status, social actions, patch version, XP radial, rune recommender, deep links, loot backdrop, incident ticker, restriction warning, loading spinner, lobby overlay, **navbar dividers**, activity divider.
+- **Visual-effect toggles** — client blur kill, store hue overlay, ready-check animation, viewport glow.
+- **Per-screen backgrounds** — independent images for Collections, Champ-select, Runes, and Mode-switcher (picker in Player Assets + on/off in the UI Editor).
+- **Sliding-door ⇄ hover mutex** — the navbar/social door and its hover mode are now mutually exclusive automatically.
+- Performance: debounced whole-document observers and a blur-scrubber freeze fix.
+
+### Rank crest override
+- Fake your displayed rank to any tier (**Iron → Challenger**) with a **division (I–IV)** selector — the client renders the matching emblem art.
+- **Ranked tooltip override**: rewrites the per-queue tier text, with a **"change all queues"** toggle and an **LP override** field.
+
+### v3.3 — Regalia hovercard override (self-only)
+The floating regalia hover card on your profile now follows your chosen rank — **only on your own card** (matched by summoner id):
+- Crest tier art (wings, plate, division), the **mini rank emblem**, and the **"Tier (Queue)" text** all match the chosen rank.
+- **Summoner icon** uses your selected custom icon.
+- **Mastery score** mirrors your **LP** value (also on the profile emblem header).
+- New **Hovercard backdrop** asset — pick a splash image with an interactive crop tool.
 
 ---
 
@@ -77,9 +106,10 @@ A unified panel that lives in its **own settings tab** (sibling to KysoTheme) �
 | ---------------------- | ---------------------------------------------------------------------------------------------------- |
 | **Background**         | Full client background — images, animated GIFs, or videos (`.mp4` / `.webm`)                         |
 | **Banner**             | Replaces your regalia banner on the profile page (shadow-DOM style injection, transparent overlay)   |
-| **Crest**              | Replaces the frame around your profile icon — ships with all **ranked emblems** (Iron → Challenger)  |
+| **Crest**              | Replaces the frame around your profile icon, **or override your displayed rank** to any tier (Iron → Challenger) + division — emblem, tooltip tier text and LP all follow |
 | **Loading screen**     | Custom loading-screen background **and** spinning icon, applied at game launch                       |
 | **Profile icon**       | Custom icon for your profile page + sidebar; optional "Apply to all players" mode                    |
+| **Hovercard backdrop** | Self-only splash behind your regalia hover card, with an interactive crop tool                       |
 
 **Local / Web switch:**
 - **Local** — thumbnail grid of every file declared in `assets/manifest.json`. Drop a new file into the right folder, add a one-line manifest entry, reload — it shows up as a clickable preview.
@@ -295,6 +325,6 @@ If you have a bug report, a feature idea, or want to add a translation, feel fre
 
 <div align="center">
 
-Made with ❤️ by **Kyso** &nbsp;·&nbsp; Built for [Pengu Loader](https://pengu.lol)
+Made with ❤️ by **kyso1** &nbsp;·&nbsp; Built for [Pengu Loader](https://pengu.lol)
 
 </div>

@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-26
 **Status:** Awaiting user review
-**Author:** Kyso (with Claude)
+**Author:** kyso1
 
 ## Goal
 
