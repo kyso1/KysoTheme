@@ -233,30 +233,40 @@ function _crestDebounce(fn, ms) {
   return () => { if (h) clearTimeout(h); h = setTimeout(fn, ms); };
 }
 
-function _updateCrestRankDom(tier, division, changeAll, lp) {
-  if (!tier) return;
-  // Apex tiers have no division → "O" clears it. Other tiers use I-IV.
+// Applies the current crest-rank + LP override to the DOM. Reads the module
+// state vars so the observer can call it with no args. LP is independent of the
+// tier: setting only LP (no rank) still rewrites the tooltip LP span.
+function _updateCrestDom() {
+  const tier = _currentCrestRank;
+  const division = _currentCrestDivision;
+  const changeAll = _currentCrestChangeAll;
+  const lp = _currentCrestLP;
+  const hasLP = lp !== "" && lp != null;
+  if (!tier && !hasLP) return;
+
   const div = _APEX_TIERS.includes(tier) ? "O" : (division || "I");
-  const tierLower = tier.toLowerCase();
+  const tierLower = tier ? tier.toLowerCase() : "";
+  const title = _RANK_TITLE(tier);
+  // Tooltip elo label: apex = just the tier ("Challenger"); else "Emerald I".
+  const eloLabel = !tier ? "" : (_APEX_TIERS.includes(tier) ? title : `${title} ${div}`);
   const setAttrs = (el, t) => {
     if (!el) return;
     if (el.getAttribute("ranked-tier") !== t) el.setAttribute("ranked-tier", t);
     if (el.getAttribute("ranked-division") !== div) el.setAttribute("ranked-division", div);
   };
-  // Main profile crest (active queue): UPPERCASE ranked-tier.
-  _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => setAttrs(el, tier));
-  // Emblem subheader text → the chosen tier label.
-  const title = _RANK_TITLE(tier);
-  document
-    .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
-    .forEach((el) => { if (el.textContent !== title) el.textContent = title; });
 
-  // Tooltip elo label: apex = just the tier ("Challenger"); else "Emerald I".
-  const eloLabel = _APEX_TIERS.includes(tier) ? title : `${title} ${div}`;
+  if (tier) {
+    // Main profile crest (active queue): UPPERCASE ranked-tier.
+    _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => setAttrs(el, tier));
+    // Emblem subheader text → the chosen tier label.
+    document
+      .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
+      .forEach((el) => { if (el.textContent !== title) el.textContent = title; });
+  }
 
   // Active queue = the emblem-card header whose text matches a tooltip queue
   // name (fallback: first queue). Limits the override to the displayed queue
-  // unless "change for all" is on.
+  // unless "change for all" is on. Used for both crest and LP.
   const queues = _findAllDeep(".ranked-tooltip-queue");
   const qName = (q) => {
     const n = q.querySelector(".ranked-tooltip-queue-name");
@@ -269,38 +279,46 @@ function _updateCrestRankDom(tier, division, changeAll, lp) {
     activeQueue = headers.find((h) => names.includes(h)) || names[0];
   }
 
-  // Emblem elements render from a LOWERCASE ranked-tier (e.g. "challenger").
-  // Inside a tooltip queue, only the active queue is overridden unless
-  // changeAll; that queue's tier text and LP span are rewritten too.
-  _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
-    const q = em.closest ? em.closest(".ranked-tooltip-queue") : null;
-    if (q && !changeAll && qName(q) !== activeQueue) return;
-    setAttrs(em, tierLower);
-    if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
-    if (q) {
+  queues.forEach((q) => {
+    if (!changeAll && qName(q) !== activeQueue) return;
+    if (tier) {
+      const em = q.querySelector("lol-regalia-emblem-element");
+      if (em) {
+        setAttrs(em, tierLower); // emblem renders from a LOWERCASE ranked-tier
+        if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+      }
       const tEl = q.querySelector(".ranked-tooltip-queue-tier");
       if (tEl && tEl.textContent !== eloLabel) tEl.textContent = eloLabel;
-      if (lp !== "" && lp != null) {
-        const lpEl = q.querySelector(".style-profile-ranked-crest-tooltip-lp");
-        const spans = lpEl ? lpEl.querySelectorAll("span") : [];
-        if (spans[1] && spans[1].textContent !== String(lp)) spans[1].textContent = String(lp);
-      }
+    }
+    if (hasLP) {
+      const lpEl = q.querySelector(".style-profile-ranked-crest-tooltip-lp");
+      const spans = lpEl ? lpEl.querySelectorAll("span") : [];
+      if (spans[1] && spans[1].textContent !== String(lp)) spans[1].textContent = String(lp);
     }
   });
+
+  // Emblem elements outside tooltip queues (e.g. the main profile emblem) get
+  // only the crest override.
+  if (tier) {
+    _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
+      if (em.closest && em.closest(".ranked-tooltip-queue")) return; // handled above
+      setAttrs(em, tierLower);
+      if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+    });
+  }
 }
 
 export function applyCrestRank(tier, division, changeAll, lp) {
   _currentCrestRank = (tier || "").toUpperCase();
   _currentCrestDivision = (division || "I").toUpperCase();
   _currentCrestChangeAll = !!changeAll;
-  _currentCrestLP = lp == null ? "" : String(lp);
+  _currentCrestLP = lp == null ? "" : String(lp).trim();
   if (_crestRankObserver) { _crestRankObserver.disconnect(); _crestRankObserver = null; }
-  _updateCrestRankDom(_currentCrestRank, _currentCrestDivision, _currentCrestChangeAll, _currentCrestLP);
-  if (!_currentCrestRank) return;
-  _crestRankObserver = new MutationObserver(_crestDebounce(
-    () => _updateCrestRankDom(_currentCrestRank, _currentCrestDivision, _currentCrestChangeAll, _currentCrestLP),
-    120,
-  ));
+  _updateCrestDom();
+  // Keep observing while EITHER a rank or an LP override is active (the tooltip
+  // mounts on hover, after this runs).
+  if (!_currentCrestRank && _currentCrestLP === "") return;
+  _crestRankObserver = new MutationObserver(_crestDebounce(_updateCrestDom, 120));
   _crestRankObserver.observe(document.body, { childList: true, subtree: true });
 }
 

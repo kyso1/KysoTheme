@@ -3345,6 +3345,10 @@ async function buildAssetsPanel() {
         <label class="kyso-label">${t("crestChangeAll")}</label>
         <label class="kyso-toggle"><input id="kyso-crest-changeall" type="checkbox" ${settings.crestChangeAll ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
       </div>
+      <div class="kyso-settings-row">
+        <label class="kyso-label" for="kyso-crest-lp">${t("crestLP")}</label>
+        <input id="kyso-crest-lp" class="kyso-input" type="text" inputmode="numeric" placeholder="LP" value="${(settings.crestLP || "").toString().replace(/"/g, "&quot;")}">
+      </div>
       <div class="kyso-settings-row"><span class="kyso-hint">${t("crestRankHint")}</span></div>
     </section>
 
@@ -3412,6 +3416,7 @@ async function buildAssetsPanel() {
   const crestDivRow = panel.querySelector("#kyso-crest-division-row");
   const crestChangeAllEl = panel.querySelector("#kyso-crest-changeall");
   const crestChangeAllRow = panel.querySelector("#kyso-crest-changeall-row");
+  const crestLpEl = panel.querySelector("#kyso-crest-lp");
   const _APEX = ["MASTER", "GRANDMASTER", "CHALLENGER"];
   const applyCrestRankNow = () => {
     const s = {
@@ -3420,6 +3425,7 @@ async function buildAssetsPanel() {
       crestRank: crestRankSel ? crestRankSel.value : "",
       crestDivision: crestDivSel ? crestDivSel.value : "I",
       crestChangeAll: crestChangeAllEl ? crestChangeAllEl.checked : false,
+      crestLP: crestLpEl ? crestLpEl.value.trim() : "",
     };
     saveSettings(s);
     assetReplacers.applyCrestRank(s.crestRank, s.crestDivision, s.crestChangeAll, s.crestLP);
@@ -3432,6 +3438,7 @@ async function buildAssetsPanel() {
   if (crestRankSel) crestRankSel.addEventListener("change", applyCrestRankNow);
   if (crestDivSel) crestDivSel.addEventListener("change", applyCrestRankNow);
   if (crestChangeAllEl) crestChangeAllEl.addEventListener("change", applyCrestRankNow);
+  if (crestLpEl) crestLpEl.addEventListener("change", applyCrestRankNow);
 
   // ── Per-category handlers: source toggle, thumb click, web apply, reset.
   // Each asset uses its targeted apply* so we don't redo full applyAllSettings on every click.
@@ -3762,10 +3769,6 @@ function buildUIEditorPanel() {
       ${tog("kyso-ue-gear-always", "gearAlwaysVisible")}
       ${tog("kyso-ue-lor-always", "lorAlwaysVisible")}
       ${rng("kyso-ue-social-blur", "socialBlur", 20, "px")}
-      <div class="kyso-settings-row">
-        <label class="kyso-label" for="kyso-ue-crest-lp">${t("crestLP")}</label>
-        <input id="kyso-ue-crest-lp" class="kyso-input" type="number" min="0" max="9999" placeholder="LP" value="${settings.crestLP || ""}">
-      </div>
     </section>
     <section class="kyso-settings-section">
       <h3 class="kyso-settings-section-title"><span>${t("visSection")}</span></h3>
@@ -3848,12 +3851,6 @@ function buildUIEditorPanel() {
   bindToggle("#kyso-ue-gear-always", "gearAlwaysVisible", (s) => applyInterfaceToggles(s));
   bindToggle("#kyso-ue-lor-always", "lorAlwaysVisible", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-social-blur", "socialBlur", "px", (s) => applySocialBlur(s.socialBlur));
-  const crestLpEl = panel.querySelector("#kyso-ue-crest-lp");
-  if (crestLpEl) crestLpEl.addEventListener("change", () => {
-    const s = { ...DEFAULTS, ...loadSettings(), crestLP: crestLpEl.value.trim() };
-    saveSettings(s);
-    assetReplacers.applyCrestRank(s.crestRank, s.crestDivision, s.crestChangeAll, s.crestLP);
-  });
 
   // ── Visibility (simple) ──
   bindToggle("#kyso-ue-hide-rp", "hideRP", (s) => applyHideOptions(s));
