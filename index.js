@@ -29,6 +29,16 @@ import "./main-theme/theme.css";
 import { initSettingsPage } from "./settingsPage.js";
 // import { initializeDodgeButton } from './dodgeButton.js';
 
+// Coalesce MutationObserver bursts — the client mutates its DOM constantly, so
+// running a whole-document callback once per mutation freezes the main thread.
+function _debounce(fn, ms) {
+  let h = null;
+  return (...a) => {
+    if (h) clearTimeout(h);
+    h = setTimeout(() => fn(...a), ms);
+  };
+}
+
 /**
  * Sobrescreve o comportamento do hidefriends.js para usar display:none
  * em vez de visibility:hidden, removendo o espaço ocupado pelo roster.
@@ -61,10 +71,10 @@ function initHideButtonDisplayToggle() {
   }
 
   // Aguarda o botão ser inserido no DOM pelo hidefriends.js
-  const bodyObserver = new MutationObserver(() => {
+  const bodyObserver = new MutationObserver(_debounce(() => {
     const btn = document.querySelector(".action-bar-button.hide-button");
     if (btn) attachToButton(btn);
-  });
+  }, 200));
   bodyObserver.observe(document.body, { childList: true, subtree: true });
 
   // Tenta imediatamente caso o botão já exista
@@ -121,37 +131,54 @@ function initBlurScrubber() {
     window.__kysoSocialBlur = 0;
   }
 
+  // Idempotent write — skip if the property is already the target value, so
+  // scrub() generates no style mutation when nothing actually needs changing.
+  const setIf = (el, prop, val) => {
+    if (el.style.getPropertyValue(prop) !== val) {
+      el.style.setProperty(prop, val, "important");
+    }
+  };
   const scrub = () => {
     for (const sel of KILL_TARGETS) {
       document.querySelectorAll(sel).forEach((el) => {
-        el.style.setProperty("backdrop-filter", "none", "important");
-        el.style.setProperty("-webkit-backdrop-filter", "none", "important");
+        setIf(el, "backdrop-filter", "none");
+        setIf(el, "-webkit-backdrop-filter", "none");
         const cur = getComputedStyle(el).filter;
-        if (cur && cur.includes("blur")) el.style.setProperty("filter", "none", "important");
+        if (cur && cur.includes("blur")) setIf(el, "filter", "none");
       });
     }
     const px = Number(window.__kysoSocialBlur) || 0;
+    const blurVal = px > 0 ? `blur(${px}px)` : "none";
     for (const sel of SOCIAL_TARGETS) {
       document.querySelectorAll(sel).forEach((el) => {
-        if (px > 0) {
-          el.style.setProperty("backdrop-filter", `blur(${px}px)`, "important");
-          el.style.setProperty("-webkit-backdrop-filter", `blur(${px}px)`, "important");
-        } else {
-          el.style.setProperty("backdrop-filter", "none", "important");
-          el.style.setProperty("-webkit-backdrop-filter", "none", "important");
-        }
+        setIf(el, "backdrop-filter", blurVal);
+        setIf(el, "-webkit-backdrop-filter", blurVal);
       });
     }
   };
 
   window.__kysoRescrub = scrub;
   scrub();
-  new MutationObserver(scrub).observe(document.documentElement, {
+
+  // Harden against the freeze this used to cause: (a) debounce so mutation
+  // bursts coalesce into one run, and (b) disconnect while scrubbing so the
+  // inline-style writes scrub() makes don't re-trigger the observer — "style"
+  // is in attributeFilter, so writing styles fed the observer its own changes
+  // (a self-sustaining loop). setIf() also drops no-op writes.
+  const _scrubOpts = {
     childList: true,
     subtree: true,
     attributes: true,
     attributeFilter: ["style", "class"],
-  });
+  };
+  let _scrubObserver = null;
+  const _scrubOnce = () => {
+    if (_scrubObserver) _scrubObserver.disconnect();
+    scrub();
+    if (_scrubObserver) _scrubObserver.observe(document.documentElement, _scrubOpts);
+  };
+  _scrubObserver = new MutationObserver(_debounce(_scrubOnce, 150));
+  _scrubObserver.observe(document.documentElement, _scrubOpts);
 }
 
 function addHomeButton() {
@@ -273,7 +300,7 @@ let homeButtonInterval = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   if (addHomeButton()) return;
-  observer = new MutationObserver((mutations) => {
+  observer = new MutationObserver(_debounce(() => {
     if (addHomeButton()) {
       observer.disconnect();
       if (homeButtonInterval) {
@@ -281,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
         homeButtonInterval = null;
       }
     }
-  });
+  }, 200));
 
   observer.observe(document.body, {
     childList: true,
