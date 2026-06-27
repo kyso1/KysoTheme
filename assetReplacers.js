@@ -337,29 +337,33 @@ function _profileHost(el) {
 }
 
 // True only when the open full profile page belongs to the local player.
-// Detection: compare the displayed Riot-ID/name to the local gameName. Other
-// players' profile pages use the same element + .style-profile-* classes, so a
-// name compare is how we tell them apart. FAILS CLOSED — unknown local name or
-// no name node => false, so we never paint a profile we can't confirm is ours.
-//
-// NAME_SELECTORS is a best-effort candidate list; the correct one is confirmed
-// in-client (Step 5). Add/replace the real selector there if none match.
+// Primary: the lol-regalia-profile-v2-element carries summoner-id + puuid attrs
+// once regalia-loaded; another player's profile carries THEIR ids, so an exact
+// match against the local id is leak-proof and reliable. Fallback: compare the
+// displayed Riot-ID game-name (.player-name__game-name) to the local gameName.
+// Returns false only when NO signal is available (id attrs absent AND name not
+// found) — so it never paints a profile it can't confirm is ours.
 function _profileIsSelf() {
-  if (!_selfGameName) return false;
   const profile = document.querySelector("lol-regalia-profile-v2-element");
   if (!profile) return false;
+  // Primary — exact identity match on the profile element's own attributes.
+  const sid = String(profile.getAttribute("summoner-id") || "");
+  if (sid && _selfSummonerId) return sid === _selfSummonerId;
+  const ppid = String(profile.getAttribute("puuid") || "");
+  if (ppid && _selfPuuid) return ppid === _selfPuuid;
+  // Fallback — compare the rendered Riot-ID game-name to the local gameName.
+  if (!_selfGameName) return false;
   const NAME_SELECTORS = [
+    ".player-name__game-name",
     ".style-profile-header-username",
     ".style-profile-username",
-    ".style-profile-display-name",
-    "[class*='profile'][class*='username']",
-    "[class*='profile'][class*='name']",
   ];
   let nameEl = null;
   for (const sel of NAME_SELECTORS) {
     nameEl =
       profile.querySelector(sel) ||
-      (profile.shadowRoot && profile.shadowRoot.querySelector(sel));
+      (profile.shadowRoot && profile.shadowRoot.querySelector(sel)) ||
+      _findAllDeep(sel, profile.shadowRoot || profile)[0];
     if (nameEl) break;
   }
   if (!nameEl) return false;
