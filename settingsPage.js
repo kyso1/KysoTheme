@@ -1881,15 +1881,16 @@ function applyHideOptions(settings) {
   }
 
   // Per-element hover-fade. Each element fades until hover UNLESS its own
-  // granular "always show" flag is set (or the legacy hideHoverElements bundle
-  // is still on — kept for back-compat with older saves).
-  const _showAll = !!settings.hideHoverElements;
-  if (!(settings.alwaysShowVersion || _showAll)) {
+  // granular "always show" flag is set. The legacy hideHoverElements bundle is
+  // no longer honored (it OR'd into every condition and suppressed every
+  // granular toggle); old saves with it true are migrated to the granular flags
+  // at init (initSettingsPage).
+  if (!(settings.alwaysShowVersion)) {
     css += `.alpha-version-panel { opacity: 0 !important; transition: 0.2s !important; }
 .alpha-version-panel:hover { opacity: 1 !important; transition: 0.2s !important; }
 `;
   }
-  if (!(settings.alwaysShowChat || _showAll)) {
+  if (!(settings.alwaysShowChat)) {
     css += `.v2-footer-component .left-container .chat-container {
   opacity: 0 !important; transition: 0.2s !important; pointer-events: auto !important;
 }
@@ -1898,14 +1899,14 @@ function applyHideOptions(settings) {
 }
 `;
   }
-  if (!(settings.alwaysShowInvite || _showAll)) {
+  if (!(settings.alwaysShowInvite)) {
     css += `.invite-info-panel-container {
   opacity: 0 !important; transition: 0.2s !important; pointer-events: auto !important;
 }
 .invite-info-panel-container:hover { opacity: 1 !important; transition: 0.2s !important; }
 `;
   }
-  if (!(settings.alwaysShowXpRing || _showAll)) {
+  if (!(settings.alwaysShowXpRing)) {
     css += `.xp-ring { opacity: 0 !important; transition: 0.2s !important; }
 .identity-icon:hover .xp-ring,
 .summoner-level-icon:hover .xp-ring {
@@ -1913,12 +1914,12 @@ function applyHideOptions(settings) {
 }
 `;
   }
-  if (!(settings.alwaysShowNotifications || _showAll)) {
+  if (!(settings.alwaysShowNotifications)) {
     css += `.notifications-button { opacity: 0 !important; transition: 0.2s !important; }
 .notifications-button:hover { opacity: 1 !important; transition: 0.2s !important; }
 `;
   }
-  if (!(settings.alwaysShowStatus || _showAll)) {
+  if (!(settings.alwaysShowStatus)) {
     css += `.lower-details > .status,
 .lower-details > lol-social-availability-hitbox {
   opacity: 0 !important; transition: 0.2s !important;
@@ -1929,7 +1930,7 @@ function applyHideOptions(settings) {
 }
 `;
   }
-  if (!(settings.alwaysShowSocialActions || _showAll)) {
+  if (!(settings.alwaysShowSocialActions)) {
     css += `.lol-social-actions-bar .actions-bar .action-bar-button:not(:first-child) {
   opacity: 0; transition: 0.2s !important;
 }
@@ -1979,17 +1980,17 @@ function applyHideOptions(settings) {
   }
 
   // ── v3.2 Bucket A: hover-fade items (OFF = fade until hover; ON = always) ──
-  if (!(settings.alwaysShowXpRadial || _showAll)) {
+  if (!(settings.alwaysShowXpRadial)) {
     css += `.summoner-xp-radial-container { opacity: 0 !important; transition: 0.2s !important; }
 .summoner-xp-radial-container:hover { opacity: 1 !important; transition: 0.2s !important; }
 `;
   }
-  if (!(settings.alwaysShowRuneRec || _showAll)) {
+  if (!(settings.alwaysShowRuneRec)) {
     css += `.rune-recommender-button-component { opacity: 0 !important; transition: 0.2s !important; }
 .rune-recommender-button-component:hover { opacity: 1 !important; transition: 0.2s !important; }
 `;
   }
-  if (!(settings.alwaysShowDeepLinks || _showAll)) {
+  if (!(settings.alwaysShowDeepLinks)) {
     css += `.deep-links-promo { opacity: 0 !important; transition: 0.2s !important; }
 .deep-links-promo:hover { opacity: 1 !important; transition: 0.2s !important; }
 `;
@@ -4158,6 +4159,22 @@ export function initSettingsPage() {
   if (JSON.stringify(_migrated) !== JSON.stringify(saved)) {
     saveSettings(_migrated);
     saved = _migrated;
+  }
+
+  // Migração v3.2: o bundle legacy hideHoverElements (true = "mostrar tudo")
+  // suprimia TODOS os toggles granulares de hover (via _showAll), deixando-os
+  // inertes. Converte para os flags granulares (preserva "tudo visível") e
+  // desliga o bundle, para que cada toggle volte a funcionar.
+  if (saved && saved.hideHoverElements === true) {
+    saved = {
+      ...saved,
+      hideHoverElements: false,
+      alwaysShowChat: true, alwaysShowInvite: true, alwaysShowNotifications: true,
+      alwaysShowXpRing: true, alwaysShowStatus: true, alwaysShowSocialActions: true,
+      alwaysShowVersion: true, alwaysShowXpRadial: true, alwaysShowRuneRec: true,
+      alwaysShowDeepLinks: true,
+    };
+    saveSettings(saved);
   }
 
   applyAllSettings(saved);
