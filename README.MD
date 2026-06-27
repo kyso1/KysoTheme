@@ -25,9 +25,15 @@ KysoTheme transforms the League of Legends client into a cleaner, more personal 
 
 ---
 
-## 🆕 What's New in v3.4
+## 🆕 What's New in v3.5
 
 The v3.x releases turned every fixed theme behavior into a user control and added two new tabs.
+
+### v3.5 — Instant top-bar icon, self-only profile, new toggles
+- Your **custom profile icon** now updates the **top-bar avatar** instantly when you apply it — no reload needed.
+- New switch: **Swap mastery icon** — also replaces the champion mastery icon with your profile icon (default off).
+- New switch: **League color scheme** — keeps the themed buttons but recolors the UI to League's native gold palette (default off).
+- Fix: ranked crest, mastery-score, and transparent background now apply **only to your own profile**, never to other players' profiles.
 
 ### v3.4 — Custom icon in lobby & party
 - Your selected **custom profile icon** now also shows on your **lobby player slot** and the **party banner** — matched to you only (by puuid / local marker), so teammates' icons are never touched.
