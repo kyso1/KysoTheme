@@ -151,33 +151,6 @@
   background-image: none !important;
 }
 
-/* changes the animation in a lot of things, like to accept the match */
-.ready-check-state-machine-timer {
-  animation-name: fadeIn;
-  animation-duration: 1s;
-  filter: hue-rotate(0deg) !important;
-}
-.ready-check-timer {
-  animation-name: fadeIn;
-  animation-duration: 1s;
-}
-.ready-check-timer.ember-view {
-  animation-name: fadeIn;
-  animation-duration: 1s;
-}
-.ready-check-root-element {
-  animation-name: fadeIn;
-  animation-duration: 1s;
-}
-.ready-check-root-element.ember-view {
-  animation-name: fadeIn;
-  animation-duration: 1s;
-}
-.fake-application-template {
-  animation-name: fadeIn;
-  animation-duration: 1s;
-}
-
 /* Top Navigation Icons */
 /* Top-nav layout (play button position, nav-item offsets) is now applied from
    settingsPage.js (_themedNavCss) and OMITTED when "Vanilla play button" is on,
@@ -224,47 +197,6 @@
   background-repeat: no-repeat;
 }
 
-/* Your Shop Settings */
-.yourshop-root {
-  position: relative;
-  isolation: isolate;
-}
-.yourshop-root:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  mix-blend-mode: hue;
-  background-color: var(--kyso-accent) !important;
-  z-index: 1;
-}
-.yourshop-content-wrapper {
-  position: relative;
-  z-index: 2;
-}
-/* Lol Store configs  */
-.store-backdrop {
-  position: relative;
-  isolation: isolate;
-}
-.store-backdrop:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* filter: hue-rotate(-10deg); */
-  mix-blend-mode: hue;
-  background-color: var(--kyso-accent) !important;
-  z-index: -1;
-}
-.__rcp-fe-lol-store {
-  position: relative;
-  z-index: 1;
-}
 ::-webkit-scrollbar-thumb {
   background-color: transparent !important;
 }
@@ -459,24 +391,6 @@ div[data-screen-name="rcp-fe-lol-navigation-screen"] {
   -webkit-backdrop-filter: none !important;
 }
 
-/* Kill backdrop-filter blur globalmente. Game-mode picker, parties view,
-   nav-bar superior — todos voltavam com blur. Global é a única forma robusta. */
-*,
-*::before,
-*::after {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Parties view: blur azul vem do .parties-background com video baked-in,
-   não é backdrop-filter. Colapsa altura (trick Elaina-theme). */
-.parties-view .parties-background {
-  height: 0px !important;
-}
-.v2-lobby-root-component .navbar-blur {
-  background: none !important;
-  backdrop-filter: none !important;
-}
 .parties-status-card-bg-container video,
 .parties-game-section.use-animation > .parties-game-info-panel-bg-container > video {
   display: none !important;
@@ -492,15 +406,6 @@ div[data-screen-name="rcp-fe-lol-home"]
 div[data-screen-name="rcp-fe-lol-home"].active
   .rcp-fe-lol-home-loading-spinner.loading {
   visibility: hidden !important;
-}
-#rcp-fe-viewport-root {
-  display: flex;
-  width: 1280px;
-  height: 720px;
-  position: relative;
-  box-sizing: border-box;
-  overflow: hidden;
-  filter: drop-shadow(1px 1px 1px var(--kyso-accent-glow)) !important;
 }
 /* Viewport-root é transparente. Background global vive em #kyso-global-bg
    (body-level, fixed, z-index:-1). */
@@ -583,11 +488,6 @@ div[data-screen-name="rcp-fe-lol-home"].active
 .right-nav-vertical-rule,
 .wallet-and-badges {
   transition: opacity 0.5s ease, transform 0.5s ease 0s;
-}
-
-/* Kill backdrop blur do navbar (Elaina). */
-.rcp-fe-lol-navigation-app .navbar_backdrop {
-  backdrop-filter: blur(0px) !important;
 }
 
 /* ─── Hide social panel (sliding-door estilo Elaina) ───────────

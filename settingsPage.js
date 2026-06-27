@@ -2171,6 +2171,47 @@ function applyInterfaceToggles(settings) {
   style.textContent = without + block;
 }
 
+// v3.2 Bucket C — visual effects relocated from theme.css. Each emits its rule
+// when ON (default) and nothing when OFF (native client look). Fence: KYSO-VIS.
+function applyVisualToggles(settings) {
+  const style = getOrCreateDynamicStyle();
+  let block = "/* KYSO-VIS-START */\n";
+  if (settings.killClientBlur) {
+    block += `*, *::before, *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.parties-view .parties-background { height: 0px !important; }
+.v2-lobby-root-component .navbar-blur { background: none !important; backdrop-filter: none !important; }
+.rcp-fe-lol-navigation-app .navbar_backdrop { backdrop-filter: blur(0px) !important; }
+`;
+  }
+  if (settings.storeHueOverlay) {
+    block += `.yourshop-root { position: relative; isolation: isolate; }
+.yourshop-root:before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; mix-blend-mode: hue; background-color: var(--kyso-accent) !important; z-index: 1; }
+.yourshop-content-wrapper { position: relative; z-index: 2; }
+.store-backdrop { position: relative; isolation: isolate; }
+.store-backdrop:before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; mix-blend-mode: hue; background-color: var(--kyso-accent) !important; z-index: -1; }
+.__rcp-fe-lol-store { position: relative; z-index: 1; }
+`;
+  }
+  if (settings.readyCheckAnim) {
+    block += `.ready-check-state-machine-timer { animation-name: fadeIn; animation-duration: 1s; filter: hue-rotate(0deg) !important; }
+.ready-check-timer, .ready-check-timer.ember-view,
+.ready-check-root-element, .ready-check-root-element.ember-view,
+.fake-application-template { animation-name: fadeIn; animation-duration: 1s; }
+`;
+  }
+  if (settings.viewportGlow) {
+    block += `#rcp-fe-viewport-root { filter: drop-shadow(1px 1px 1px var(--kyso-accent-glow)) !important; }\n`;
+  }
+  block += "/* KYSO-VIS-END */\n";
+
+  const current = style.textContent || "";
+  const without = current.replace(
+    /\/\* KYSO-VIS-START \*\/[\s\S]*?\/\* KYSO-VIS-END \*\//g,
+    "",
+  );
+  style.textContent = without + block;
+}
+
 // Bridges the social-blur slider to index.js's blur scrubber.
 function applySocialBlur(px) {
   window.__kysoSocialBlur = Math.max(0, Math.min(20, Number(px) || 0));
@@ -2315,6 +2356,7 @@ export function applyAllSettings(settings) {
   applyFont(merged.fontUrl, merged.fontFamily);
   applyHideOptions(merged);
   applyInterfaceToggles(merged);
+  applyVisualToggles(merged);
   applySocialBlur(merged.socialBlur);
   // Asset replacers — self-only profile icon (shadow DOM), CSS icon injection
   assetReplacers.applyBanner(resolveAsset("banner", merged));
@@ -3700,6 +3742,13 @@ function buildUIEditorPanel() {
       ${tog("kyso-ue-activity-divider", "showActivityDivider")}
     </section>
     <section class="kyso-settings-section">
+      <h3 class="kyso-settings-section-title"><span>${t("effectsSection")}</span></h3>
+      ${tog("kyso-ue-kill-blur", "killClientBlur")}
+      ${tog("kyso-ue-store-hue", "storeHueOverlay")}
+      ${tog("kyso-ue-readycheck-anim", "readyCheckAnim")}
+      ${tog("kyso-ue-viewport-glow", "viewportGlow")}
+    </section>
+    <section class="kyso-settings-section">
       <h3 class="kyso-settings-section-title"><span>${t("hoverGroupTitle")}</span></h3>
       ${tog("kyso-ue-always-chat", "alwaysShowChat")}
       ${tog("kyso-ue-always-invite", "alwaysShowInvite")}
@@ -3766,6 +3815,12 @@ function buildUIEditorPanel() {
   bindToggle("#kyso-ue-lobby-overlay", "showLobbyOverlay", (s) => applyHideOptions(s));
   bindToggle("#kyso-ue-nav-dividers", "showNavDividers", (s) => applyHideOptions(s));
   bindToggle("#kyso-ue-activity-divider", "showActivityDivider", (s) => applyHideOptions(s));
+
+  // ── v3.2 Bucket C ──
+  bindToggle("#kyso-ue-kill-blur", "killClientBlur", (s) => applyVisualToggles(s));
+  bindToggle("#kyso-ue-store-hue", "storeHueOverlay", (s) => applyVisualToggles(s));
+  bindToggle("#kyso-ue-readycheck-anim", "readyCheckAnim", (s) => applyVisualToggles(s));
+  bindToggle("#kyso-ue-viewport-glow", "viewportGlow", (s) => applyVisualToggles(s));
 
   // ── Social hover toggles (mutex) + sliding-door buttons (conflict w/ hover) ──
   const soEl = panel.querySelector("#kyso-ue-hide-social-only");
