@@ -253,16 +253,39 @@ function _crestDebounce(fn, ms) {
 // A crest-v2 inside a regalia hovercard is overridden only for the local player
 // (hovercards now reachable since shadow roots are forced open). Crests elsewhere
 // (profile page, sidebar) are unaffected by this guard.
-function _crestAllowed(el) {
+// Returns the lol-regalia-hovercard-v2-element ancestor of `el` (crossing shadow
+// boundaries) or null if `el` is not inside a hovercard.
+function _hovercardHost(el) {
   let n = el;
   for (let i = 0; i < 12 && n; i++) {
-    if (n.tagName === "LOL-REGALIA-HOVERCARD-V2-ELEMENT") {
-      return String(n.getAttribute("summoner-id") || "") === _selfSummonerId;
-    }
+    if (n.tagName === "LOL-REGALIA-HOVERCARD-V2-ELEMENT") return n;
     const r = n.getRootNode ? n.getRootNode() : null;
     n = r && r.host ? r.host : (n.parentElement || null);
   }
-  return true; // not inside a hovercard
+  return null;
+}
+function _crestAllowed(el) {
+  const host = _hovercardHost(el);
+  if (!host) return true; // not inside a hovercard
+  return String(host.getAttribute("summoner-id") || "") === _selfSummonerId;
+}
+
+// The hovercard crest-v2 stops re-rendering from ranked-tier/ranked-division
+// once it has the regalia-crest-loaded state, so set the rendered art directly:
+// wings + tier plate backgrounds and the division number.
+function _applyHovercardCrestArt(rootShadow, tier, dvText) {
+  const tl = tier.toLowerCase();
+  const wings = `url("/fe/lol-static-assets/images/ranked-emblem/wings/wings_${tl}_plate.png")`;
+  const plate = `url("/fe/lol-static-assets/images/ranked-emblem/tier/${tl}-plate.png")`;
+  _findAllDeep(".lol-regalia-ranked-border-container", rootShadow).forEach((w) => {
+    if (w.style.backgroundImage !== wings) w.style.backgroundImage = wings;
+  });
+  _findAllDeep(".lol-regalia-rank-division-container", rootShadow).forEach((p) => {
+    if (p.style.backgroundImage !== plate) p.style.backgroundImage = plate;
+  });
+  _findAllDeep(".lol-regalia-rank-division-text", rootShadow).forEach((d) => {
+    if (d.textContent !== dvText) d.textContent = dvText;
+  });
 }
 
 // Applies the current crest-rank + LP override to the DOM. Reads the module
@@ -290,9 +313,12 @@ function _updateCrestRankDom() {
   if (tier) {
     // Main profile crest (active queue): UPPERCASE ranked-tier. Hovercard crests
     // are limited to the local player via _crestAllowed.
+    const dvText = _APEX_TIERS.includes(tier) ? "" : div;
     _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => {
       if (!_crestAllowed(el)) return;
       setAttrs(el, tier);
+      // Hovercard crest won't re-render from the attrs → paint art directly.
+      if (el.shadowRoot && _hovercardHost(el)) _applyHovercardCrestArt(el.shadowRoot, tier, dvText);
     });
     // Emblem subheader text → the chosen tier label.
     document
@@ -419,11 +445,13 @@ function _updateHovercardDom() {
       const bd = root.querySelector("#hover-card-backdrop");
       if (bd) {
         const next = `${_HOVER_GRADIENT}, url("${_hoverBackdrop}")`;
-        if (bd.style.backgroundImage !== next) {
-          bd.style.backgroundImage = next;
-          bd.style.backgroundSize = "cover";
-          bd.style.backgroundPosition = "center";
-        }
+        // Image is pre-cropped to the backdrop ratio, so fill exactly (100% 100%)
+        // instead of cover — avoids the sub-pixel overflow that leaked ~1px past
+        // the card's bottom edge.
+        if (bd.style.backgroundImage !== next) bd.style.backgroundImage = next;
+        if (bd.style.backgroundSize !== "100% 100%") bd.style.backgroundSize = "100% 100%";
+        if (bd.style.backgroundPosition !== "center") bd.style.backgroundPosition = "center";
+        if (bd.style.backgroundRepeat !== "no-repeat") bd.style.backgroundRepeat = "no-repeat";
       }
     }
   }
