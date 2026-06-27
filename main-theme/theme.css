@@ -241,11 +241,11 @@
 }
 /* .basic-button (top-nav play button) and .left-nav-menu offsets relocated to
    settingsPage.js _themedNavCss (gated by !playVanilla).
-   .league-logo display:none removed — the League logo now shows in its original
-   (uncropped) form. */
-lol-uikit-video-state-machine {
-  display: none !important;
-}
+   .league-logo display:none removed AND the lol-uikit-video-state-machine
+   display:none removed — that state-machine is the SOLE one in the client and
+   is the league logo's animated video parent (verified: only 1 in the DOM,
+   parent .league-client-logo). Hiding it collapsed the logo to 0x0. Both
+   removed so the original animated League logo (left of the play button) shows. */
 
 /* Collections settings */
 
