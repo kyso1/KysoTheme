@@ -88,7 +88,7 @@ function _findAllDeep(tagName, root = document) {
 // re-apply via the onResolved callback.
 let _selfSummonerId = "";
 let _selfPuuid = ""; // local player's puuid — matches lobby slots' voice-puuid
-let _selfGameName = ""; // local Riot-ID gameName, normalized (trim+lowercase) — used by _profileIsSelf
+let _selfGameName = ""; // local Riot-ID gameName, normalized (trim+lowercase) — reserved for name-based fallbacks
 let _selfIdPromise = null;
 function ensureSelfSummonerId(onResolved) {
   if (_selfSummonerId) { if (onResolved) onResolved(_selfSummonerId); return; }
@@ -111,16 +111,17 @@ let _profileIconObserver = null;
 let _currentProfileIconUrl = "";
 
 function _updateProfileIconDom(url) {
-  // Profile page crest (shadow root) — self-only: never paint another player's profile.
-  const regaliaProfile = document.querySelector("lol-regalia-profile-v2-element");
-  if (regaliaProfile && regaliaProfile.shadowRoot && _profileIsSelf()) {
-    const icon = regaliaProfile.shadowRoot.querySelector(
+  // Profile page crest (shadow root) — self-only: paint only OUR profile element,
+  // never another player's (two profiles can be mounted at once).
+  document.querySelectorAll("lol-regalia-profile-v2-element").forEach((pf) => {
+    if (!pf.shadowRoot || !_profileElIsSelf(pf)) return;
+    const icon = pf.shadowRoot.querySelector(
       "div > div > div.regalia-profile-crest-hover-area.picker-enabled > lol-regalia-crest-v2-element",
     );
     if (icon && icon.getAttribute("profile-icon-url") !== url) {
       icon.setAttribute("profile-icon-url", url);
     }
-  }
+  });
   // Sidebar avatar (light DOM)
   const sidebarIcon = document.querySelector(
     "lol-social-avatar .summoner-level-icon .icon-image",
@@ -198,9 +199,10 @@ export function applyProfileIcon(url) {
   _profileIconObserver.observe(document.body, { childList: true, subtree: true });
 }
 
-// applyBanner — injects override style into the shadow root of EVERY
-// lol-regalia-banner-v2-element currently mounted. Covers profile page,
-// sidebar profile hover card, chat hover cards — all banner surfaces.
+// applyBanner — injects override style into the shadow root of each self-owned
+// lol-regalia-banner-v2-element. Covers profile page, sidebar profile hover card,
+// chat hover cards — but self-only (see _bannerAllowed), so another player's
+// banner is never overridden.
 let _bannerObserver = null;
 let _currentBannerUrl = "";
 
@@ -219,13 +221,23 @@ const BANNER_CSS = (url) => url
      }`
   : "";
 
+// Per-banner self-guard (same shape as _crestImgAllowed): hovercard → local
+// player only; profile page → that profile's id; elsewhere → unaffected.
+function _bannerAllowed(banner) {
+  if (_hovercardHost(banner)) return _crestAllowed(banner);
+  const host = _profileHost(banner);
+  if (host) return _profileElIsSelf(host);
+  return true;
+}
+
 function _updateBannerDom(url) {
   const banners = _findAllDeep("lol-regalia-banner-v2-element");
   for (const banner of banners) {
     if (!banner.shadowRoot) continue;
     const style = ensureStyleIn(banner.shadowRoot, "kyso-banner-override");
     if (!style) continue;
-    style.textContent = BANNER_CSS(url);
+    // Self-only: paint our banner; clear it on others' surfaces (reused elements).
+    style.textContent = _bannerAllowed(banner) ? BANNER_CSS(url) : "";
   }
 }
 
@@ -273,7 +285,7 @@ export function applyCrest(url) {
   if (_crestObserver) _crestObserver.disconnect();
   _updateCrestDom(_currentCrestUrl);
   // Resolve self-id so the self-only crest guard can take effect once known
-  // (the crest image is now gated by _profileIsSelf/_crestAllowed).
+  // (the crest image is now gated per-element by _crestImgAllowed).
   ensureSelfSummonerId(() => _updateCrestDom(_currentCrestUrl));
   _crestObserver = new MutationObserver(() => {
     _updateCrestDom(_currentCrestUrl);
@@ -336,49 +348,54 @@ function _profileHost(el) {
   return null;
 }
 
-// True only when the open full profile page belongs to the local player.
-// Primary: the lol-regalia-profile-v2-element carries summoner-id + puuid attrs
-// once regalia-loaded; another player's profile carries THEIR ids, so an exact
-// match against the local id is leak-proof and reliable. Fallback: compare the
-// displayed Riot-ID game-name (.player-name__game-name) to the local gameName.
-// Returns false only when NO signal is available (id attrs absent AND name not
-// found) — so it never paints a profile it can't confirm is ours.
-function _profileIsSelf() {
-  const profile = document.querySelector("lol-regalia-profile-v2-element");
-  if (!profile) return false;
-  // Primary — exact identity match on the profile element's own attributes.
-  const sid = String(profile.getAttribute("summoner-id") || "");
+// _profileElIsSelf — exact identity check on a SPECIFIC lol-regalia-profile-v2-
+// element. It carries summoner-id + puuid attrs once regalia-loaded; another
+// player's profile carries THEIR ids, so matching the local id is leak-proof.
+// Fails closed (returns false) until the id attrs exist — re-applies on the next
+// mutation once the client sets them.
+function _profileElIsSelf(profileEl) {
+  if (!profileEl) return false;
+  const sid = String(profileEl.getAttribute("summoner-id") || "");
   if (sid && _selfSummonerId) return sid === _selfSummonerId;
-  const ppid = String(profile.getAttribute("puuid") || "");
+  const ppid = String(profileEl.getAttribute("puuid") || "");
   if (ppid && _selfPuuid) return ppid === _selfPuuid;
-  // Fallback — compare the rendered Riot-ID game-name to the local gameName.
-  if (!_selfGameName) return false;
-  const NAME_SELECTORS = [
-    ".player-name__game-name",
-    ".style-profile-header-username",
-    ".style-profile-username",
-  ];
-  let nameEl = null;
-  for (const sel of NAME_SELECTORS) {
-    nameEl =
-      profile.querySelector(sel) ||
-      (profile.shadowRoot && profile.shadowRoot.querySelector(sel)) ||
-      _findAllDeep(sel, profile.shadowRoot || profile)[0];
-    if (nameEl) break;
+  return false;
+}
+
+// _surfaceIsSelf — does a painted profile surface belong to the local player?
+// Two profile pages can be mounted at once (your own page + a modal of a player
+// you opened), so a single document-level check is wrong — each surface must
+// resolve to ITS OWN player:
+//   1) inside a profile element (crest/banner)  → that element's id
+//   2) otherwise climb to the nearest ancestor whose subtree holds exactly one
+//      profile element (the per-player container, e.g. .style-profile-overview-
+//      content / .rcp-fe-lol-profiles-main|modal) → that element's id
+// Fails closed: no resolvable owner, or an ambiguous container with >1 profile,
+// returns false (never paint a surface we can't attribute to ourselves).
+function _surfaceIsSelf(el) {
+  const host = _profileHost(el);
+  if (host) return _profileElIsSelf(host);
+  let n = el;
+  for (let i = 0; i < 30 && n; i++) {
+    if (n.querySelectorAll) {
+      const inside = _findAllDeep("lol-regalia-profile-v2-element", n);
+      if (inside.length === 1) return _profileElIsSelf(inside[0]);
+      if (inside.length > 1) return false; // ambiguous container — fail closed
+    }
+    const r = n.getRootNode ? n.getRootNode() : null;
+    n = r && r.host ? r.host : (n.parentElement || null);
   }
-  if (!nameEl) return false;
-  const shown = String(nameEl.textContent || "").trim().toLowerCase().replace(/#.*$/, "").trim();
-  const mine = _selfGameName.replace(/#.*$/, "").trim();
-  return shown !== "" && shown === mine;
+  return false;
 }
 
 // Per-crest self-guard for crest-v2 elements anywhere in the document:
 //   hovercard  -> allowed only for the local player (summoner-id match)
-//   profile pg -> allowed only when the open profile is ours (_profileIsSelf)
+//   profile pg -> allowed only when THAT crest's profile element is ours
 //   elsewhere  -> unaffected (sidebar/lobby) — returns true
 function _crestImgAllowed(crest) {
   if (_hovercardHost(crest)) return _crestAllowed(crest);
-  if (_profileHost(crest)) return _profileIsSelf();
+  const host = _profileHost(crest);
+  if (host) return _profileElIsSelf(host);
   return true;
 }
 
@@ -458,8 +475,8 @@ function _updateCrestRankDom() {
   if (!tier && !hasLP) return;
 
   // Profile-page surfaces (.style-profile-*, tooltip queues, emblem) are painted
-  // only on our own profile. Hovercard crests use their own _crestAllowed guard.
-  const selfProfile = _profileIsSelf();
+  // only on our OWN profile, checked PER-SURFACE via _surfaceIsSelf — two
+  // profiles can be mounted at once. Hovercard crests use their _crestAllowed guard.
   const div = _APEX_TIERS.includes(tier) ? "O" : (division || "I");
   const tierLower = tier ? tier.toLowerCase() : "";
   const title = _RANK_TITLE(tier);
@@ -489,18 +506,16 @@ function _updateCrestRankDom() {
         if (proot) _applyHovercardRank(proot, tier, eloLabel);
       }
     });
-    // Emblem subheader text → the chosen tier label (self profile page only).
-    if (selfProfile) {
-      document
-        .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
-        .forEach((el) => { if (el.textContent !== title) el.textContent = title; });
-    }
+    // Emblem subheader text → the chosen tier label (per-surface self check).
+    document
+      .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
+      .forEach((el) => { if (_surfaceIsSelf(el) && el.textContent !== title) el.textContent = title; });
   }
 
-  // Profile emblem header mastery-score → show the chosen LP (self profile page only).
-  if (hasLP && selfProfile) {
+  // Profile emblem header mastery-score → show the chosen LP (per-surface self check).
+  if (hasLP) {
     _findAllDeep(".style-profile-champion-mastery-score").forEach((el) => {
-      if (el.textContent !== String(lp)) el.textContent = String(lp);
+      if (_surfaceIsSelf(el) && el.textContent !== String(lp)) el.textContent = String(lp);
     });
   }
 
@@ -519,34 +534,34 @@ function _updateCrestRankDom() {
     activeQueue = headers.find((h) => names.includes(h)) || names[0];
   }
 
-  if (selfProfile) {
-    queues.forEach((q) => {
-      if (!changeAll && qName(q) !== activeQueue) return;
-      if (tier) {
-        const em = q.querySelector("lol-regalia-emblem-element");
-        if (em) {
-          setAttrs(em, tierLower); // emblem renders from a LOWERCASE ranked-tier
-          if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
-        }
-        const tEl = q.querySelector(".ranked-tooltip-queue-tier");
-        if (tEl && tEl.textContent !== eloLabel) tEl.textContent = eloLabel;
-      }
-      if (hasLP) {
-        const lpEl = q.querySelector(".style-profile-ranked-crest-tooltip-lp");
-        const spans = lpEl ? lpEl.querySelectorAll("span") : [];
-        if (spans[1] && spans[1].textContent !== String(lp)) spans[1].textContent = String(lp);
-      }
-    });
-
-    // Emblem elements outside tooltip queues (e.g. the main profile emblem) get
-    // only the crest override.
+  queues.forEach((q) => {
+    if (!_surfaceIsSelf(q)) return;
+    if (!changeAll && qName(q) !== activeQueue) return;
     if (tier) {
-      _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
-        if (em.closest && em.closest(".ranked-tooltip-queue")) return; // handled above
-        setAttrs(em, tierLower);
+      const em = q.querySelector("lol-regalia-emblem-element");
+      if (em) {
+        setAttrs(em, tierLower); // emblem renders from a LOWERCASE ranked-tier
         if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
-      });
+      }
+      const tEl = q.querySelector(".ranked-tooltip-queue-tier");
+      if (tEl && tEl.textContent !== eloLabel) tEl.textContent = eloLabel;
     }
+    if (hasLP) {
+      const lpEl = q.querySelector(".style-profile-ranked-crest-tooltip-lp");
+      const spans = lpEl ? lpEl.querySelectorAll("span") : [];
+      if (spans[1] && spans[1].textContent !== String(lp)) spans[1].textContent = String(lp);
+    }
+  });
+
+  // Emblem elements outside tooltip queues (e.g. the main profile emblem) get
+  // only the crest override (per-surface self check).
+  if (tier) {
+    _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
+      if (em.closest && em.closest(".ranked-tooltip-queue")) return; // handled above
+      if (!_surfaceIsSelf(em)) return;
+      setAttrs(em, tierLower);
+      if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+    });
   }
 }
 
@@ -689,45 +704,42 @@ export function applyLoadingScreen({ bgUrl, iconUrl }) {
   style.textContent = parts.join("\n");
 }
 
-// applyProfileBgTransparent — zeroes the profile-page background switcher so a
-// custom #kyso-global-bg shows through. The backdrop lives in the LIGHT DOM
-// (.style-profile-backdrop-component … .uikit-background-switcher). Self-only: a
-// plain CSS rule can't tell whose profile is open, so a single document-level
-// <style> rule is toggled on/off by a body MutationObserver keyed to
-// _profileIsSelf() — applied only while the local player's own profile is mounted.
-let _profileBgStyle = null;
+// applyProfileBgTransparent — makes the profile-page background switcher
+// transparent so the custom #kyso-global-bg shows through. Self-only & PER-
+// ELEMENT: two profiles can be mounted (your page + a modal of another player),
+// and a single global CSS rule would blank BOTH backdrops. So each
+// .style-profile-backdrop-component switcher is toggled by _surfaceIsSelf via an
+// inline style; a debounced body observer re-syncs as profiles mount/unmount.
 let _profileBgObserver = null;
 let _profileBgHidden = false;
 
 function _updateProfileBgStyle() {
-  if (!_profileBgStyle || !_profileBgStyle.isConnected) {
-    _profileBgStyle =
-      document.getElementById("kyso-profilebg-style") ||
-      (() => {
-        const s = document.createElement("style");
-        s.id = "kyso-profilebg-style";
-        document.head.appendChild(s);
-        return s;
-      })();
-  }
-  // Self-only: a plain CSS rule can't tell whose profile is open, so toggle the
-  // rule on/off as the local player's profile mounts/unmounts.
-  _profileBgStyle.textContent = (_profileBgHidden && _profileIsSelf())
-    ? `.style-profile-backdrop-component .style-profile-backdrop-container .uikit-background-switcher {
-         background: transparent !important;
-         background-image: none !important;
-         opacity: 0 !important;
-       }`
-    : "";
+  // Drop any stale global rule from an earlier build (pre per-element approach).
+  const legacy = document.getElementById("kyso-profilebg-style");
+  if (legacy) legacy.remove();
+  const switchers = _findAllDeep(
+    ".style-profile-backdrop-component .style-profile-backdrop-container .uikit-background-switcher",
+  );
+  switchers.forEach((el) => {
+    if (_profileBgHidden && _surfaceIsSelf(el)) {
+      el.style.setProperty("background", "transparent", "important");
+      el.style.setProperty("background-image", "none", "important");
+      el.style.setProperty("opacity", "0", "important");
+    } else {
+      el.style.removeProperty("background");
+      el.style.removeProperty("background-image");
+      el.style.removeProperty("opacity");
+    }
+  });
 }
 
 export function applyProfileBgTransparent(hidden) {
   _profileBgHidden = !!hidden;
   _updateProfileBgStyle();
-  // Resolve self-id so the name compare can succeed once known.
+  // Resolve self-id so the per-element self check can succeed once known.
   ensureSelfSummonerId(() => _updateProfileBgStyle());
   if (_profileBgObserver) { _profileBgObserver.disconnect(); _profileBgObserver = null; }
-  if (!_profileBgHidden) return; // off → nothing to maintain
+  if (!_profileBgHidden) return; // off → cleared above, nothing to maintain
   _profileBgObserver = new MutationObserver(_crestDebounce(_updateProfileBgStyle, 120));
   _profileBgObserver.observe(document.body, { childList: true, subtree: true });
 }
