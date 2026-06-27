@@ -288,6 +288,29 @@ function _applyHovercardCrestArt(rootShadow, tier, dvText) {
   });
 }
 
+// The crest component re-renders the division subtree (wrapper > plate > text)
+// asynchronously after load — a shadow mutation the document.body observer never
+// sees, so the override gets reverted. Watch the crest's OWN shadow root and
+// reapply (disconnect-during-write so our own writes don't re-trigger it).
+const _watchedCrests = new WeakSet();
+const _crestArtObsOpts = {
+  childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class"],
+};
+function _watchHovercardCrest(el) {
+  if (_watchedCrests.has(el) || !el.shadowRoot) return;
+  _watchedCrests.add(el);
+  let ob = null;
+  const reapply = () => {
+    const a = el.__kysoCrestArt;
+    if (!a || !el.shadowRoot) return;
+    if (ob) ob.disconnect();
+    _applyHovercardCrestArt(el.shadowRoot, a.tier, a.dvText);
+    if (ob) ob.observe(el.shadowRoot, _crestArtObsOpts);
+  };
+  ob = new MutationObserver(_crestDebounce(reapply, 50));
+  ob.observe(el.shadowRoot, _crestArtObsOpts);
+}
+
 // Applies the current crest-rank + LP override to the DOM. Reads the module
 // state vars so the observer can call it with no args. LP is independent of the
 // tier: setting only LP (no rank) still rewrites the tooltip LP span.
@@ -317,8 +340,13 @@ function _updateCrestRankDom() {
     _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => {
       if (!_crestAllowed(el)) return;
       setAttrs(el, tier);
-      // Hovercard crest won't re-render from the attrs → paint art directly.
-      if (el.shadowRoot && _hovercardHost(el)) _applyHovercardCrestArt(el.shadowRoot, tier, dvText);
+      // Hovercard crest won't re-render from the attrs → paint art directly and
+      // keep it painted across the component's async re-renders.
+      if (el.shadowRoot && _hovercardHost(el)) {
+        el.__kysoCrestArt = { tier, dvText };
+        _applyHovercardCrestArt(el.shadowRoot, tier, dvText);
+        _watchHovercardCrest(el);
+      }
     });
     // Emblem subheader text → the chosen tier label.
     document
