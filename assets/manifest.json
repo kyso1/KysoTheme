@@ -33,6 +33,21 @@
     ],
     "loadingIcons": [
       { "label": "Default", "path": "Loading Screen/loading-icon.gif" }
+    ],
+    "collectionsBackgrounds": [
+      { "label": "Alt 22", "path": "Collections/collections-bg22.jpg" }
+    ],
+    "champSelectBackgrounds": [
+      { "label": "Default", "path": "Runes and Select/champ-select-and-runes.jpg" },
+      { "label": "Alt 1", "path": "Runes and Select/1.jpg" }
+    ],
+    "runesBackgrounds": [
+      { "label": "Default", "path": "Runes and Select/champ-select-and-runes.jpg" },
+      { "label": "Alt 1", "path": "Runes and Select/1.jpg" }
+    ],
+    "modeSwitcherBackgrounds": [
+      { "label": "Default", "path": "ModeSwitcher/switch.jpg" },
+      { "label": "Alt 1", "path": "ModeSwitcher/switch1.jpg" }
     ]
   }
 }

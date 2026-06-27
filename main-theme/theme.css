@@ -167,35 +167,6 @@
    parent .league-client-logo). Hiding it collapsed the logo to 0x0. Both
    removed so the original animated League logo (left of the play button) shows. */
 
-/* Collections settings */
-
-.collections-application {
-  position: relative;
-  isolation: isolate;
-  background-color: transparent !important;
-  background-image: url("../assets/Collections/collections-bg.jpg") !important;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  opacity: 0;
-}
-.collections-application:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: transparent !important;
-}
-.collections-routes {
-  position: relative;
-  z-index: 10;
-  background-image: url("../assets/Collections/collections-bg.jpg") !important;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-}
 
 ::-webkit-scrollbar-thumb {
   background-color: transparent !important;
@@ -207,21 +178,6 @@
   border-bottom: transparent !important;
 }
 
-/* Sets the background of gaming mode select  */
-:host .lol-uikit-background-switcher-image {
-  content: url("../assets/ModeSwitcher/switch.jpg");
-  /* box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5); */
-  filter: blur(0px);
-  width: auto !important;
-  opacity: 0 !important; /* You can comment this line to show the wallpaper, but i think it's good just transparent*/
-}
-.parties-view .parties-background .uikit-background-switcher {
-  content: url("../assets/ModeSwitcher/switch.jpg");
-  /* box-shadow: inset 0 0 0 1000px rgba(0,0,0,.5); */
-  filter: blur(10px);
-  width: auto !important;
-  opacity: 0 !important;
-}
 
 /* Loading screen configs */
 
@@ -239,12 +195,6 @@
 }
 
 /* Champ Select configs */
-.champion-select {
-  background-image: url("../assets/Runes and Select/champ-select-and-runes.jpg") !important;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-}
 .champion-select
   .champion-splash-background
   .background-vignette-container.defocussed
@@ -259,13 +209,6 @@
 }
 .lol-uikit-background-switcher-image.none.transition {
   display: none !important;
-}
-/* Runes config */
-.perks-body-content {
-  background-image: url("../assets/Runes and Select/champ-select-and-runes.jpg");
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
 }
 /* Changing some colors on notifications and etc */
 .parties-status-card.closed {

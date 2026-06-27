@@ -2372,6 +2372,7 @@ export function applyAllSettings(settings) {
     bgUrl: resolveAsset("loadingBg", merged),
     iconUrl: resolveAsset("loadingIcon", merged),
   });
+  assetReplacers.applyScreenBackgrounds(merged);
   applyHideNavbarBtnSetting(merged);
   applyHideSocialBtnSetting(merged);
   applyBgFilters(merged);

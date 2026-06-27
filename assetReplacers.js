@@ -326,6 +326,80 @@ export function applyProfileBgTransparent(hidden) {
     : "";
 }
 
+const _SCREENBG_BASE = "//plugins/KysoTheme/assets/";
+function _screenBgUrl(rel) {
+  if (!rel) return "";
+  const s = String(rel);
+  if (/^(https?:)?\/\//.test(s) || s.startsWith("data:")) return s;
+  return _SCREENBG_BASE + s.replace(/^\/+/, "");
+}
+function _resolveScreenBg(cat, s) {
+  if (s[cat + "Source"] === "web") return s[cat + "Web"] || "";
+  return _screenBgUrl(s[cat + "Local"] || "");
+}
+
+// v3.2 Bucket B — per-screen backgrounds. Each screen ON = its resolved image;
+// OFF = transparent so the global #kyso-global-bg shows through. One head style.
+export function applyScreenBackgrounds(settings) {
+  let style = document.querySelector("#kyso-screenbg-style");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "kyso-screenbg-style";
+    document.head.appendChild(style);
+  }
+  const bgCover = (url) =>
+    `background-image: url("${url}") !important; background-size: cover !important; background-position: center center !important; background-repeat: no-repeat !important;`;
+  const transparent = `background: transparent !important; background-image: none !important;`;
+  let css = "";
+
+  // Collections
+  if (settings.collectionsBgEnabled) {
+    const u = _resolveScreenBg("collectionsBg", settings);
+    css += `.collections-application, .collections-routes { ${u ? bgCover(u) : transparent} }\n`;
+  } else {
+    css += `.collections-application, .collections-routes { ${transparent} }\n`;
+  }
+
+  // Champ select
+  if (settings.champSelectBgEnabled) {
+    const u = _resolveScreenBg("champSelectBg", settings);
+    css += `.champion-select { ${u ? bgCover(u) : transparent} }\n`;
+  } else {
+    css += `.champion-select { ${transparent} }\n`;
+  }
+
+  // Runes
+  if (settings.runesBgEnabled) {
+    const u = _resolveScreenBg("runesBg", settings);
+    css += `.perks-body-content { ${u ? bgCover(u) : transparent} }\n`;
+  } else {
+    css += `.perks-body-content { ${transparent} }\n`;
+  }
+
+  // Mode switcher (default OFF/transparent; ON shows image at full opacity)
+  if (settings.modeSwitcherBgEnabled) {
+    const u = _resolveScreenBg("modeSwitcherBg", settings);
+    css += `:host .lol-uikit-background-switcher-image, .parties-view .parties-background .uikit-background-switcher { content: url("${u}") !important; opacity: 1 !important; width: auto !important; }\n`;
+  } else {
+    css += `:host .lol-uikit-background-switcher-image, .parties-view .parties-background .uikit-background-switcher { opacity: 0 !important; }\n`;
+  }
+
+  style.textContent = css;
+}
+
+// v3.2 — greys out an Assets-tab screen-bg picker when its UI Editor toggle is
+// OFF, with a hint pointing to the UI Editor. `panel` = the Assets panel root.
+const _SCREENBG_CATS = ["collectionsBg", "champSelectBg", "runesBg", "modeSwitcherBg"];
+export function applyScreenBgDisabledUI(panel, settings) {
+  if (!panel) return;
+  _SCREENBG_CATS.forEach((cat) => {
+    const block = panel.querySelector(`.kyso-asset-section[data-cat="${cat}"]`);
+    if (!block) return;
+    const enabled = !!settings[cat + "Enabled"];
+    block.classList.toggle("kyso-asset-section--disabled", !enabled);
+  });
+}
+
 // applyBannerVisibility — fully hides the profile banner across all surfaces
 // (profile page, hover cards). Separate style id from applyBanner so the
 // image-override and the hide can coexist; hide wins.
