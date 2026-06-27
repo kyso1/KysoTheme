@@ -88,13 +88,14 @@ function _findAllDeep(tagName, root = document) {
 // re-apply via the onResolved callback.
 let _selfSummonerId = "";
 let _selfPuuid = ""; // local player's puuid — matches lobby slots' voice-puuid
+let _selfGameName = ""; // local Riot-ID gameName, normalized (trim+lowercase) — used by _profileIsSelf
 let _selfIdPromise = null;
 function ensureSelfSummonerId(onResolved) {
   if (_selfSummonerId) { if (onResolved) onResolved(_selfSummonerId); return; }
   if (!_selfIdPromise) {
     _selfIdPromise = fetch("/lol-summoner/v1/current-summoner")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then((d) => { _selfSummonerId = String(d.summonerId || ""); _selfPuuid = String(d.puuid || ""); return _selfSummonerId; })
+      .then((d) => { _selfSummonerId = String(d.summonerId || ""); _selfPuuid = String(d.puuid || ""); _selfGameName = String(d.gameName || d.displayName || "").trim().toLowerCase(); return _selfSummonerId; })
       .catch((e) => {
         console.warn("[KysoTheme] self summonerId fetch failed:", e);
         _selfIdPromise = null;
@@ -315,6 +316,51 @@ function _crestAllowed(el) {
   const host = _hovercardHost(el);
   if (!host) return true; // not inside a hovercard
   return String(host.getAttribute("summoner-id") || "") === _selfSummonerId;
+}
+
+// Returns the lol-regalia-profile-v2-element ancestor of `el` (crossing shadow
+// boundaries) or null. The profile-page crest lives inside that element's
+// (forced-open) shadow root, so a plain .closest() can't reach the host.
+function _profileHost(el) {
+  let n = el;
+  for (let i = 0; i < 12 && n; i++) {
+    if (n.tagName === "LOL-REGALIA-PROFILE-V2-ELEMENT") return n;
+    const r = n.getRootNode ? n.getRootNode() : null;
+    n = r && r.host ? r.host : (n.parentElement || null);
+  }
+  return null;
+}
+
+// True only when the open full profile page belongs to the local player.
+// Detection: compare the displayed Riot-ID/name to the local gameName. Other
+// players' profile pages use the same element + .style-profile-* classes, so a
+// name compare is how we tell them apart. FAILS CLOSED — unknown local name or
+// no name node => false, so we never paint a profile we can't confirm is ours.
+//
+// NAME_SELECTORS is a best-effort candidate list; the correct one is confirmed
+// in-client (Step 5). Add/replace the real selector there if none match.
+function _profileIsSelf() {
+  if (!_selfGameName) return false;
+  const profile = document.querySelector("lol-regalia-profile-v2-element");
+  if (!profile) return false;
+  const NAME_SELECTORS = [
+    ".style-profile-header-username",
+    ".style-profile-username",
+    ".style-profile-display-name",
+    "[class*='profile'][class*='username']",
+    "[class*='profile'][class*='name']",
+  ];
+  let nameEl = null;
+  for (const sel of NAME_SELECTORS) {
+    nameEl =
+      profile.querySelector(sel) ||
+      (profile.shadowRoot && profile.shadowRoot.querySelector(sel));
+    if (nameEl) break;
+  }
+  if (!nameEl) return false;
+  const shown = String(nameEl.textContent || "").trim().toLowerCase().replace(/#.*$/, "").trim();
+  const mine = _selfGameName.replace(/#.*$/, "").trim();
+  return shown !== "" && shown === mine;
 }
 
 // The hovercard crest-v2 stops re-rendering from ranked-tier/ranked-division
