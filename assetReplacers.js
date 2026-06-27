@@ -236,7 +236,7 @@ function _crestDebounce(fn, ms) {
 // Applies the current crest-rank + LP override to the DOM. Reads the module
 // state vars so the observer can call it with no args. LP is independent of the
 // tier: setting only LP (no rank) still rewrites the tooltip LP span.
-function _updateCrestDom() {
+function _updateCrestRankDom() {
   const tier = _currentCrestRank;
   const division = _currentCrestDivision;
   const changeAll = _currentCrestChangeAll;
@@ -314,11 +314,11 @@ export function applyCrestRank(tier, division, changeAll, lp) {
   _currentCrestChangeAll = !!changeAll;
   _currentCrestLP = lp == null ? "" : String(lp).trim();
   if (_crestRankObserver) { _crestRankObserver.disconnect(); _crestRankObserver = null; }
-  _updateCrestDom();
+  _updateCrestRankDom();
   // Keep observing while EITHER a rank or an LP override is active (the tooltip
   // mounts on hover, after this runs).
   if (!_currentCrestRank && _currentCrestLP === "") return;
-  _crestRankObserver = new MutationObserver(_crestDebounce(_updateCrestDom, 120));
+  _crestRankObserver = new MutationObserver(_crestDebounce(_updateCrestRankDom, 120));
   _crestRankObserver.observe(document.body, { childList: true, subtree: true });
 }
 
