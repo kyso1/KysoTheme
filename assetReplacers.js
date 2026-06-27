@@ -219,47 +219,88 @@ export function applyCrest(url) {
 let _crestRankObserver = null;
 let _currentCrestRank = "";
 let _currentCrestDivision = "I";
+let _currentCrestChangeAll = false;
+let _currentCrestLP = "";
 const _APEX_TIERS = ["MASTER", "GRANDMASTER", "CHALLENGER"];
 
 const _RANK_TITLE = (tier) =>
   tier ? tier.charAt(0) + tier.slice(1).toLowerCase() : "";
 
-function _updateCrestRankDom(tier, division) {
+// Coalesce the crest observer's mutation bursts (it deep-walks shadow roots,
+// so running per-mutation on the busy client DOM is expensive).
+function _crestDebounce(fn, ms) {
+  let h = null;
+  return () => { if (h) clearTimeout(h); h = setTimeout(fn, ms); };
+}
+
+function _updateCrestRankDom(tier, division, changeAll, lp) {
   if (!tier) return;
   // Apex tiers have no division → "O" clears it. Other tiers use I-IV.
   const div = _APEX_TIERS.includes(tier) ? "O" : (division || "I");
+  const tierLower = tier.toLowerCase();
   const setAttrs = (el, t) => {
     if (!el) return;
     if (el.getAttribute("ranked-tier") !== t) el.setAttribute("ranked-tier", t);
     if (el.getAttribute("ranked-division") !== div) el.setAttribute("ranked-division", div);
   };
-  // Crest elements (profile page + hover cards): UPPERCASE ranked-tier.
+  // Main profile crest (active queue): UPPERCASE ranked-tier.
   _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => setAttrs(el, tier));
-  // Emblem elements render from a LOWERCASE ranked-tier (e.g. "challenger").
-  // Set it on the element itself AND the inner shadow `div > div`.
-  const tierLower = tier.toLowerCase();
-  _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
-    setAttrs(em, tierLower);
-    if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
-  });
   // Emblem subheader text → the chosen tier label.
-  const label = _RANK_TITLE(tier);
+  const title = _RANK_TITLE(tier);
   document
     .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
-    .forEach((el) => {
-      if (el.textContent !== label) el.textContent = label;
-    });
+    .forEach((el) => { if (el.textContent !== title) el.textContent = title; });
+
+  // Tooltip elo label: apex = just the tier ("Challenger"); else "Emerald I".
+  const eloLabel = _APEX_TIERS.includes(tier) ? title : `${title} ${div}`;
+
+  // Active queue = the emblem-card header whose text matches a tooltip queue
+  // name (fallback: first queue). Limits the override to the displayed queue
+  // unless "change for all" is on.
+  const queues = _findAllDeep(".ranked-tooltip-queue");
+  const qName = (q) => {
+    const n = q.querySelector(".ranked-tooltip-queue-name");
+    return n ? n.textContent.trim() : "";
+  };
+  let activeQueue = "";
+  if (!changeAll && queues.length) {
+    const names = queues.map(qName);
+    const headers = _findAllDeep(".style-profile-emblem-header-title").map((h) => h.textContent.trim());
+    activeQueue = headers.find((h) => names.includes(h)) || names[0];
+  }
+
+  // Emblem elements render from a LOWERCASE ranked-tier (e.g. "challenger").
+  // Inside a tooltip queue, only the active queue is overridden unless
+  // changeAll; that queue's tier text and LP span are rewritten too.
+  _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
+    const q = em.closest ? em.closest(".ranked-tooltip-queue") : null;
+    if (q && !changeAll && qName(q) !== activeQueue) return;
+    setAttrs(em, tierLower);
+    if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+    if (q) {
+      const tEl = q.querySelector(".ranked-tooltip-queue-tier");
+      if (tEl && tEl.textContent !== eloLabel) tEl.textContent = eloLabel;
+      if (lp !== "" && lp != null) {
+        const lpEl = q.querySelector(".style-profile-ranked-crest-tooltip-lp");
+        const spans = lpEl ? lpEl.querySelectorAll("span") : [];
+        if (spans[1] && spans[1].textContent !== String(lp)) spans[1].textContent = String(lp);
+      }
+    }
+  });
 }
 
-export function applyCrestRank(tier, division) {
+export function applyCrestRank(tier, division, changeAll, lp) {
   _currentCrestRank = (tier || "").toUpperCase();
   _currentCrestDivision = (division || "I").toUpperCase();
+  _currentCrestChangeAll = !!changeAll;
+  _currentCrestLP = lp == null ? "" : String(lp);
   if (_crestRankObserver) { _crestRankObserver.disconnect(); _crestRankObserver = null; }
-  _updateCrestRankDom(_currentCrestRank, _currentCrestDivision);
+  _updateCrestRankDom(_currentCrestRank, _currentCrestDivision, _currentCrestChangeAll, _currentCrestLP);
   if (!_currentCrestRank) return;
-  _crestRankObserver = new MutationObserver(() =>
-    _updateCrestRankDom(_currentCrestRank, _currentCrestDivision),
-  );
+  _crestRankObserver = new MutationObserver(_crestDebounce(
+    () => _updateCrestRankDom(_currentCrestRank, _currentCrestDivision, _currentCrestChangeAll, _currentCrestLP),
+    120,
+  ));
   _crestRankObserver.observe(document.body, { childList: true, subtree: true });
 }
 

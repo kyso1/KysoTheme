@@ -32,6 +32,8 @@ const TRANSLATIONS = {
     bannerLabel: "Banner",
     crestLabel: "Crest",
     crestRankLabel: "Rank crest (game default)",
+    crestChangeAll: "Change all ranked queues",
+    crestLP: "Tooltip LP override",
     crestRankOff: "Off (real rank / image)",
     crestDivisionLabel: "Division",
     crestRankHint: "(overrides the crest, emblem and rank text to the selected tier's default)",
@@ -213,6 +215,8 @@ const TRANSLATIONS = {
     bannerLabel: "Banner",
     crestLabel: "Brasão",
     crestRankLabel: "Brasão por elo (padrão do jogo)",
+    crestChangeAll: "Mudar todas as filas ranqueadas",
+    crestLP: "Sobrescrever LP do tooltip",
     crestRankOff: "Desligado (rank real / imagem)",
     crestDivisionLabel: "Divisão",
     crestRankHint: "(troca brasão, emblema e texto do rank pela arte padrão do elo)",
@@ -1044,6 +1048,8 @@ const DEFAULTS = {
   crestWeb: "",
   crestRank: "", // override rank crest to a LoL tier default (caps) e.g. "GOLD"; "" = off
   crestDivision: "I", // division I-IV for non-apex tiers (apex forced to "O")
+  crestChangeAll: false, // override all ranked-tooltip queues vs only the displayed one
+  crestLP: "",           // override the LP shown in the rank tooltip ("" = leave real)
   // Profile icon (self-only — no allPlayers toggle)
   profileIconSource: "local",
   profileIconLocal: "",
@@ -2377,7 +2383,7 @@ export function applyAllSettings(settings) {
   assetReplacers.applyBanner(resolveAsset("banner", merged));
   assetReplacers.applyBannerVisibility(merged.bannerHidden);
   assetReplacers.applyCrest(resolveAsset("crest", merged));
-  assetReplacers.applyCrestRank(merged.crestRank, merged.crestDivision);
+  assetReplacers.applyCrestRank(merged.crestRank, merged.crestDivision, merged.crestChangeAll, merged.crestLP);
   assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";
   const _iconAll = merged.iconAllPlayers || false;
@@ -3335,6 +3341,10 @@ async function buildAssetsPanel() {
           ${["I", "II", "III", "IV"].map((v) => `<option value="${v}" ${settings.crestDivision === v ? "selected" : ""}>${v}</option>`).join("")}
         </select>
       </div>
+      <div class="kyso-settings-row kyso-settings-row--toggle" id="kyso-crest-changeall-row" ${settings.crestRank ? "" : 'style="display:none"'}>
+        <label class="kyso-label">${t("crestChangeAll")}</label>
+        <label class="kyso-toggle"><input id="kyso-crest-changeall" type="checkbox" ${settings.crestChangeAll ? "checked" : ""}><span class="kyso-toggle-slider"></span></label>
+      </div>
       <div class="kyso-settings-row"><span class="kyso-hint">${t("crestRankHint")}</span></div>
     </section>
 
@@ -3400,6 +3410,8 @@ async function buildAssetsPanel() {
   const crestRankSel = panel.querySelector("#kyso-crest-rank");
   const crestDivSel = panel.querySelector("#kyso-crest-division");
   const crestDivRow = panel.querySelector("#kyso-crest-division-row");
+  const crestChangeAllEl = panel.querySelector("#kyso-crest-changeall");
+  const crestChangeAllRow = panel.querySelector("#kyso-crest-changeall-row");
   const _APEX = ["MASTER", "GRANDMASTER", "CHALLENGER"];
   const applyCrestRankNow = () => {
     const s = {
@@ -3407,16 +3419,19 @@ async function buildAssetsPanel() {
       ...loadSettings(),
       crestRank: crestRankSel ? crestRankSel.value : "",
       crestDivision: crestDivSel ? crestDivSel.value : "I",
+      crestChangeAll: crestChangeAllEl ? crestChangeAllEl.checked : false,
     };
     saveSettings(s);
-    assetReplacers.applyCrestRank(s.crestRank, s.crestDivision);
+    assetReplacers.applyCrestRank(s.crestRank, s.crestDivision, s.crestChangeAll, s.crestLP);
     if (crestDivRow) {
       crestDivRow.style.display =
         s.crestRank && !_APEX.includes(s.crestRank) ? "" : "none";
     }
+    if (crestChangeAllRow) crestChangeAllRow.style.display = s.crestRank ? "" : "none";
   };
   if (crestRankSel) crestRankSel.addEventListener("change", applyCrestRankNow);
   if (crestDivSel) crestDivSel.addEventListener("change", applyCrestRankNow);
+  if (crestChangeAllEl) crestChangeAllEl.addEventListener("change", applyCrestRankNow);
 
   // ── Per-category handlers: source toggle, thumb click, web apply, reset.
   // Each asset uses its targeted apply* so we don't redo full applyAllSettings on every click.
@@ -3747,6 +3762,10 @@ function buildUIEditorPanel() {
       ${tog("kyso-ue-gear-always", "gearAlwaysVisible")}
       ${tog("kyso-ue-lor-always", "lorAlwaysVisible")}
       ${rng("kyso-ue-social-blur", "socialBlur", 20, "px")}
+      <div class="kyso-settings-row">
+        <label class="kyso-label" for="kyso-ue-crest-lp">${t("crestLP")}</label>
+        <input id="kyso-ue-crest-lp" class="kyso-input" type="number" min="0" max="9999" placeholder="LP" value="${settings.crestLP || ""}">
+      </div>
     </section>
     <section class="kyso-settings-section">
       <h3 class="kyso-settings-section-title"><span>${t("visSection")}</span></h3>
@@ -3829,6 +3848,12 @@ function buildUIEditorPanel() {
   bindToggle("#kyso-ue-gear-always", "gearAlwaysVisible", (s) => applyInterfaceToggles(s));
   bindToggle("#kyso-ue-lor-always", "lorAlwaysVisible", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-social-blur", "socialBlur", "px", (s) => applySocialBlur(s.socialBlur));
+  const crestLpEl = panel.querySelector("#kyso-ue-crest-lp");
+  if (crestLpEl) crestLpEl.addEventListener("change", () => {
+    const s = { ...DEFAULTS, ...loadSettings(), crestLP: crestLpEl.value.trim() };
+    saveSettings(s);
+    assetReplacers.applyCrestRank(s.crestRank, s.crestDivision, s.crestChangeAll, s.crestLP);
+  });
 
   // ── Visibility (simple) ──
   bindToggle("#kyso-ue-hide-rp", "hideRP", (s) => applyHideOptions(s));
