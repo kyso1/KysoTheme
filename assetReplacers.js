@@ -68,19 +68,16 @@ function ensureStyleIn(root, id) {
 function _findAllDeep(tagName, root = document) {
   const results = [];
   const visit = (node) => {
-    if (!node) return;
-    if (typeof node.querySelectorAll === "function") {
-      const matches = node.querySelectorAll(tagName);
-      for (const el of matches) results.push(el);
-    }
-    // Walk descendants searching for shadow roots
-    if (typeof node.createTreeWalker === "function") {
-      const walker = node.createTreeWalker(node, NodeFilter.SHOW_ELEMENT);
-      let n;
-      while ((n = walker.nextNode())) {
-        if (n.shadowRoot) visit(n.shadowRoot);
-      }
-    }
+    if (!node || typeof node.querySelectorAll !== "function") return;
+    node.querySelectorAll(tagName).forEach((el) => results.push(el));
+    // Recurse into EVERY nested shadow root. The previous TreeWalker approach
+    // relied on createTreeWalker, which exists on Document but NOT on ShadowRoot
+    // — so it silently stopped at the first shadow level and missed elements
+    // nested 2+ shadows deep (e.g. the regalia hovercard crest, and the
+    // .lol-regalia-summoner-icon inside it).
+    node.querySelectorAll("*").forEach((el) => {
+      if (el.shadowRoot) visit(el.shadowRoot);
+    });
   };
   visit(root);
   return results;
@@ -395,6 +392,14 @@ function _updateHovercardDom() {
     if (String(card.getAttribute("summoner-id") || "") !== _selfSummonerId) continue;
     // Summoner icon — inside the crest shadow under the regalia element.
     if (_hoverIcon && card.shadowRoot) {
+      // The crest-v2 renders its icon from profile-icon-url (same mechanism as
+      // the profile-page crest), which survives the component's re-renders.
+      _findAllDeep("lol-regalia-crest-v2-element", card.shadowRoot).forEach((cr) => {
+        if (cr.getAttribute("profile-icon-url") !== _hoverIcon) {
+          cr.setAttribute("profile-icon-url", _hoverIcon);
+        }
+      });
+      // Fallback: set the already-rendered icon div background directly.
       _findAllDeep(".lol-regalia-summoner-icon", card.shadowRoot).forEach((ic) => {
         const next = `url("${_hoverIcon}")`;
         if (ic.style.backgroundImage !== next) {
