@@ -13,19 +13,7 @@
       { "label": "Mode Switcher Alt", "path": "ModeSwitcher/switch1.jpg" }
     ],
     "banners": [],
-    "crests": [
-      { "label": "Iron",        "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/iron.svg" },
-      { "label": "Bronze",      "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/bronze.svg" },
-      { "label": "Silver",      "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/silver.svg" },
-      { "label": "Gold",        "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/gold.svg" },
-      { "label": "Platinum",    "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/platinum.svg" },
-      { "label": "Emerald",     "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/emerald.svg" },
-      { "label": "Diamond",     "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/diamond.svg" },
-      { "label": "Master",      "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/master.svg" },
-      { "label": "Grandmaster", "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/grandmaster.svg" },
-      { "label": "Challenger",  "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/challenger.svg" },
-      { "label": "Unranked",    "path": "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.svg" }
-    ],
+    "crests": [],
     "profileIcons": [],
     "loadingBackgrounds": [
       { "label": "Default", "path": "Loading Screen/loading-background.jpg" },
