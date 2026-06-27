@@ -288,16 +288,26 @@ function _applyHovercardCrestArt(rootShadow, tier, dvText) {
   });
 }
 
-// The hovercard popup also shows a mini rank emblem per queue:
-// <img class="hover-card-rank-image" src=".../<tier>.svg">. Swap the tier name in
-// the src to the chosen tier (preserves the full path + any query string).
-function _applyHovercardRankImages(root, tier) {
+// The hovercard popup shows, per .hover-card-rank: a mini emblem
+// <img.hover-card-rank-image src=".../<tier>.svg"> and a raw text node sibling
+// like "Emerald I (TFT)". Swap the emblem tier and rewrite the text's rank
+// prefix to the chosen elo, preserving the " (queue)" suffix. The sibling
+// .hover-card-challenge-crystal is left untouched (it's the challenge level).
+function _applyHovercardRank(root, tier, eloLabel) {
   const tl = tier.toLowerCase();
-  root.querySelectorAll(".hover-card-rank-image").forEach((img) => {
-    const cur = img.getAttribute("src") || "";
-    if (!/\.svg/i.test(cur)) return;
-    const next = cur.replace(/[a-z-]+\.svg(\?[^#]*)?$/i, (m, q) => tl + ".svg" + (q || ""));
-    if (cur !== next) img.setAttribute("src", next);
+  root.querySelectorAll(".hover-card-rank").forEach((rank) => {
+    rank.querySelectorAll(".hover-card-rank-image").forEach((img) => {
+      const cur = img.getAttribute("src") || "";
+      if (!/\.svg/i.test(cur)) return;
+      const next = cur.replace(/[a-z-]+\.svg(\?[^#]*)?$/i, (m, q) => tl + ".svg" + (q || ""));
+      if (cur !== next) img.setAttribute("src", next);
+    });
+    rank.childNodes.forEach((n) => {
+      if (n.nodeType !== 3 || !n.textContent.trim()) return;
+      const m = n.textContent.match(/\(.*$/); // the "(TFT)" queue suffix
+      const next = m ? `${eloLabel} ${m[0]}` : eloLabel;
+      if (n.textContent.trim() !== next.trim()) n.textContent = next;
+    });
   });
 }
 
@@ -361,7 +371,7 @@ function _updateCrestRankDom() {
         _applyHovercardCrestArt(el.shadowRoot, tier, dvText);
         _watchHovercardCrest(el);
         const proot = _hovercardPopupRoot(host);
-        if (proot) _applyHovercardRankImages(proot, tier);
+        if (proot) _applyHovercardRank(proot, tier, eloLabel);
       }
     });
     // Emblem subheader text → the chosen tier label.
