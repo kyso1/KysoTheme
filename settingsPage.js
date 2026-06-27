@@ -55,6 +55,7 @@ const TRANSLATIONS = {
     alwaysShowStatus: "Always show status / availability",
     alwaysShowSocialActions: "Always show social action buttons",
     alwaysShowVersion: "Always show patch version",
+    activityTabsAlwaysVisible: "Always show activity center tabs",
     uiEditorSection: "UI Editor",
     hoverGroupTitle: "Hover elements",
     hideTFT: "Hide TFT (hover mode)",
@@ -199,6 +200,7 @@ const TRANSLATIONS = {
     alwaysShowStatus: "Sempre mostrar status / disponibilidade",
     alwaysShowSocialActions: "Sempre mostrar botões de ação social",
     alwaysShowVersion: "Sempre mostrar versão do patch",
+    activityTabsAlwaysVisible: "Sempre mostrar abas da central de atividades",
     uiEditorSection: "UI Editor",
     hoverGroupTitle: "Elementos hover",
     hideTFT: "Ocultar TFT (modo hover)",
@@ -992,6 +994,7 @@ const DEFAULTS = {
   alwaysShowStatus: false,
   alwaysShowSocialActions: false,
   alwaysShowVersion: false,
+  activityTabsAlwaysVisible: false, // force #activity-center tabs always visible
   hideTFT: false,
   hideSocialOnly: false,
   hideSocialPanel: false,
@@ -1538,9 +1541,21 @@ function applyTopNavbarHiddenState(hidden, showBlueEssence) {
     el.style.setProperty("pointer-events", pe, "important");
   };
 
-  // Botão SEMPRE fica à esquerda (translateX 0). Não desloca com BE/RP.
+  // Botão desliza junto: ao esconder vai até o fim (translateX = offset). Se
+  // "always show blue essence" estiver ligado, a carteira (BE) permanece
+  // visível em translateX(0), então o botão gruda logo à esquerda dela em vez
+  // de ir até o fim. Ao mostrar, volta para translateX(0). offsetLeft é a
+  // posição base (ignora transform), então o cálculo é estável entre toggles.
   if (btn) {
-    btn.style.setProperty("transform", "translateX(0px)", "important");
+    let btx = 0;
+    if (hidden) {
+      if (showBlueEssence && wallet) {
+        btx = Math.max(0, wallet.offsetLeft - btn.offsetLeft - btn.offsetWidth);
+      } else {
+        btx = offset;
+      }
+    }
+    btn.style.setProperty("transform", `translateX(${btx}px)`, "important");
     btn.style.setProperty("opacity", "1", "important");
     btn.style.setProperty("pointer-events", "auto", "important");
   }
@@ -1817,6 +1832,13 @@ function applyHideOptions(settings) {
 `;
   }
 
+  if (settings.activityTabsAlwaysVisible) {
+    css += `#activity-center .activity-center__tabs_scrollable {
+  opacity: 1 !important; visibility: visible !important; display: flex !important;
+}
+`;
+  }
+
   if (settings.hideTFT) {
     css += `.menu_item_navbar_tft { opacity: 0 !important; transition: 0.2s !important; }
 .menu_item_navbar_tft:hover { opacity: 1 !important; transition: 0.2s !important; }\n`;
@@ -1868,12 +1890,14 @@ function applyIcon(url, allPlayers = false, syncNavbar = false) {
     // Modo "todos": seletores globais (comportamento antigo)
     iconBlock = `/* KYSO-ICON-START */\n.icon-image.has-icon,\n.top > .icon-image.has-icon,\n.summoner-level-icon .icon-image {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nsummoner-icon,\nimg.icon-image.has-icon,\n.style-profile-champion-icon-masked > img {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
   } else {
-    // Modo "só eu": escopo restrito ao avatar próprio na barra lateral
-    const navbarSel = syncNavbar
-      ? ",\n.top > .icon-image.has-icon,\n.main-navigation .icon-image.has-icon"
-      : "";
+    // Modo "só eu": escopo restrito ao avatar próprio na barra lateral.
+    // navbarSel was a background-image rule on a SIBLING (.top > .icon-image)
+    // which rendered a second icon BELOW the official one. Dropped — we now
+    // override the real top-bar <img> (lol-uikit-radial-progress > .top > img)
+    // directly via content:url(), so there is exactly one synced icon.
+    const navbarSel = "";
     const navbarContentSel = syncNavbar
-      ? ",\n.style-profile-champion-icon-masked > img"
+      ? ",\n.style-profile-champion-icon-masked > img,\nlol-uikit-radial-progress > div.top > img"
       : "";
     iconBlock = `/* KYSO-ICON-START */\nlol-social-avatar .icon-image.has-icon,\nlol-social-avatar .summoner-level-icon .icon-image${navbarSel} {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nlol-social-avatar img.icon-image.has-icon,\nlol-social-avatar summoner-icon${navbarContentSel} {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
   }
@@ -1971,6 +1995,11 @@ function _themedNavCss() {
 .main-navigation-menu-item .menu_item_navbar_competitive .ember-view { left: -448px !important; }
 .basic-button { left: 32vw !important; height: 48px !important; width: 122px !important; top: 15px !important; }
 .left-nav-menu { position: relative !important; margin-left: -200px !important; }
+/* Hide the League logo only in THEMED mode (the themed play button uses its
+   own ▶ glyph). In vanilla mode this block is omitted, so the original animated
+   League logo shows to the left of the play button. */
+.league-logo { display: none !important; }
+lol-uikit-video-state-machine { display: none !important; }
 `;
 }
 
@@ -3480,6 +3509,7 @@ function buildUIEditorPanel() {
       ${tog("kyso-ue-always-status", "alwaysShowStatus")}
       ${tog("kyso-ue-always-social-actions", "alwaysShowSocialActions")}
       ${tog("kyso-ue-always-version", "alwaysShowVersion")}
+      ${tog("kyso-ue-activity-tabs", "activityTabsAlwaysVisible")}
     </section>
   `;
 
@@ -3524,6 +3554,7 @@ function buildUIEditorPanel() {
   bindToggle("#kyso-ue-always-status", "alwaysShowStatus", (s) => applyHideOptions(s));
   bindToggle("#kyso-ue-always-social-actions", "alwaysShowSocialActions", (s) => applyHideOptions(s));
   bindToggle("#kyso-ue-always-version", "alwaysShowVersion", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-activity-tabs", "activityTabsAlwaysVisible", (s) => applyHideOptions(s));
 
   // ── Social hover toggles (mutex) + sliding-door buttons (conflict w/ hover) ──
   const soEl = panel.querySelector("#kyso-ue-hide-social-only");

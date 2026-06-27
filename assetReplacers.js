@@ -250,37 +250,31 @@ export function applyLoadingScreen({ bgUrl, iconUrl }) {
   style.textContent = parts.join("\n");
 }
 
-// applyProfileBgTransparent — hides the profile-page champion-splash background
-// so a custom #kyso-global-bg shows through. Deep-injects into every
-// lol-regalia-profile-v2-element shadow root.
-let _profileBgObserver = null;
-let _profileBgHidden = false;
-
-const PROFILE_BG_CSS = (hidden) => hidden
-  ? `:host, [class*="background"], [class*="splash"], [class*="banner-image"] {
-       background: transparent !important;
-       background-image: none !important;
-     }
-     img[class*="background"], img[class*="splash"] { opacity: 0 !important; }`
-  : "";
-
-function _updateProfileBgDom(hidden) {
-  const profiles = _findAllDeep("lol-regalia-profile-v2-element");
-  for (const p of profiles) {
-    if (!p.shadowRoot) continue;
-    const style = ensureStyleIn(p.shadowRoot, "kyso-profilebg-override");
-    if (!style) continue;
-    style.textContent = PROFILE_BG_CSS(hidden);
-  }
-}
+// applyProfileBgTransparent — zeroes the profile-page background switcher so a
+// custom #kyso-global-bg shows through. The backdrop lives in the LIGHT DOM
+// (.style-profile-backdrop-component … .uikit-background-switcher), so a single
+// document-level <style> rule covers current and future profile mounts — no
+// shadow-root walking or MutationObserver needed.
+let _profileBgStyle = null;
 
 export function applyProfileBgTransparent(hidden) {
-  _profileBgHidden = !!hidden;
-  if (_profileBgObserver) { _profileBgObserver.disconnect(); _profileBgObserver = null; }
-  _updateProfileBgDom(_profileBgHidden);
-  if (!_profileBgHidden) return;
-  _profileBgObserver = new MutationObserver(() => { _updateProfileBgDom(_profileBgHidden); });
-  _profileBgObserver.observe(document.body, { childList: true, subtree: true });
+  if (!_profileBgStyle || !_profileBgStyle.isConnected) {
+    _profileBgStyle =
+      document.getElementById("kyso-profilebg-style") ||
+      (() => {
+        const s = document.createElement("style");
+        s.id = "kyso-profilebg-style";
+        document.head.appendChild(s);
+        return s;
+      })();
+  }
+  _profileBgStyle.textContent = hidden
+    ? `.style-profile-backdrop-component .style-profile-backdrop-container .uikit-background-switcher {
+         background: transparent !important;
+         background-image: none !important;
+         opacity: 0 !important;
+       }`
+    : "";
 }
 
 // applyBannerVisibility — fully hides the profile banner across all surfaces
