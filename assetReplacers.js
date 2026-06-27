@@ -272,6 +272,9 @@ export function applyCrest(url) {
   _currentCrestUrl = url || "";
   if (_crestObserver) _crestObserver.disconnect();
   _updateCrestDom(_currentCrestUrl);
+  // Resolve self-id so the self-only crest guard can take effect once known
+  // (the crest image is now gated by _profileIsSelf/_crestAllowed).
+  ensureSelfSummonerId(() => _updateCrestDom(_currentCrestUrl));
   _crestObserver = new MutationObserver(() => {
     _updateCrestDom(_currentCrestUrl);
   });
