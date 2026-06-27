@@ -3716,6 +3716,11 @@ function buildUIEditorPanel() {
       </div>`;
 
   panel.innerHTML = `
+    <div class="kyso-ue-search">
+      <input id="kyso-ue-search-input" class="kyso-input" type="text" placeholder="${t("searchPlaceholder")}" autocomplete="off">
+      <button id="kyso-ue-search-clear" class="kyso-ue-search-clear" type="button" aria-label="clear">×</button>
+    </div>
+    <div id="kyso-ue-search-empty" class="kyso-ue-search-empty" style="display:none;">${t("searchNoResults")}</div>
     <section class="kyso-settings-section">
       <h3 class="kyso-settings-section-title"><span>${t("interfaceSection")}</span></h3>
       ${tog("kyso-ue-icon-navbar", "iconSyncNavbar")}
@@ -3898,6 +3903,37 @@ function buildUIEditorPanel() {
     const s = persist({ showBlueEssenceOnHide: beEl.checked });
     applyTopNavbarHiddenState(s.navbarHidden, s.showBlueEssenceOnHide);
   });
+
+  // ── v3.2 search filter (scoped to this panel) ──
+  const searchInput = panel.querySelector("#kyso-ue-search-input");
+  const searchClear = panel.querySelector("#kyso-ue-search-clear");
+  const searchEmpty = panel.querySelector("#kyso-ue-search-empty");
+  const searchRows = Array.from(panel.querySelectorAll(".kyso-settings-row"));
+  // Tag each row with its lowercased label text once.
+  searchRows.forEach((row) => {
+    const lbl = row.querySelector(".kyso-label");
+    row.dataset.kysoSearch = (lbl ? lbl.textContent : "").toLowerCase();
+  });
+  const sections = Array.from(panel.querySelectorAll(".kyso-settings-section"));
+  const runSearch = (qRaw) => {
+    const q = (qRaw || "").trim().toLowerCase();
+    let anyVisible = false;
+    searchRows.forEach((row) => {
+      const match = !q || row.dataset.kysoSearch.indexOf(q) !== -1;
+      row.style.display = match ? "" : "none";
+      if (match) anyVisible = true;
+    });
+    // Hide a section header whose rows are all hidden.
+    sections.forEach((sec) => {
+      const visibleRow = sec.querySelector(".kyso-settings-row:not([style*='display: none'])");
+      const header = sec.querySelector(".kyso-settings-section-title");
+      if (header) header.style.display = q && !visibleRow ? "none" : "";
+      sec.style.display = q && !visibleRow ? "none" : "";
+    });
+    if (searchEmpty) searchEmpty.style.display = q && !anyVisible ? "" : "none";
+  };
+  if (searchInput) searchInput.addEventListener("input", () => runSearch(searchInput.value));
+  if (searchClear) searchClear.addEventListener("click", () => { if (searchInput) { searchInput.value = ""; runSearch(""); searchInput.focus(); } });
 
   return panel;
 }

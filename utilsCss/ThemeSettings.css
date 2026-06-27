@@ -980,3 +980,30 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.03em;
 }
+
+/* v3.2 UI Editor search */
+.kyso-ue-search {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0 10px;
+  background: inherit;
+}
+.kyso-ue-search .kyso-input { flex: 1; }
+.kyso-ue-search-clear {
+  background: none;
+  border: none;
+  color: #c8a040;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 6px;
+}
+.kyso-ue-search-empty {
+  padding: 14px 0;
+  text-align: center;
+  opacity: 0.6;
+}
