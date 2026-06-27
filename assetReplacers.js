@@ -87,13 +87,14 @@ function _findAllDeep(tagName, root = document) {
 // from the LCU; until it arrives, hovercard/self-guarded overrides no-op, then
 // re-apply via the onResolved callback.
 let _selfSummonerId = "";
+let _selfPuuid = ""; // local player's puuid — matches lobby slots' voice-puuid
 let _selfIdPromise = null;
 function ensureSelfSummonerId(onResolved) {
   if (_selfSummonerId) { if (onResolved) onResolved(_selfSummonerId); return; }
   if (!_selfIdPromise) {
     _selfIdPromise = fetch("/lol-summoner/v1/current-summoner")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
-      .then((d) => { _selfSummonerId = String(d.summonerId || ""); return _selfSummonerId; })
+      .then((d) => { _selfSummonerId = String(d.summonerId || ""); _selfPuuid = String(d.puuid || ""); return _selfSummonerId; })
       .catch((e) => {
         console.warn("[KysoTheme] self summonerId fetch failed:", e);
         _selfIdPromise = null;
@@ -136,6 +137,48 @@ function _updateProfileIconDom(url) {
       }
     }
   }
+
+  // Lobby player slots + parties banner — self-only. A crest-v2 renders its icon
+  // from profile-icon-url (native, survives the component's re-renders); also
+  // paint the already-rendered .lol-regalia-summoner-icon bg for an immediate
+  // swap. Self is identified per-surface (see below); never touches teammates.
+  const _paintCrestIcon = (cr) => {
+    if (!cr) return;
+    if (cr.getAttribute("profile-icon-url") !== url) cr.setAttribute("profile-icon-url", url);
+    const next = `url("${url}")`;
+    _findAllDeep(".lol-regalia-summoner-icon", cr.shadowRoot || cr).forEach((ic) => {
+      if (ic.style.backgroundImage !== next) {
+        ic.style.backgroundImage = next;
+        ic.style.backgroundSize = "cover";
+        ic.style.backgroundPosition = "center";
+      }
+    });
+  };
+
+  // Lobby slot crests live in the light DOM; the self slot's crest-v2 carries
+  // voice-puuid === local puuid. Only that one gets the custom icon.
+  if (_selfPuuid) {
+    document
+      .querySelectorAll(".player-slot__crest-wrapper > lol-regalia-crest-v2-element")
+      .forEach((cr) => {
+        if (String(cr.getAttribute("voice-puuid") || "") === _selfPuuid) _paintCrestIcon(cr);
+      });
+  }
+
+  // Parties banner — .lobby-banner.local marks the local player's banner, so no
+  // puuid check needed. Paint any crest-v2 + icon div nested in its shadow tree.
+  document.querySelectorAll("lol-regalia-parties-v2-element").forEach((pv) => {
+    if (!pv.closest || !pv.closest(".lobby-banner.local")) return;
+    _findAllDeep("lol-regalia-crest-v2-element", pv.shadowRoot || pv).forEach(_paintCrestIcon);
+    const next = `url("${url}")`;
+    _findAllDeep(".lol-regalia-summoner-icon", pv.shadowRoot || pv).forEach((ic) => {
+      if (ic.style.backgroundImage !== next) {
+        ic.style.backgroundImage = next;
+        ic.style.backgroundSize = "cover";
+        ic.style.backgroundPosition = "center";
+      }
+    });
+  });
 }
 
 export function applyProfileIcon(url) {
@@ -144,9 +187,13 @@ export function applyProfileIcon(url) {
   if (!_currentProfileIconUrl) return; // empty → leave Riot default
 
   _updateProfileIconDom(_currentProfileIconUrl);
-  _profileIconObserver = new MutationObserver(() => {
-    _updateProfileIconDom(_currentProfileIconUrl);
-  });
+  // Resolve local puuid so the self lobby-slot match can take effect once known.
+  ensureSelfSummonerId(() => _updateProfileIconDom(_currentProfileIconUrl));
+  // Debounced: the callback now deep-walks parties-v2 shadow trees, too heavy to
+  // run per-mutation on the busy lobby DOM.
+  _profileIconObserver = new MutationObserver(
+    _crestDebounce(() => _updateProfileIconDom(_currentProfileIconUrl), 120),
+  );
   _profileIconObserver.observe(document.body, { childList: true, subtree: true });
 }
 

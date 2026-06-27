@@ -9,7 +9,7 @@ Built for [Pengu Loader](https://pengu.lol) — configure everything without tou
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-3.3-blue?style=for-the-badge&logo=github)](https://github.com/kyso1/KysoTheme/releases)
+[![Version](https://img.shields.io/badge/version-3.4-blue?style=for-the-badge&logo=github)](https://github.com/kyso1/KysoTheme/releases)
 [![Pengu Loader](https://img.shields.io/badge/Pengu%20Loader-0.5.0%2B-purple?style=for-the-badge)](https://pengu.lol)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -25,9 +25,12 @@ KysoTheme transforms the League of Legends client into a cleaner, more personal 
 
 ---
 
-## 🆕 What's New in v3.3
+## 🆕 What's New in v3.4
 
 The v3.x releases turned every fixed theme behavior into a user control and added two new tabs.
+
+### v3.4 — Custom icon in lobby & party
+- Your selected **custom profile icon** now also shows on your **lobby player slot** and the **party banner** — matched to you only (by puuid / local marker), so teammates' icons are never touched.
 
 ### v3.1 — Kyso UI Editor
 - Renamed to **Kyso UI Editor** with a **first-run welcome modal**.
