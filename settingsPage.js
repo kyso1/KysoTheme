@@ -2166,10 +2166,13 @@ function applyInterfaceToggles(settings) {
 `;
   }
   if (settings.lorAlwaysVisible) {
-    block += `.launch-lor-button-container { opacity: 1 !important; }\n`;
+    block += `.launch-lor-button-container,
+.deep-links-promo-element .launch-lor-button-arrow { opacity: 1 !important; }\n`;
   } else {
-    block += `.launch-lor-button-container { opacity: 0; transition: 0.2s !important; }
-.launch-lor-button-container:hover { opacity: 1; transition: 0.2s !important; }
+    block += `.launch-lor-button-container,
+.deep-links-promo-element .launch-lor-button-arrow { opacity: 0; transition: 0.2s !important; }
+.launch-lor-button-container:hover,
+.deep-links-promo-element:hover .launch-lor-button-arrow { opacity: 1; transition: 0.2s !important; }
 `;
   }
   block += "/* KYSO-INTERFACE-END */\n";
