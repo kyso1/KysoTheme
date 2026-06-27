@@ -1718,6 +1718,17 @@ const SOCIAL_SLIDE_OFFSET = 225; // px — largura do social panel + margem
 
 let _socialMutationObserver = null;
 
+// v3.2 perf: coalesce MutationObserver bursts so the whole-body observers
+// (navbar/social drawer-button keep-alive) don't thrash the main thread on the
+// constantly-mutating client DOM. Trailing debounce — runs once after quiet.
+function _debounce(fn, ms) {
+  let h = null;
+  return () => {
+    if (h) clearTimeout(h);
+    h = setTimeout(fn, ms);
+  };
+}
+
 function applySocialHiddenState(hidden) {
   const btn = document.querySelector(".hide-friendslist");
   const icon = document.querySelector(".hide-friendslist-icon");
@@ -1799,7 +1810,7 @@ function applyHideSocialBtnSetting(settings) {
     ensureButton();
 
     if (_socialMutationObserver) _socialMutationObserver.disconnect();
-    _socialMutationObserver = new MutationObserver(ensureButton);
+    _socialMutationObserver = new MutationObserver(_debounce(ensureButton, 120));
     _socialMutationObserver.observe(document.body, {
       childList: true,
       subtree: true,
@@ -1831,7 +1842,7 @@ function applyHideNavbarBtnSetting(settings) {
 
     // Observer persistente — sobrevive page changes que destroem right-nav
     if (_navbarMutationObserver) _navbarMutationObserver.disconnect();
-    _navbarMutationObserver = new MutationObserver(ensureButton);
+    _navbarMutationObserver = new MutationObserver(_debounce(ensureButton, 120));
     _navbarMutationObserver.observe(document.body, {
       childList: true,
       subtree: true,
@@ -1919,10 +1930,10 @@ function applyHideOptions(settings) {
 `;
   }
   if (!(settings.alwaysShowSocialActions || _showAll)) {
-    css += `.lol-social-actions-bar > .actions-bar > buttons:not(:first-child) {
+    css += `.lol-social-actions-bar .actions-bar .action-bar-button:not(:first-child) {
   opacity: 0; transition: 0.2s !important;
 }
-.lol-social-actions-bar:hover > .actions-bar > buttons:not(:first-child) {
+.lol-social-actions-bar:hover .actions-bar .action-bar-button:not(:first-child) {
   opacity: 1; transition: 0.2s !important;
 }
 `;
@@ -3865,16 +3876,26 @@ function buildUIEditorPanel() {
   const socEl = panel.querySelector("#kyso-ue-enable-hide-social-btn");
   const beRow = panel.querySelector("#kyso-ue-show-blue-essence-row");
 
-  if (soEl) soEl.addEventListener("change", () => {
-    const patch = { hideSocialOnly: soEl.checked };
-    if (soEl.checked && spEl) { spEl.checked = false; patch.hideSocialPanel = false; }
-    applyHideOptions(persist(patch));
-  });
-  if (spEl) spEl.addEventListener("change", () => {
-    const patch = { hideSocialPanel: spEl.checked };
-    if (spEl.checked && soEl) { soEl.checked = false; patch.hideSocialOnly = false; }
-    applyHideOptions(persist(patch));
-  });
+  // Hover modes are mutually exclusive with each other AND with both sliding
+  // doors (a door + a hover mode on the same panel fight each other). The two
+  // doors target different things (top-nav vs social panel) so they may coexist.
+  const _exclusiveHover = (which, checked) => {
+    const patch = { [which]: checked };
+    if (checked) {
+      const other = which === "hideSocialOnly" ? "hideSocialPanel" : "hideSocialOnly";
+      const otherEl = which === "hideSocialOnly" ? spEl : soEl;
+      if (otherEl) otherEl.checked = false;
+      patch[other] = false;
+      if (navEl && navEl.checked) { navEl.checked = false; patch.enableHideNavbarBtn = false; if (beRow) beRow.style.display = "none"; }
+      if (socEl && socEl.checked) { socEl.checked = false; patch.enableHideSocialBtn = false; }
+    }
+    const s = persist(patch);
+    if (patch.enableHideNavbarBtn === false) applyHideNavbarBtnSetting(s);
+    if (patch.enableHideSocialBtn === false) applyHideSocialBtnSetting(s);
+    applyHideOptions(s);
+  };
+  if (soEl) soEl.addEventListener("change", () => _exclusiveHover("hideSocialOnly", soEl.checked));
+  if (spEl) spEl.addEventListener("change", () => _exclusiveHover("hideSocialPanel", spEl.checked));
   if (navEl) navEl.addEventListener("change", () => {
     const patch = { enableHideNavbarBtn: navEl.checked };
     if (navEl.checked) {
