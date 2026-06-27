@@ -407,6 +407,16 @@ div[data-screen-name="rcp-fe-lol-home"].active
   .rcp-fe-lol-home-loading-spinner.loading {
   visibility: hidden !important;
 }
+
+#rcp-fe-viewport-root {
+  display: flex;
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
 /* Viewport-root é transparente. Background global vive em #kyso-global-bg
    (body-level, fixed, z-index:-1). */
 #rcp-fe-viewport-root {
