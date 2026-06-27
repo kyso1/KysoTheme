@@ -111,9 +111,9 @@ let _profileIconObserver = null;
 let _currentProfileIconUrl = "";
 
 function _updateProfileIconDom(url) {
-  // Profile page crest (shadow root)
+  // Profile page crest (shadow root) — self-only: never paint another player's profile.
   const regaliaProfile = document.querySelector("lol-regalia-profile-v2-element");
-  if (regaliaProfile && regaliaProfile.shadowRoot) {
+  if (regaliaProfile && regaliaProfile.shadowRoot && _profileIsSelf()) {
     const icon = regaliaProfile.shadowRoot.querySelector(
       "div > div > div.regalia-profile-crest-hover-area.picker-enabled > lol-regalia-crest-v2-element",
     );
@@ -262,7 +262,9 @@ function _updateCrestDom(url) {
     if (!crest.shadowRoot) continue;
     const style = ensureStyleIn(crest.shadowRoot, "kyso-crest-override");
     if (!style) continue;
-    style.textContent = CREST_CSS(url);
+    // Self-only: paint our crest image; clear it on others' surfaces (an element
+    // may be reused, so explicitly blank disallowed ones).
+    style.textContent = _crestImgAllowed(crest) ? CREST_CSS(url) : "";
   }
 }
 
@@ -361,6 +363,16 @@ function _profileIsSelf() {
   const shown = String(nameEl.textContent || "").trim().toLowerCase().replace(/#.*$/, "").trim();
   const mine = _selfGameName.replace(/#.*$/, "").trim();
   return shown !== "" && shown === mine;
+}
+
+// Per-crest self-guard for crest-v2 elements anywhere in the document:
+//   hovercard  -> allowed only for the local player (summoner-id match)
+//   profile pg -> allowed only when the open profile is ours (_profileIsSelf)
+//   elsewhere  -> unaffected (sidebar/lobby) — returns true
+function _crestImgAllowed(crest) {
+  if (_hovercardHost(crest)) return _crestAllowed(crest);
+  if (_profileHost(crest)) return _profileIsSelf();
+  return true;
 }
 
 // The hovercard crest-v2 stops re-rendering from ranked-tier/ranked-division
