@@ -218,17 +218,20 @@ export function applyCrest(url) {
 // ranked-division gets the letter "O" to clear it; other tiers default to "I".
 let _crestRankObserver = null;
 let _currentCrestRank = "";
+let _currentCrestDivision = "I";
+const _APEX_TIERS = ["MASTER", "GRANDMASTER", "CHALLENGER"];
 
 const _RANK_TITLE = (tier) =>
   tier ? tier.charAt(0) + tier.slice(1).toLowerCase() : "";
 
-function _updateCrestRankDom(tier) {
+function _updateCrestRankDom(tier, division) {
   if (!tier) return;
-  const division = ["MASTER", "GRANDMASTER", "CHALLENGER"].includes(tier) ? "O" : "I";
+  // Apex tiers have no division → "O" clears it. Other tiers use I-IV.
+  const div = _APEX_TIERS.includes(tier) ? "O" : (division || "I");
   const setAttrs = (el) => {
     if (!el) return;
     if (el.getAttribute("ranked-tier") !== tier) el.setAttribute("ranked-tier", tier);
-    if (el.getAttribute("ranked-division") !== division) el.setAttribute("ranked-division", division);
+    if (el.getAttribute("ranked-division") !== div) el.setAttribute("ranked-division", div);
   };
   // Crest elements (profile page + hover cards): attributes on the element.
   _findAllDeep("lol-regalia-crest-v2-element").forEach(setAttrs);
@@ -245,12 +248,15 @@ function _updateCrestRankDom(tier) {
     });
 }
 
-export function applyCrestRank(tier) {
+export function applyCrestRank(tier, division) {
   _currentCrestRank = (tier || "").toUpperCase();
+  _currentCrestDivision = (division || "I").toUpperCase();
   if (_crestRankObserver) { _crestRankObserver.disconnect(); _crestRankObserver = null; }
-  _updateCrestRankDom(_currentCrestRank);
+  _updateCrestRankDom(_currentCrestRank, _currentCrestDivision);
   if (!_currentCrestRank) return;
-  _crestRankObserver = new MutationObserver(() => _updateCrestRankDom(_currentCrestRank));
+  _crestRankObserver = new MutationObserver(() =>
+    _updateCrestRankDom(_currentCrestRank, _currentCrestDivision),
+  );
   _crestRankObserver.observe(document.body, { childList: true, subtree: true });
 }
 

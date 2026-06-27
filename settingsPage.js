@@ -33,6 +33,7 @@ const TRANSLATIONS = {
     crestLabel: "Crest",
     crestRankLabel: "Rank crest (game default)",
     crestRankOff: "Off (real rank / image)",
+    crestDivisionLabel: "Division",
     crestRankHint: "(overrides the crest, emblem and rank text to the selected tier's default)",
     profileIconLabel: "Profile Icon",
     loadingBgLabel: "Loading Background",
@@ -181,6 +182,7 @@ const TRANSLATIONS = {
     crestLabel: "Brasão",
     crestRankLabel: "Brasão por elo (padrão do jogo)",
     crestRankOff: "Desligado (rank real / imagem)",
+    crestDivisionLabel: "Divisão",
     crestRankHint: "(troca brasão, emblema e texto do rank pela arte padrão do elo)",
     profileIconLabel: "Ícone de Perfil",
     loadingBgLabel: "Fundo da Tela de Loading",
@@ -977,6 +979,7 @@ const DEFAULTS = {
   crestLocal: "",
   crestWeb: "",
   crestRank: "", // override rank crest to a LoL tier default (caps) e.g. "GOLD"; "" = off
+  crestDivision: "I", // division I-IV for non-apex tiers (apex forced to "O")
   // Profile icon (self-only — no allPlayers toggle)
   profileIconSource: "local",
   profileIconLocal: "",
@@ -2184,7 +2187,7 @@ export function applyAllSettings(settings) {
   assetReplacers.applyBanner(resolveAsset("banner", merged));
   assetReplacers.applyBannerVisibility(merged.bannerHidden);
   assetReplacers.applyCrest(resolveAsset("crest", merged));
-  assetReplacers.applyCrestRank(merged.crestRank);
+  assetReplacers.applyCrestRank(merged.crestRank, merged.crestDivision);
   assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";
   const _iconAll = merged.iconAllPlayers || false;
@@ -3135,6 +3138,12 @@ async function buildAssetsPanel() {
             .join("")}
         </select>
       </div>
+      <div class="kyso-settings-row" id="kyso-crest-division-row" ${settings.crestRank && !["MASTER", "GRANDMASTER", "CHALLENGER"].includes(settings.crestRank) ? "" : 'style="display:none"'}>
+        <label class="kyso-label" for="kyso-crest-division">${t("crestDivisionLabel")}</label>
+        <select id="kyso-crest-division" class="kyso-select">
+          ${["I", "II", "III", "IV"].map((v) => `<option value="${v}" ${settings.crestDivision === v ? "selected" : ""}>${v}</option>`).join("")}
+        </select>
+      </div>
       <div class="kyso-settings-row"><span class="kyso-hint">${t("crestRankHint")}</span></div>
     </section>
 
@@ -3189,15 +3198,28 @@ async function buildAssetsPanel() {
   `;
 
   // Crest rank override (elo default crest) — sets ranked-tier/division
-  // attributes via assetReplacers.applyCrestRank.
+  // attributes via assetReplacers.applyCrestRank. Division dropdown (I-IV)
+  // applies to non-apex tiers; hidden for apex (forced to "O") and "Off".
   const crestRankSel = panel.querySelector("#kyso-crest-rank");
-  if (crestRankSel) {
-    crestRankSel.addEventListener("change", () => {
-      const s = { ...DEFAULTS, ...loadSettings(), crestRank: crestRankSel.value };
-      saveSettings(s);
-      assetReplacers.applyCrestRank(s.crestRank);
-    });
-  }
+  const crestDivSel = panel.querySelector("#kyso-crest-division");
+  const crestDivRow = panel.querySelector("#kyso-crest-division-row");
+  const _APEX = ["MASTER", "GRANDMASTER", "CHALLENGER"];
+  const applyCrestRankNow = () => {
+    const s = {
+      ...DEFAULTS,
+      ...loadSettings(),
+      crestRank: crestRankSel ? crestRankSel.value : "",
+      crestDivision: crestDivSel ? crestDivSel.value : "I",
+    };
+    saveSettings(s);
+    assetReplacers.applyCrestRank(s.crestRank, s.crestDivision);
+    if (crestDivRow) {
+      crestDivRow.style.display =
+        s.crestRank && !_APEX.includes(s.crestRank) ? "" : "none";
+    }
+  };
+  if (crestRankSel) crestRankSel.addEventListener("change", applyCrestRankNow);
+  if (crestDivSel) crestDivSel.addEventListener("change", applyCrestRankNow);
 
   // ── Per-category handlers: source toggle, thumb click, web apply, reset.
   // Each asset uses its targeted apply* so we don't redo full applyAllSettings on every click.
