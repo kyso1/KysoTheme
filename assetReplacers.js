@@ -370,6 +370,13 @@ function _updateCrestRankDom() {
       .forEach((el) => { if (el.textContent !== title) el.textContent = title; });
   }
 
+  // Profile emblem header mastery-score → show the chosen LP (self profile page).
+  if (hasLP) {
+    _findAllDeep(".style-profile-champion-mastery-score").forEach((el) => {
+      if (el.textContent !== String(lp)) el.textContent = String(lp);
+    });
+  }
+
   // Active queue = the emblem-card header whose text matches a tooltip queue
   // name (fallback: first queue). Limits the override to the displayed queue
   // unless "change for all" is on. Used for both crest and LP.
