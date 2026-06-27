@@ -921,6 +921,25 @@
   font-size: 14px;
 }
 
+/* v3.2 — screen-bg picker disabled when its UI Editor toggle is OFF */
+.kyso-asset-section--disabled {
+  position: relative;
+  opacity: 0.45;
+  pointer-events: none;
+}
+.kyso-asset-section--disabled::after {
+  content: attr(data-disabled-hint);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #c8a040;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
 /* ─── Visual filter controls (inside Color Theme section) ───────────────── */
 .kyso-filter-divider {
   height: 1px;

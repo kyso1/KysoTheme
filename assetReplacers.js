@@ -397,6 +397,7 @@ export function applyScreenBgDisabledUI(panel, settings) {
     if (!block) return;
     const enabled = !!settings[cat + "Enabled"];
     block.classList.toggle("kyso-asset-section--disabled", !enabled);
+    block.setAttribute("data-disabled-hint", enabled ? "" : (settings._enableHint || "Enable in UI Editor"));
   });
 }
 

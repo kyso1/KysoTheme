@@ -3368,6 +3368,12 @@ async function buildAssetsPanel() {
 
     ${buildAssetBlock("loadingIcon", "loadingIconLabel", manifest.categories.loadingIcons, settings, { icon: ICONS.picture })}
 
+    <h3 class="kyso-settings-section-title" style="margin-top:18px;"><span>${t("screenBgSection")}</span></h3>
+    ${buildAssetBlock("collectionsBg", "collectionsBgLabel", manifest.categories.collectionsBackgrounds || [], settings, { icon: ICONS.picture })}
+    ${buildAssetBlock("champSelectBg", "champSelectBgLabel", manifest.categories.champSelectBackgrounds || [], settings, { icon: ICONS.picture })}
+    ${buildAssetBlock("runesBg", "runesBgLabel", manifest.categories.runesBackgrounds || [], settings, { icon: ICONS.picture })}
+    ${buildAssetBlock("modeSwitcherBg", "modeSwitcherBgLabel", manifest.categories.modeSwitcherBackgrounds || [], settings, { icon: ICONS.picture })}
+
     <div class="kyso-settings-footer">
       <span id="kyso-save-feedback" class="kyso-save-feedback"></span>
     </div>
@@ -3405,6 +3411,10 @@ async function buildAssetsPanel() {
     crest:      (s) => assetReplacers.applyCrest(resolveAsset("crest", s)),
     loadingBg:  (s) => assetReplacers.applyLoadingScreen({ bgUrl: resolveAsset("loadingBg", s), iconUrl: resolveAsset("loadingIcon", s) }),
     loadingIcon:(s) => assetReplacers.applyLoadingScreen({ bgUrl: resolveAsset("loadingBg", s), iconUrl: resolveAsset("loadingIcon", s) }),
+    collectionsBg: (s) => assetReplacers.applyScreenBackgrounds(s),
+    champSelectBg: (s) => assetReplacers.applyScreenBackgrounds(s),
+    runesBg:       (s) => assetReplacers.applyScreenBackgrounds(s),
+    modeSwitcherBg:(s) => assetReplacers.applyScreenBackgrounds(s),
   };
 
   function updateActiveThumb(cat, path, block) {
@@ -3661,6 +3671,8 @@ async function buildAssetsPanel() {
     });
   }
 
+  assetReplacers.applyScreenBgDisabledUI(panel, { ...settings, _enableHint: t("enableInUiEditor") });
+
   return panel;
 }
 
@@ -3750,6 +3762,13 @@ function buildUIEditorPanel() {
       ${tog("kyso-ue-viewport-glow", "viewportGlow")}
     </section>
     <section class="kyso-settings-section">
+      <h3 class="kyso-settings-section-title"><span>${t("screenBgSection")}</span></h3>
+      ${tog("kyso-ue-bg-collections", "collectionsBgEnabled")}
+      ${tog("kyso-ue-bg-champselect", "champSelectBgEnabled")}
+      ${tog("kyso-ue-bg-runes", "runesBgEnabled")}
+      ${tog("kyso-ue-bg-modeswitch", "modeSwitcherBgEnabled")}
+    </section>
+    <section class="kyso-settings-section">
       <h3 class="kyso-settings-section-title"><span>${t("hoverGroupTitle")}</span></h3>
       ${tog("kyso-ue-always-chat", "alwaysShowChat")}
       ${tog("kyso-ue-always-invite", "alwaysShowInvite")}
@@ -3822,6 +3841,17 @@ function buildUIEditorPanel() {
   bindToggle("#kyso-ue-store-hue", "storeHueOverlay", (s) => applyVisualToggles(s));
   bindToggle("#kyso-ue-readycheck-anim", "readyCheckAnim", (s) => applyVisualToggles(s));
   bindToggle("#kyso-ue-viewport-glow", "viewportGlow", (s) => applyVisualToggles(s));
+
+  // ── v3.2 Bucket B screen-background enable toggles ──
+  const _bgRefresh = (s) => {
+    assetReplacers.applyScreenBackgrounds(s);
+    const assetsPanel = document.querySelector(".kyso-assets-panel");
+    if (assetsPanel) assetReplacers.applyScreenBgDisabledUI(assetsPanel, { ...s, _enableHint: t("enableInUiEditor") });
+  };
+  bindToggle("#kyso-ue-bg-collections", "collectionsBgEnabled", _bgRefresh);
+  bindToggle("#kyso-ue-bg-champselect", "champSelectBgEnabled", _bgRefresh);
+  bindToggle("#kyso-ue-bg-runes", "runesBgEnabled", _bgRefresh);
+  bindToggle("#kyso-ue-bg-modeswitch", "modeSwitcherBgEnabled", _bgRefresh);
 
   // ── Social hover toggles (mutex) + sliding-door buttons (conflict w/ hover) ──
   const soEl = panel.querySelector("#kyso-ue-hide-social-only");
