@@ -60,6 +60,38 @@ const TRANSLATIONS = {
     alwaysShowSocialActions: "Always show social action buttons",
     alwaysShowVersion: "Always show patch version",
     activityTabsAlwaysVisible: "Always show activity center tabs",
+    // v3.2 Bucket A
+    alwaysShowXpRadial: "Always show XP radial",
+    alwaysShowRuneRec: "Always show rune recommender",
+    alwaysShowDeepLinks: "Always show deep-links promo",
+    showLootBackdrop: "Show loot backdrop",
+    showIncidentTicker: "Show service-incident ticker",
+    showRestrictionWarning: "Show profile restriction warning",
+    showLoadingSpinner: "Show loading-screen spinner",
+    showLobbyOverlay: "Show lobby header overlay",
+    showNavDividers: "Show navbar item dividers",
+    showActivityDivider: "Show activity-center divider",
+    // v3.2 Bucket C
+    killClientBlur: "Disable client blur",
+    storeHueOverlay: "Store accent tint",
+    readyCheckAnim: "Ready-check animations",
+    viewportGlow: "Viewport accent glow",
+    // v3.2 Bucket B
+    screenBgSection: "Screen backgrounds",
+    collectionsBgEnabled: "Collections background",
+    champSelectBgEnabled: "Champ-select background",
+    runesBgEnabled: "Runes background",
+    modeSwitcherBgEnabled: "Mode-switcher background",
+    collectionsBgLabel: "Collections background",
+    champSelectBgLabel: "Champ-select background",
+    runesBgLabel: "Runes background",
+    modeSwitcherBgLabel: "Mode-switcher background",
+    enableInUiEditor: "Enable in UI Editor",
+    // v3.2 search
+    searchPlaceholder: "Search options…",
+    searchNoResults: "No results",
+    moreVisSection: "More visibility",
+    effectsSection: "Visual effects",
     uiEditorSection: "UI Editor",
     hoverGroupTitle: "Hover elements",
     hideTFT: "Hide TFT (hover mode)",
@@ -209,6 +241,38 @@ const TRANSLATIONS = {
     alwaysShowSocialActions: "Sempre mostrar botões de ação social",
     alwaysShowVersion: "Sempre mostrar versão do patch",
     activityTabsAlwaysVisible: "Sempre mostrar abas da central de atividades",
+    // v3.2 Bucket A
+    alwaysShowXpRadial: "Sempre mostrar radial de XP",
+    alwaysShowRuneRec: "Sempre mostrar recomendador de runas",
+    alwaysShowDeepLinks: "Sempre mostrar promo de deep-links",
+    showLootBackdrop: "Mostrar fundo do saque",
+    showIncidentTicker: "Mostrar aviso de incidente do serviço",
+    showRestrictionWarning: "Mostrar aviso de restrição no perfil",
+    showLoadingSpinner: "Mostrar spinner da tela de loading",
+    showLobbyOverlay: "Mostrar overlay do cabeçalho da lobby",
+    showNavDividers: "Mostrar divisórias da navbar",
+    showActivityDivider: "Mostrar divisória do activity-center",
+    // v3.2 Bucket C
+    killClientBlur: "Desativar blur do cliente",
+    storeHueOverlay: "Tom de destaque na loja",
+    readyCheckAnim: "Animações do ready-check",
+    viewportGlow: "Brilho de destaque do viewport",
+    // v3.2 Bucket B
+    screenBgSection: "Fundos de tela",
+    collectionsBgEnabled: "Fundo de Coleções",
+    champSelectBgEnabled: "Fundo de Seleção de campeão",
+    runesBgEnabled: "Fundo de Runas",
+    modeSwitcherBgEnabled: "Fundo do seletor de modo",
+    collectionsBgLabel: "Fundo de Coleções",
+    champSelectBgLabel: "Fundo de Seleção de campeão",
+    runesBgLabel: "Fundo de Runas",
+    modeSwitcherBgLabel: "Fundo do seletor de modo",
+    enableInUiEditor: "Ative no UI Editor",
+    // v3.2 search
+    searchPlaceholder: "Pesquisar opções…",
+    searchNoResults: "Nenhum resultado",
+    moreVisSection: "Mais visibilidade",
+    effectsSection: "Efeitos visuais",
     uiEditorSection: "UI Editor",
     hoverGroupTitle: "Elementos hover",
     hideTFT: "Ocultar TFT (modo hover)",
@@ -1005,6 +1069,27 @@ const DEFAULTS = {
   alwaysShowSocialActions: false,
   alwaysShowVersion: false,
   activityTabsAlwaysVisible: false, // force #activity-center tabs always visible
+  // ── v3.2 Bucket A: hide/show toggles (default = current theme look) ──
+  alwaysShowXpRadial: false,        // .summoner-xp-radial-container
+  alwaysShowRuneRec: false,         // .rune-recommender-button-component
+  alwaysShowDeepLinks: false,       // .deep-links-promo
+  showLootBackdrop: false,          // .loot-backdrop
+  showIncidentTicker: false,        // .navigation-status-ticker.has-incidents
+  showRestrictionWarning: false,    // .player-restriction-warning-icon
+  showLoadingSpinner: false,        // .lol-loading-screen-spinner
+  showLobbyOverlay: false,          // .lobby-header-overlay
+  showNavDividers: false,           // .right-nav-vertical-rule
+  showActivityDivider: false,       // .activity-center__tabs_section-divider
+  // ── v3.2 Bucket C: visual-effect toggles (default ON = current look) ──
+  killClientBlur: true,             // *{backdrop-filter:none} + parties blur collapse
+  storeHueOverlay: true,            // store/yourshop accent hue blend
+  readyCheckAnim: true,             // ready-check fadeIn animations
+  viewportGlow: true,               // #rcp-fe-viewport-root accent drop-shadow
+  // ── v3.2 Bucket B: per-screen backgrounds ──
+  collectionsBgSource: "local", collectionsBgLocal: "Collections/collections-bg.jpg", collectionsBgWeb: "", collectionsBgEnabled: false,
+  champSelectBgSource: "local", champSelectBgLocal: "Runes and Select/champ-select-and-runes.jpg", champSelectBgWeb: "", champSelectBgEnabled: true,
+  runesBgSource: "local", runesBgLocal: "Runes and Select/champ-select-and-runes.jpg", runesBgWeb: "", runesBgEnabled: true,
+  modeSwitcherBgSource: "local", modeSwitcherBgLocal: "ModeSwitcher/switch.jpg", modeSwitcherBgWeb: "", modeSwitcherBgEnabled: false,
   hideTFT: false,
   hideSocialOnly: false,
   hideSocialPanel: false,
