@@ -9,9 +9,13 @@ Built for [Pengu Loader](https://pengu.lol) — configure everything without tou
 
 <br>
 
-[![Version](https://img.shields.io/badge/version-3.4-blue?style=for-the-badge&logo=github)](https://github.com/kyso1/KysoTheme/releases)
+[![Version](https://img.shields.io/badge/version-3.5.1-blue?style=for-the-badge&logo=github)](https://github.com/kyso1/KysoTheme/releases)
 [![Pengu Loader](https://img.shields.io/badge/Pengu%20Loader-0.5.0%2B-purple?style=for-the-badge)](https://pengu.lol)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
+
+<br>
+
+[🇺🇸 English](README.MD) &nbsp;&bull;&nbsp; [🇧🇷 Português](README-pt-BR.md)
 
 </div>
 
@@ -25,9 +29,16 @@ KysoTheme transforms the League of Legends client into a cleaner, more personal 
 
 ---
 
-## 🆕 What's New in v3.5
+## 🆕 What's New
 
-The v3.x releases turned every fixed theme behavior into a user control and added two new tabs.
+### 🏷️ v3.5.1 (Patch/Fixes)
+This update focuses on fixing the "Self-Only" functionality (which restricts visual mods to your own profile).
+- **Self-Only Profile Detection**: Fixed own-profile detection to use `summoner-id`/`puuid` attributes instead of name selectors.
+- **Per-surface check**: Profile ownership is now checked per rendered surface, fixing bugs when multiple profiles are mounted.
+- **Crest Self-ID Guard**: Fixed `applyCrest` so the self-only guard re-runs once your local ID is resolved, preventing your crest from appearing on friends' profiles.
+
+<details>
+<summary><b>View Older Releases (v3.5, v3.4, v3.1...)</b></summary>
 
 ### v3.5 — Instant top-bar icon, self-only profile, new toggles
 - Your **custom profile icon** now updates the **top-bar avatar** instantly when you apply it — no reload needed.
@@ -60,6 +71,8 @@ The floating regalia hover card on your profile now follows your chosen rank —
 - **Summoner icon** uses your selected custom icon.
 - **Mastery score** mirrors your **LP** value (also on the profile emblem header).
 - New **Hovercard backdrop** asset — pick a splash image with an interactive crop tool.
+
+</details>
 
 ---
 
