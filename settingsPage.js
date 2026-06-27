@@ -34,6 +34,11 @@ const TRANSLATIONS = {
     crestRankLabel: "Rank crest (game default)",
     crestChangeAll: "Change all ranked queues",
     crestLP: "Tooltip LP override",
+    hoverBackdropLabel: "Hovercard backdrop",
+    hoverBackdropHint: "Self-only splash behind your regalia hover card. Cropped to 2.934:1.",
+    hoverBackdropCropButton: "Crop backdrop",
+    hoverBackdropCropTitle: "Crop hovercard backdrop (2.93:1)",
+    hoverBackdropCropHint: "Drag the frame to choose the visible area.",
     crestRankOff: "Off (real rank / image)",
     crestDivisionLabel: "Division",
     crestRankHint: "(overrides the crest, emblem and rank text to the selected tier's default)",
@@ -217,6 +222,11 @@ const TRANSLATIONS = {
     crestRankLabel: "Brasão por elo (padrão do jogo)",
     crestChangeAll: "Mudar todas as filas ranqueadas",
     crestLP: "Sobrescrever LP do tooltip",
+    hoverBackdropLabel: "Fundo do hovercard",
+    hoverBackdropHint: "Splash atrás do seu hover card de regalia (só você). Cortado em 2.934:1.",
+    hoverBackdropCropButton: "Cortar fundo",
+    hoverBackdropCropTitle: "Cortar fundo do hovercard (2.93:1)",
+    hoverBackdropCropHint: "Arraste o quadro para escolher a área visível.",
     crestRankOff: "Desligado (rank real / imagem)",
     crestDivisionLabel: "Divisão",
     crestRankHint: "(troca brasão, emblema e texto do rank pela arte padrão do elo)",
@@ -1050,6 +1060,7 @@ const DEFAULTS = {
   crestDivision: "I", // division I-IV for non-apex tiers (apex forced to "O")
   crestChangeAll: false, // override all ranked-tooltip queues vs only the displayed one
   crestLP: "",           // override the LP shown in the rank tooltip ("" = leave real)
+  hoverBackdrop: "",     // self-only regalia hovercard splash (dataURL/web URL); "" = client default
   // Profile icon (self-only — no allPlayers toggle)
   profileIconSource: "local",
   profileIconLocal: "",
@@ -2384,6 +2395,7 @@ export function applyAllSettings(settings) {
   assetReplacers.applyBannerVisibility(merged.bannerHidden);
   assetReplacers.applyCrest(resolveAsset("crest", merged));
   assetReplacers.applyCrestRank(merged.crestRank, merged.crestDivision, merged.crestChangeAll, merged.crestLP);
+  assetReplacers.applyHovercard({ iconUrl: merged.iconUrl || "", lp: merged.crestLP || "", backdropUrl: merged.hoverBackdrop || "" });
   assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";
   const _iconAll = merged.iconAllPlayers || false;
@@ -2427,6 +2439,14 @@ const CROP_OUTPUT_SIZE = 256;
 // ─────────────────────────────────────────────
 const BANNER_CROP_W = 960;
 const BANNER_CROP_H = 240;
+
+// ─────────────────────────────────────────────
+//  Crop modal for the hovercard backdrop — ≈ 402×137 (ratio 2.934).
+//  Saída: PNG dataURL 804×274.
+// ─────────────────────────────────────────────
+const HOVER_BD_RATIO = 2.934;
+const HOVER_BD_W = 804;
+const HOVER_BD_H = 274;
 
 function openIconCropModal(srcUrl, onConfirm) {
   const overlay = document.createElement("div");
@@ -2732,6 +2752,152 @@ function openBannerCropModal(srcUrl, onConfirm) {
       dataUrl = canvas.toDataURL("image/png");
     } catch (err) {
       console.error("[KysoTheme] Banner crop falhou (CORS):", err);
+      alert(
+        "Não foi possível recortar essa imagem (CORS). Faça upload de um arquivo local ou use uma URL que permita CORS.",
+      );
+      return;
+    }
+    cleanup();
+    onConfirm(dataUrl);
+  });
+}
+
+function openHovercardBackdropCropModal(srcUrl, onConfirm) {
+  const overlay = document.createElement("div");
+  overlay.className = "kyso-crop-overlay";
+  overlay.innerHTML = `
+    <div class="kyso-crop-modal" role="dialog" aria-modal="true">
+      <div class="kyso-crop-header">
+        <span class="kyso-crop-title">${t("hoverBackdropCropTitle")}</span>
+      </div>
+      <div class="kyso-crop-hint">${t("hoverBackdropCropHint")}</div>
+      <div class="kyso-crop-stage kyso-crop-stage--wide">
+        <div class="kyso-crop-image-wrap">
+          <img class="kyso-crop-image" alt="" draggable="false">
+          <div class="kyso-crop-box">
+            <div class="kyso-crop-handle" data-h="nw"></div>
+            <div class="kyso-crop-handle" data-h="ne"></div>
+            <div class="kyso-crop-handle" data-h="sw"></div>
+            <div class="kyso-crop-handle" data-h="se"></div>
+          </div>
+        </div>
+      </div>
+      <div class="kyso-crop-actions">
+        <button class="kyso-btn kyso-btn--secondary kyso-crop-cancel">${t("cropCancel")}</button>
+        <button class="kyso-btn kyso-btn--primary kyso-crop-confirm">${t("cropApply")}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const img = overlay.querySelector(".kyso-crop-image");
+  const box = overlay.querySelector(".kyso-crop-box");
+
+  let dispW = 0, dispH = 0;
+  let cx = 0, cy = 0, cw = 0, ch = 0;
+
+  const layoutBox = () => {
+    box.style.left = `${cx}px`;
+    box.style.top = `${cy}px`;
+    box.style.width = `${cw}px`;
+    box.style.height = `${ch}px`;
+  };
+
+  const init = () => {
+    dispW = img.clientWidth;
+    dispH = img.clientHeight;
+    cw = Math.floor(dispW * 0.9);
+    ch = Math.round(cw / HOVER_BD_RATIO);
+    if (ch > dispH * 0.9) {
+      ch = Math.floor(dispH * 0.9);
+      cw = Math.round(ch * HOVER_BD_RATIO);
+    }
+    cx = Math.floor((dispW - cw) / 2);
+    cy = Math.floor((dispH - ch) / 2);
+    layoutBox();
+  };
+
+  img.addEventListener("load", init);
+  img.crossOrigin = "anonymous";
+  img.src = srcUrl;
+
+  let drag = null;
+  box.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    const handle = e.target.classList.contains("kyso-crop-handle")
+      ? e.target.dataset.h
+      : null;
+    drag = { mode: handle ? "resize" : "move", handle, sx: e.clientX, sy: e.clientY, cx, cy, cw, ch };
+  });
+
+  const onMove = (e) => {
+    if (!drag) return;
+    const dx = e.clientX - drag.sx;
+    const dy = e.clientY - drag.sy;
+    if (drag.mode === "move") {
+      cx = Math.max(0, Math.min(dispW - drag.cw, drag.cx + dx));
+      cy = Math.max(0, Math.min(dispH - drag.ch, drag.cy + dy));
+      cw = drag.cw;
+      ch = drag.ch;
+    } else {
+      const h = drag.handle;
+      let newCw;
+      if (h === "se") {
+        newCw = Math.max(40, Math.min(drag.cw + dx, dispW - drag.cx));
+        cx = drag.cx;
+        cy = drag.cy;
+      } else if (h === "sw") {
+        newCw = Math.max(40, Math.min(drag.cw - dx, drag.cx + drag.cw));
+        cx = drag.cx + drag.cw - newCw;
+        cy = drag.cy;
+      } else if (h === "ne") {
+        newCw = Math.max(40, Math.min(drag.cw + dx, dispW - drag.cx));
+        cx = drag.cx;
+        cy = drag.cy + drag.ch - Math.round(newCw / HOVER_BD_RATIO);
+      } else { // nw
+        newCw = Math.max(40, Math.min(drag.cw - dx, drag.cx + drag.cw));
+        cx = drag.cx + drag.cw - newCw;
+        cy = drag.cy + drag.ch - Math.round(newCw / HOVER_BD_RATIO);
+      }
+      cw = newCw;
+      ch = Math.round(cw / HOVER_BD_RATIO);
+      cx = Math.max(0, Math.min(cx, dispW - cw));
+      cy = Math.max(0, Math.min(cy, dispH - ch));
+    }
+    layoutBox();
+  };
+
+  const onUp = () => { drag = null; };
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+
+  const cleanup = () => {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+    overlay.remove();
+  };
+
+  overlay.querySelector(".kyso-crop-cancel").addEventListener("click", cleanup);
+
+  overlay.querySelector(".kyso-crop-confirm").addEventListener("click", () => {
+    const scale = img.naturalWidth / dispW;
+    const sx = Math.round(cx * scale);
+    const sy = Math.round(cy * scale);
+    const sW = Math.round(cw * scale);
+    const sH = Math.round(ch * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = HOVER_BD_W;
+    canvas.height = HOVER_BD_H;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, sx, sy, sW, sH, 0, 0, HOVER_BD_W, HOVER_BD_H);
+
+    let dataUrl;
+    try {
+      dataUrl = canvas.toDataURL("image/png");
+    } catch (err) {
+      console.error("[KysoTheme] Hovercard backdrop crop falhou (CORS):", err);
       alert(
         "Não foi possível recortar essa imagem (CORS). Faça upload de um arquivo local ou use uma URL que permita CORS.",
       );
@@ -3393,6 +3559,35 @@ async function buildAssetsPanel() {
       </div>
     </section>
 
+    <!-- Hovercard backdrop — self-only regalia hover-card splash (single dataURL/web string) -->
+    <section class="kyso-settings-section" id="kyso-hoverbd-section">
+      <h3 class="kyso-settings-section-title">${ICONS.picture}<span>${t("hoverBackdropLabel")}</span></h3>
+
+      <div class="kyso-settings-row">
+        <label class="kyso-label" for="kyso-hoverbd-url">${t("iconUrl")}</label>
+        <input id="kyso-hoverbd-url" class="kyso-input" type="text"
+          placeholder="${t("iconUrlPlaceholder")}"
+          value="${(settings.hoverBackdrop || "").replace(/"/g, "&quot;")}">
+      </div>
+
+      <div class="kyso-settings-row kyso-settings-row--upload">
+        <label class="kyso-label">${t("iconUpload")}</label>
+        <label class="kyso-btn kyso-btn--secondary kyso-upload-label">
+          ${ICONS.folder}<span>${t("iconChoose")}</span>
+          <input id="kyso-hoverbd-file" type="file" accept="image/*" style="display:none;">
+        </label>
+        <span id="kyso-hoverbd-filename" class="kyso-filename">${t("noFile")}</span>
+      </div>
+
+      <div class="kyso-settings-row"><span class="kyso-hint">${t("hoverBackdropHint")}</span></div>
+
+      <div class="kyso-settings-row">
+        <button id="kyso-hoverbd-crop" class="kyso-btn kyso-btn--secondary" ${settings.hoverBackdrop ? "" : "disabled"}>${ICONS.scissors}<span>${t("hoverBackdropCropButton")}</span></button>
+        <button id="kyso-hoverbd-apply" class="kyso-btn kyso-btn--primary">${t("iconApply")}</button>
+        <button id="kyso-hoverbd-reset" class="kyso-btn kyso-btn--danger">${t("iconRemove")}</button>
+      </div>
+    </section>
+
     ${buildAssetBlock("loadingBg", "loadingBgLabel", manifest.categories.loadingBackgrounds, settings, { icon: ICONS.picture })}
 
     ${buildAssetBlock("loadingIcon", "loadingIconLabel", manifest.categories.loadingIcons, settings, { icon: ICONS.picture })}
@@ -3707,6 +3902,52 @@ async function buildAssetsPanel() {
       applyIcon(url, allPlayers);
     });
   }
+
+  // Hovercard backdrop section handlers (self-only splash; single dataURL/web string)
+  const hbdUrlInput  = panel.querySelector("#kyso-hoverbd-url");
+  const hbdFileInput = panel.querySelector("#kyso-hoverbd-file");
+  const hbdFilename  = panel.querySelector("#kyso-hoverbd-filename");
+  const hbdCropBtn   = panel.querySelector("#kyso-hoverbd-crop");
+  const hbdApplyBtn  = panel.querySelector("#kyso-hoverbd-apply");
+  const hbdResetBtn  = panel.querySelector("#kyso-hoverbd-reset");
+  let _hbdPendingUrl = "";
+  const _enableHbdCrop = () => { if (hbdCropBtn) hbdCropBtn.disabled = !(hbdUrlInput.value.trim() || _hbdPendingUrl); };
+  const _saveHbd = (url) => {
+    const s = { ...DEFAULTS, ...loadSettings(), hoverBackdrop: url };
+    saveSettings(s);
+    assetReplacers.applyHovercard({ iconUrl: s.iconUrl || "", lp: s.crestLP || "", backdropUrl: url });
+  };
+  if (hbdUrlInput) hbdUrlInput.addEventListener("input", _enableHbdCrop);
+  if (hbdFileInput) hbdFileInput.addEventListener("change", () => {
+    const file = hbdFileInput.files[0];
+    if (!file) return;
+    hbdFilename.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => { _hbdPendingUrl = ev.target.result; hbdUrlInput.value = ""; _enableHbdCrop(); };
+    reader.readAsDataURL(file);
+  });
+  if (hbdCropBtn) hbdCropBtn.addEventListener("click", () => {
+    const src = _hbdPendingUrl || hbdUrlInput.value.trim();
+    if (!src) return;
+    openHovercardBackdropCropModal(src, (dataUrl) => {
+      _hbdPendingUrl = "";
+      hbdFilename.textContent = t("noFile");
+      hbdUrlInput.value = dataUrl;
+      _enableHbdCrop();
+      _saveHbd(dataUrl);
+      showFeedback(panel, t("iconApplied"));
+    });
+  });
+  if (hbdApplyBtn) hbdApplyBtn.addEventListener("click", () => {
+    _saveHbd(hbdUrlInput.value.trim());
+    showFeedback(panel, t("iconApplied"));
+  });
+  if (hbdResetBtn) hbdResetBtn.addEventListener("click", () => {
+    hbdUrlInput.value = ""; _hbdPendingUrl = ""; hbdFilename.textContent = t("noFile");
+    if (hbdCropBtn) hbdCropBtn.disabled = true;
+    _saveHbd("");
+    showFeedback(panel, t("iconRemoved"));
+  });
 
   assetReplacers.applyScreenBgDisabledUI(panel, { ...settings, _enableHint: t("enableInUiEditor") });
 

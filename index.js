@@ -29,6 +29,17 @@ import "./main-theme/theme.css";
 import { initSettingsPage } from "./settingsPage.js";
 // import { initializeDodgeButton } from './dodgeButton.js';
 
+// Force every shadow root open so the plugin can read/override closed component
+// internals. The regalia hovercard's crest/icon/backdrop live in a CLOSED shadow
+// root, unreachable via element.shadowRoot otherwise. Runs on import (before the
+// client builds hovercards). Benign: only makes roots readable; no behavior change.
+if (!Element.prototype.__kysoOpenShadow) {
+  Element.prototype.__kysoOpenShadow = Element.prototype.attachShadow;
+  Element.prototype.attachShadow = function (init) {
+    return this.__kysoOpenShadow({ ...(init || {}), mode: "open" });
+  };
+}
+
 // Coalesce MutationObserver bursts — the client mutates its DOM constantly, so
 // running a whole-document callback once per mutation freezes the main thread.
 function _debounce(fn, ms) {

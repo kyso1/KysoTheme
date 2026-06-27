@@ -86,6 +86,26 @@ function _findAllDeep(tagName, root = document) {
   return results;
 }
 
+// Local player's summonerId — hovercard overrides are self-only. Resolved once
+// from the LCU; until it arrives, hovercard/self-guarded overrides no-op, then
+// re-apply via the onResolved callback.
+let _selfSummonerId = "";
+let _selfIdPromise = null;
+function ensureSelfSummonerId(onResolved) {
+  if (_selfSummonerId) { if (onResolved) onResolved(_selfSummonerId); return; }
+  if (!_selfIdPromise) {
+    _selfIdPromise = fetch("/lol-summoner/v1/current-summoner")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+      .then((d) => { _selfSummonerId = String(d.summonerId || ""); return _selfSummonerId; })
+      .catch((e) => {
+        console.warn("[KysoTheme] self summonerId fetch failed:", e);
+        _selfIdPromise = null;
+        return "";
+      });
+  }
+  _selfIdPromise.then((id) => { if (id && onResolved) onResolved(id); });
+}
+
 // applyProfileIcon — self-only. Touches profile page crest + sidebar avatar.
 // Empty URL → skip mutations (lets Riot default render).
 let _profileIconObserver = null;
@@ -233,6 +253,21 @@ function _crestDebounce(fn, ms) {
   return () => { if (h) clearTimeout(h); h = setTimeout(fn, ms); };
 }
 
+// A crest-v2 inside a regalia hovercard is overridden only for the local player
+// (hovercards now reachable since shadow roots are forced open). Crests elsewhere
+// (profile page, sidebar) are unaffected by this guard.
+function _crestAllowed(el) {
+  let n = el;
+  for (let i = 0; i < 12 && n; i++) {
+    if (n.tagName === "LOL-REGALIA-HOVERCARD-V2-ELEMENT") {
+      return String(n.getAttribute("summoner-id") || "") === _selfSummonerId;
+    }
+    const r = n.getRootNode ? n.getRootNode() : null;
+    n = r && r.host ? r.host : (n.parentElement || null);
+  }
+  return true; // not inside a hovercard
+}
+
 // Applies the current crest-rank + LP override to the DOM. Reads the module
 // state vars so the observer can call it with no args. LP is independent of the
 // tier: setting only LP (no rank) still rewrites the tooltip LP span.
@@ -256,8 +291,12 @@ function _updateCrestRankDom() {
   };
 
   if (tier) {
-    // Main profile crest (active queue): UPPERCASE ranked-tier.
-    _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => setAttrs(el, tier));
+    // Main profile crest (active queue): UPPERCASE ranked-tier. Hovercard crests
+    // are limited to the local player via _crestAllowed.
+    _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => {
+      if (!_crestAllowed(el)) return;
+      setAttrs(el, tier);
+    });
     // Emblem subheader text → the chosen tier label.
     document
       .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
@@ -315,11 +354,87 @@ export function applyCrestRank(tier, division, changeAll, lp) {
   _currentCrestLP = lp == null ? "" : String(lp).trim();
   if (_crestRankObserver) { _crestRankObserver.disconnect(); _crestRankObserver = null; }
   _updateCrestRankDom();
+  // Resolve self-id so the hovercard crest self-guard can take effect once known.
+  ensureSelfSummonerId(() => _updateCrestRankDom());
   // Keep observing while EITHER a rank or an LP override is active (the tooltip
   // mounts on hover, after this runs).
   if (!_currentCrestRank && _currentCrestLP === "") return;
   _crestRankObserver = new MutationObserver(_crestDebounce(_updateCrestRankDom, 120));
   _crestRankObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+// applyHovercard — overrides the LOCAL player's regalia hovercard popup only:
+// summoner icon (custom), mastery-score text (= LP override), and the backdrop
+// splash. The crest TIER is handled by applyCrestRank (self-guarded). Scoped by
+// matching the hovercard host's summoner-id to the local player.
+let _hoverObserver = null;
+let _hoverIcon = "";
+let _hoverLp = "";
+let _hoverBackdrop = "";
+const _HOVER_GRADIENT =
+  "linear-gradient(to top, #1A1C21 13.41%, rgba(196, 196, 196, 0) 75.55%)";
+
+// The hovercard popup siblings (#hover-card-backdrop, .hover-card-mastery-score)
+// live in a shadow root above the regalia element. Climb host boundaries to find
+// the root that contains them.
+function _hovercardPopupRoot(regaliaEl) {
+  let node = regaliaEl;
+  for (let i = 0; i < 12 && node; i++) {
+    const root = node.getRootNode ? node.getRootNode() : null;
+    if (root && root.querySelector && root.querySelector("#hover-card-backdrop")) return root;
+    node = root && root.host ? root.host : null;
+  }
+  return null;
+}
+
+function _updateHovercardDom() {
+  if (!_hoverIcon && _hoverLp === "" && !_hoverBackdrop) return;
+  if (!_selfSummonerId) return; // not resolved yet
+  const cards = _findAllDeep("lol-regalia-hovercard-v2-element");
+  for (const card of cards) {
+    if (String(card.getAttribute("summoner-id") || "") !== _selfSummonerId) continue;
+    // Summoner icon — inside the crest shadow under the regalia element.
+    if (_hoverIcon && card.shadowRoot) {
+      _findAllDeep(".lol-regalia-summoner-icon", card.shadowRoot).forEach((ic) => {
+        const next = `url("${_hoverIcon}")`;
+        if (ic.style.backgroundImage !== next) {
+          ic.style.backgroundImage = next;
+          ic.style.backgroundSize = "cover";
+          ic.style.backgroundPosition = "center";
+        }
+      });
+    }
+    const root = _hovercardPopupRoot(card);
+    if (!root) continue;
+    if (_hoverLp !== "") {
+      const ms = root.querySelector(".hover-card-mastery-score");
+      if (ms && ms.textContent !== String(_hoverLp)) ms.textContent = String(_hoverLp);
+    }
+    if (_hoverBackdrop) {
+      const bd = root.querySelector("#hover-card-backdrop");
+      if (bd) {
+        const next = `${_HOVER_GRADIENT}, url("${_hoverBackdrop}")`;
+        if (bd.style.backgroundImage !== next) {
+          bd.style.backgroundImage = next;
+          bd.style.backgroundSize = "cover";
+          bd.style.backgroundPosition = "center";
+        }
+      }
+    }
+  }
+}
+
+export function applyHovercard({ iconUrl, lp, backdropUrl } = {}) {
+  _hoverIcon = iconUrl || "";
+  _hoverLp = lp == null ? "" : String(lp).trim();
+  _hoverBackdrop = backdropUrl || "";
+  if (_hoverObserver) { _hoverObserver.disconnect(); _hoverObserver = null; }
+  const active = _hoverIcon || _hoverLp !== "" || _hoverBackdrop;
+  if (!active) return;
+  ensureSelfSummonerId(() => _updateHovercardDom());
+  _updateHovercardDom();
+  _hoverObserver = new MutationObserver(_crestDebounce(_updateHovercardDom, 120));
+  _hoverObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 // applyLoadingScreen — single <style id="kyso-loading-style"> in document.head.
