@@ -228,16 +228,19 @@ function _updateCrestRankDom(tier, division) {
   if (!tier) return;
   // Apex tiers have no division → "O" clears it. Other tiers use I-IV.
   const div = _APEX_TIERS.includes(tier) ? "O" : (division || "I");
-  const setAttrs = (el) => {
+  const setAttrs = (el, t) => {
     if (!el) return;
-    if (el.getAttribute("ranked-tier") !== tier) el.setAttribute("ranked-tier", tier);
+    if (el.getAttribute("ranked-tier") !== t) el.setAttribute("ranked-tier", t);
     if (el.getAttribute("ranked-division") !== div) el.setAttribute("ranked-division", div);
   };
-  // Crest elements (profile page + hover cards): attributes on the element.
-  _findAllDeep("lol-regalia-crest-v2-element").forEach(setAttrs);
-  // Emblem elements: attributes on the inner `div > div` inside the shadow root.
+  // Crest elements (profile page + hover cards): UPPERCASE ranked-tier.
+  _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => setAttrs(el, tier));
+  // Emblem elements render from a LOWERCASE ranked-tier (e.g. "challenger").
+  // Set it on the element itself AND the inner shadow `div > div`.
+  const tierLower = tier.toLowerCase();
   _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
-    if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"));
+    setAttrs(em, tierLower);
+    if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
   });
   // Emblem subheader text → the chosen tier label.
   const label = _RANK_TITLE(tier);
