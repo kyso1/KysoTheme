@@ -1086,7 +1086,7 @@ const DEFAULTS = {
   readyCheckAnim: true,             // ready-check fadeIn animations
   viewportGlow: true,               // #rcp-fe-viewport-root accent drop-shadow
   // ── v3.2 Bucket B: per-screen backgrounds ──
-  collectionsBgSource: "local", collectionsBgLocal: "Collections/collections-bg.jpg", collectionsBgWeb: "", collectionsBgEnabled: false,
+  collectionsBgSource: "local", collectionsBgLocal: "Collections/collections-bg22.jpg", collectionsBgWeb: "", collectionsBgEnabled: false,
   champSelectBgSource: "local", champSelectBgLocal: "Runes and Select/champ-select-and-runes.jpg", champSelectBgWeb: "", champSelectBgEnabled: true,
   runesBgSource: "local", runesBgLocal: "Runes and Select/champ-select-and-runes.jpg", runesBgWeb: "", runesBgEnabled: true,
   modeSwitcherBgSource: "local", modeSwitcherBgLocal: "ModeSwitcher/switch.jpg", modeSwitcherBgWeb: "", modeSwitcherBgEnabled: false,

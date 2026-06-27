@@ -35,7 +35,7 @@
       { "label": "Default", "path": "Loading Screen/loading-icon.gif" }
     ],
     "collectionsBackgrounds": [
-      { "label": "Alt 22", "path": "Collections/collections-bg22.jpg" }
+      { "label": "Default", "path": "Collections/collections-bg22.jpg" }
     ],
     "champSelectBackgrounds": [
       { "label": "Default", "path": "Runes and Select/champ-select-and-runes.jpg" },
