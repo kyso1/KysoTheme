@@ -88,16 +88,7 @@
   cursor: pointer;
 }
 
-/* Hover-fade rules moved to settingsPage.js (applyHideOptions)
-   so the "Always show hover elements" toggle can disable them. */
-.summoner-xp-radial-container {
-  opacity: 0;
-  transition: 0.2s !important;
-}
-.summoner-xp-radial-container:hover {
-  opacity: 1;
-  transition: 0.2s !important;
-}
+
 .style-profile-skin-picker-button {
   opacity: 0;
   transition: 0.2s !important;
@@ -116,14 +107,7 @@
   opacity: 1;
   transition: 0.2s !important;
 }
-.deep-links-promo {
-  opacity: 0;
-  transition: 0.2s !important;
-}
-.deep-links-promo:hover {
-  opacity: 1;
-  transition: 0.2s !important;
-}
+
 
 /* remove rp currency */
 /* .currency-rp-container-top-up-enabled{
@@ -170,19 +154,7 @@
 .lobby-header-map-icon {
   filter: var(--kyso-filter);
 }
-.loot-backdrop {
-  opacity: 0 !important;
-}
 
-/* changes auto rune to hover mode */
-.rune-recommender-button-component {
-  opacity: 0;
-  transition: 0.2s !important;
-}
-.rune-recommender-button-component:hover {
-  opacity: 1;
-  transition: 0.2s !important;
-}
 /* In-game screens: transparente. Background global é fornecido por #kyso-global-bg
    (body-level, fixed, z-index:-1). Mantido único em todo o cliente. */
 .rcp-fe-lol-game-in-progress,
@@ -226,15 +198,9 @@
 }
 
 /* Top Navigation Icons */
-.navigation-status-ticker.has-incidents {
-  visibility: hidden !important;
-}
 /* Top-nav layout (play button position, nav-item offsets) is now applied from
    settingsPage.js (_themedNavCss) and OMITTED when "Vanilla play button" is on,
    so the play button returns to its original position. */
-.right-nav-vertical-rule {
-  visibility: hidden !important;
-}
 .collections-sub-nav-container {
   z-index: 10 !important;
   filter: hue-rotate(0deg) !important;
@@ -328,11 +294,6 @@
   border-bottom: transparent !important;
 }
 
-/*hides the restriction warning from player profile*/
-.player-restriction-info-component .player-restriction-warning-icon {
-  visibility: hidden;
-}
-
 /* Sets the background of gaming mode select  */
 :host .lol-uikit-background-switcher-image {
   content: url("../assets/ModeSwitcher/switch.jpg");
@@ -354,9 +315,6 @@
 /* Loading screen background + icon are now injected at runtime by
    assetReplacers.applyLoadingScreen() from user settings. Spinner /
    status-container layout-only rules below remain. */
-.lol-loading-screen-spinner {
-  visibility: hidden !important;
-}
 .lol-loading-screen-status-container {
   width: 700px !important;
   /* visibility: hidden !important; */
@@ -449,9 +407,6 @@ lol-social-roster-member .open-party-indicator {
 }
 .rcp-fe-viewport-sidebar {
   background: var(--social-sidebar-bg-color) !important;
-}
-.right-nav-vertical-rule {
-  display: none !important;
 }
 .rcp-fe-viewport-sidebar {
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)) !important;
@@ -760,9 +715,6 @@ lol-parties-game-info-panel,
     visibility: hidden;
 } */
 
-#activity-center .activity-center__tabs_section-divider {
-  visibility: hidden !important;
-}
 #activity-center .activity-center__tabs_scrollable {
   opacity: 0;
   transition: 0.2s !important;
@@ -816,8 +768,4 @@ lol-parties-game-info-panel,
 /* Icon override moved to settingsPage.js (applyIcon)
    so it follows the user-selected iconUrl. */
 
-/* Lobby blurs.*/
-.v2-header-component .lobby-header-overlay {
-  display: none !important;
-}
 

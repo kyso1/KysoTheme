@@ -1966,6 +1966,45 @@ function applyHideOptions(settings) {
 }\n`;
   }
 
+  // ── v3.2 Bucket A: hover-fade items (OFF = fade until hover; ON = always) ──
+  if (!(settings.alwaysShowXpRadial || _showAll)) {
+    css += `.summoner-xp-radial-container { opacity: 0 !important; transition: 0.2s !important; }
+.summoner-xp-radial-container:hover { opacity: 1 !important; transition: 0.2s !important; }
+`;
+  }
+  if (!(settings.alwaysShowRuneRec || _showAll)) {
+    css += `.rune-recommender-button-component { opacity: 0 !important; transition: 0.2s !important; }
+.rune-recommender-button-component:hover { opacity: 1 !important; transition: 0.2s !important; }
+`;
+  }
+  if (!(settings.alwaysShowDeepLinks || _showAll)) {
+    css += `.deep-links-promo { opacity: 0 !important; transition: 0.2s !important; }
+.deep-links-promo:hover { opacity: 1 !important; transition: 0.2s !important; }
+`;
+  }
+  // ── v3.2 Bucket A: force-hidden items (OFF = hidden; ON = shown) ──
+  if (!settings.showLootBackdrop) {
+    css += `.loot-backdrop { opacity: 0 !important; }\n`;
+  }
+  if (!settings.showIncidentTicker) {
+    css += `.navigation-status-ticker.has-incidents { visibility: hidden !important; }\n`;
+  }
+  if (!settings.showRestrictionWarning) {
+    css += `.player-restriction-info-component .player-restriction-warning-icon { visibility: hidden !important; }\n`;
+  }
+  if (!settings.showLoadingSpinner) {
+    css += `.lol-loading-screen-spinner { visibility: hidden !important; }\n`;
+  }
+  if (!settings.showLobbyOverlay) {
+    css += `.v2-header-component .lobby-header-overlay { display: none !important; }\n`;
+  }
+  if (!settings.showNavDividers) {
+    css += `.right-nav-vertical-rule { display: none !important; }\n`;
+  }
+  if (!settings.showActivityDivider) {
+    css += `#activity-center .activity-center__tabs_section-divider { visibility: hidden !important; }\n`;
+  }
+
   // Substitui apenas o bloco de hide options preservando font
   const existingStyle = style.textContent || "";
   const withoutHide = existingStyle.replace(
@@ -3639,6 +3678,19 @@ function buildUIEditorPanel() {
       ${tog("kyso-ue-enable-hide-social-btn", "enableHideSocialBtn")}
     </section>
     <section class="kyso-settings-section">
+      <h3 class="kyso-settings-section-title"><span>${t("moreVisSection")}</span></h3>
+      ${tog("kyso-ue-xp-radial", "alwaysShowXpRadial")}
+      ${tog("kyso-ue-rune-rec", "alwaysShowRuneRec")}
+      ${tog("kyso-ue-deeplinks", "alwaysShowDeepLinks")}
+      ${tog("kyso-ue-loot", "showLootBackdrop")}
+      ${tog("kyso-ue-incident", "showIncidentTicker")}
+      ${tog("kyso-ue-restriction", "showRestrictionWarning")}
+      ${tog("kyso-ue-loading-spinner", "showLoadingSpinner")}
+      ${tog("kyso-ue-lobby-overlay", "showLobbyOverlay")}
+      ${tog("kyso-ue-nav-dividers", "showNavDividers")}
+      ${tog("kyso-ue-activity-divider", "showActivityDivider")}
+    </section>
+    <section class="kyso-settings-section">
       <h3 class="kyso-settings-section-title"><span>${t("hoverGroupTitle")}</span></h3>
       ${tog("kyso-ue-always-chat", "alwaysShowChat")}
       ${tog("kyso-ue-always-invite", "alwaysShowInvite")}
@@ -3693,6 +3745,18 @@ function buildUIEditorPanel() {
   bindToggle("#kyso-ue-always-social-actions", "alwaysShowSocialActions", (s) => applyHideOptions(s));
   bindToggle("#kyso-ue-always-version", "alwaysShowVersion", (s) => applyHideOptions(s));
   bindToggle("#kyso-ue-activity-tabs", "activityTabsAlwaysVisible", (s) => applyHideOptions(s));
+
+  // ── v3.2 Bucket A ──
+  bindToggle("#kyso-ue-xp-radial", "alwaysShowXpRadial", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-rune-rec", "alwaysShowRuneRec", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-deeplinks", "alwaysShowDeepLinks", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-loot", "showLootBackdrop", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-incident", "showIncidentTicker", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-restriction", "showRestrictionWarning", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-loading-spinner", "showLoadingSpinner", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-lobby-overlay", "showLobbyOverlay", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-nav-dividers", "showNavDividers", (s) => applyHideOptions(s));
+  bindToggle("#kyso-ue-activity-divider", "showActivityDivider", (s) => applyHideOptions(s));
 
   // ── Social hover toggles (mutex) + sliding-door buttons (conflict w/ hover) ──
   const soEl = panel.querySelector("#kyso-ue-hide-social-only");
