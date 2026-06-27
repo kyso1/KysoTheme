@@ -31,6 +31,9 @@ const TRANSLATIONS = {
     assetsSection: "Player Assets",
     bannerLabel: "Banner",
     crestLabel: "Crest",
+    crestRankLabel: "Rank crest (game default)",
+    crestRankOff: "Off (real rank / image)",
+    crestRankHint: "(overrides the crest, emblem and rank text to the selected tier's default)",
     profileIconLabel: "Profile Icon",
     loadingBgLabel: "Loading Background",
     loadingIconLabel: "Loading Icon",
@@ -176,6 +179,9 @@ const TRANSLATIONS = {
     assetsSection: "Assets do Jogador",
     bannerLabel: "Banner",
     crestLabel: "Brasão",
+    crestRankLabel: "Brasão por elo (padrão do jogo)",
+    crestRankOff: "Desligado (rank real / imagem)",
+    crestRankHint: "(troca brasão, emblema e texto do rank pela arte padrão do elo)",
     profileIconLabel: "Ícone de Perfil",
     loadingBgLabel: "Fundo da Tela de Loading",
     loadingIconLabel: "Ícone da Tela de Loading",
@@ -970,6 +976,7 @@ const DEFAULTS = {
   crestSource: "local",
   crestLocal: "",
   crestWeb: "",
+  crestRank: "", // override rank crest to a LoL tier default (caps) e.g. "GOLD"; "" = off
   // Profile icon (self-only — no allPlayers toggle)
   profileIconSource: "local",
   profileIconLocal: "",
@@ -2177,6 +2184,7 @@ export function applyAllSettings(settings) {
   assetReplacers.applyBanner(resolveAsset("banner", merged));
   assetReplacers.applyBannerVisibility(merged.bannerHidden);
   assetReplacers.applyCrest(resolveAsset("crest", merged));
+  assetReplacers.applyCrestRank(merged.crestRank);
   assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";
   const _iconAll = merged.iconAllPlayers || false;
@@ -3118,6 +3126,18 @@ async function buildAssetsPanel() {
 
     ${buildAssetBlock("crest", "crestLabel", manifest.categories.crests, settings, { icon: ICONS.palette })}
 
+    <section class="kyso-settings-section" id="kyso-crest-rank-section">
+      <div class="kyso-settings-row">
+        <label class="kyso-label" for="kyso-crest-rank">${t("crestRankLabel")}</label>
+        <select id="kyso-crest-rank" class="kyso-select">
+          ${["", "IRON", "BRONZE", "SILVER", "GOLD", "PLATINUM", "EMERALD", "DIAMOND", "MASTER", "GRANDMASTER", "CHALLENGER"]
+            .map((v) => `<option value="${v}" ${settings.crestRank === v ? "selected" : ""}>${v === "" ? t("crestRankOff") : v.charAt(0) + v.slice(1).toLowerCase()}</option>`)
+            .join("")}
+        </select>
+      </div>
+      <div class="kyso-settings-row"><span class="kyso-hint">${t("crestRankHint")}</span></div>
+    </section>
+
     <!-- Profile Icon — own section (uses iconUrl / iconAllPlayers, not the source/local/web triple) -->
     <section class="kyso-settings-section" id="kyso-icon-section">
       <h3 class="kyso-settings-section-title">${ICONS.wizard}<span>${t("iconSection")}</span></h3>
@@ -3167,6 +3187,17 @@ async function buildAssetsPanel() {
       <span id="kyso-save-feedback" class="kyso-save-feedback"></span>
     </div>
   `;
+
+  // Crest rank override (elo default crest) — sets ranked-tier/division
+  // attributes via assetReplacers.applyCrestRank.
+  const crestRankSel = panel.querySelector("#kyso-crest-rank");
+  if (crestRankSel) {
+    crestRankSel.addEventListener("change", () => {
+      const s = { ...DEFAULTS, ...loadSettings(), crestRank: crestRankSel.value };
+      saveSettings(s);
+      assetReplacers.applyCrestRank(s.crestRank);
+    });
+  }
 
   // ── Per-category handlers: source toggle, thumb click, web apply, reset.
   // Each asset uses its targeted apply* so we don't redo full applyAllSettings on every click.

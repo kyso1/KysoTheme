@@ -211,6 +211,49 @@ export function applyCrest(url) {
   _crestObserver.observe(document.body, { childList: true, subtree: true });
 }
 
+// applyCrestRank — overrides the rank crest/emblem to a chosen LoL tier's game
+// default by setting ranked-tier / ranked-division (the client renders the
+// matching art) plus the emblem subheader text. Empty tier = no override (keep
+// the player's real rank). Master/Grandmaster/Challenger have no division, so
+// ranked-division gets the letter "O" to clear it; other tiers default to "I".
+let _crestRankObserver = null;
+let _currentCrestRank = "";
+
+const _RANK_TITLE = (tier) =>
+  tier ? tier.charAt(0) + tier.slice(1).toLowerCase() : "";
+
+function _updateCrestRankDom(tier) {
+  if (!tier) return;
+  const division = ["MASTER", "GRANDMASTER", "CHALLENGER"].includes(tier) ? "O" : "I";
+  const setAttrs = (el) => {
+    if (!el) return;
+    if (el.getAttribute("ranked-tier") !== tier) el.setAttribute("ranked-tier", tier);
+    if (el.getAttribute("ranked-division") !== division) el.setAttribute("ranked-division", division);
+  };
+  // Crest elements (profile page + hover cards): attributes on the element.
+  _findAllDeep("lol-regalia-crest-v2-element").forEach(setAttrs);
+  // Emblem elements: attributes on the inner `div > div` inside the shadow root.
+  _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
+    if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"));
+  });
+  // Emblem subheader text → the chosen tier label.
+  const label = _RANK_TITLE(tier);
+  document
+    .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
+    .forEach((el) => {
+      if (el.textContent !== label) el.textContent = label;
+    });
+}
+
+export function applyCrestRank(tier) {
+  _currentCrestRank = (tier || "").toUpperCase();
+  if (_crestRankObserver) { _crestRankObserver.disconnect(); _crestRankObserver = null; }
+  _updateCrestRankDom(_currentCrestRank);
+  if (!_currentCrestRank) return;
+  _crestRankObserver = new MutationObserver(() => _updateCrestRankDom(_currentCrestRank));
+  _crestRankObserver.observe(document.body, { childList: true, subtree: true });
+}
+
 // applyLoadingScreen — single <style id="kyso-loading-style"> in document.head.
 // Empty URL for either field omits the corresponding rule.
 // Both empty → remove the element entirely.
