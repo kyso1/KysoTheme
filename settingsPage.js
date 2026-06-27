@@ -1896,7 +1896,8 @@ function applyHideOptions(settings) {
   }
   if (!(settings.alwaysShowXpRing || _showAll)) {
     css += `.xp-ring { opacity: 0 !important; transition: 0.2s !important; }
-.identity-icon:hover > .summoner-level-icon > .xp-ring {
+.identity-icon:hover .xp-ring,
+.summoner-level-icon:hover .xp-ring {
   opacity: 1 !important; transition: 0.2s !important;
 }
 `;
@@ -2148,9 +2149,17 @@ function applyInterfaceToggles(settings) {
   }
   if (settings.gearAlwaysVisible) {
     block += `.style-profile-skin-picker-button { opacity: 1 !important; }\n`;
+  } else {
+    block += `.style-profile-skin-picker-button { opacity: 0; transition: 0.2s !important; }
+.style-profile-skin-picker-button:hover { opacity: 1; transition: 0.2s !important; }
+`;
   }
   if (settings.lorAlwaysVisible) {
-    block += `.launch-lor-button-container, .deep-links-promo { opacity: 1 !important; }\n`;
+    block += `.launch-lor-button-container { opacity: 1 !important; }\n`;
+  } else {
+    block += `.launch-lor-button-container { opacity: 0; transition: 0.2s !important; }
+.launch-lor-button-container:hover { opacity: 1; transition: 0.2s !important; }
+`;
   }
   block += "/* KYSO-INTERFACE-END */\n";
 

@@ -89,25 +89,6 @@
 }
 
 
-.style-profile-skin-picker-button {
-  opacity: 0;
-  transition: 0.2s !important;
-}
-.style-profile-skin-picker-button:hover {
-  opacity: 1;
-  transition: 0.2s !important;
-}
-
-/* Lor Button Settings  */
-.launch-lor-button-container {
-  opacity: 0;
-  transition: 0.2s !important;
-}
-.launch-lor-button-container:hover {
-  opacity: 1;
-  transition: 0.2s !important;
-}
-
 
 /* remove rp currency */
 /* .currency-rp-container-top-up-enabled{
