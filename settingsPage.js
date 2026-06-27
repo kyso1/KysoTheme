@@ -1135,6 +1135,7 @@ const DEFAULTS = {
   iconAllPlayers: false,
   // ── Kyso UI Editor (v3.1) ─────────────────────────────────────────────
   iconSyncNavbar: true,        // sync chosen profile icon to top navbar
+  iconSwapMastery: false,      // also replace the champ mastery icon (.style-profile-champion-icon-masked) — opt-in
   bannerHidden: false,         // fully hide profile banner
   profileBgTransparent: false, // transparent profile champ-splash bg
   gearAlwaysVisible: false,    // profile-skin-picker gear: always vs hover
@@ -2045,14 +2046,19 @@ function applyHideOptions(settings) {
     withoutHide + `/* KYSO-HIDE-START */\n${css}/* KYSO-HIDE-END */\n`;
 }
 
-function applyIcon(url, allPlayers = false, syncNavbar = false) {
+function applyIcon(url, allPlayers = false, syncNavbar = false, swapMastery = false) {
   const style = getOrCreateDynamicStyle();
+  // Mastery champ icon (.style-profile-champion-icon-masked) is now opt-in via
+  // swapMastery and INDEPENDENT of the top-bar sync. OFF keeps the real mastery icon.
+  const masterySel = swapMastery
+    ? ",\n.style-profile-champion-icon-masked > img"
+    : "";
   let iconBlock;
   if (!url) {
     iconBlock = `/* KYSO-ICON-START *//* KYSO-ICON-END */\n`;
   } else if (allPlayers) {
     // Modo "todos": seletores globais (comportamento antigo)
-    iconBlock = `/* KYSO-ICON-START */\n.icon-image.has-icon,\n.top > .icon-image.has-icon,\n.summoner-level-icon .icon-image {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nsummoner-icon,\nimg.icon-image.has-icon,\n.style-profile-champion-icon-masked > img {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
+    iconBlock = `/* KYSO-ICON-START */\n.icon-image.has-icon,\n.top > .icon-image.has-icon,\n.summoner-level-icon .icon-image {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nsummoner-icon,\nimg.icon-image.has-icon${masterySel} {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
   } else {
     // Modo "só eu": escopo restrito ao avatar próprio na barra lateral.
     // navbarSel was a background-image rule on a SIBLING (.top > .icon-image)
@@ -2060,9 +2066,10 @@ function applyIcon(url, allPlayers = false, syncNavbar = false) {
     // override the real top-bar <img> (lol-uikit-radial-progress > .top > img)
     // directly via content:url(), so there is exactly one synced icon.
     const navbarSel = "";
-    const navbarContentSel = syncNavbar
-      ? ",\n.style-profile-champion-icon-masked > img,\nlol-uikit-radial-progress > div.top > img"
-      : "";
+    // Top-bar avatar gated by syncNavbar; mastery gated separately by swapMastery.
+    const navbarContentSel =
+      masterySel +
+      (syncNavbar ? ",\nlol-uikit-radial-progress > div.top > img" : "");
     iconBlock = `/* KYSO-ICON-START */\nlol-social-avatar .icon-image.has-icon,\nlol-social-avatar .summoner-level-icon .icon-image${navbarSel} {\n  background-image: url("${url}") !important;\n  background-size: cover !important;\n  background-position: center !important;\n}\nlol-social-avatar img.icon-image.has-icon,\nlol-social-avatar summoner-icon${navbarContentSel} {\n  content: url("${url}") !important;\n}\n/* KYSO-ICON-END */\n`;
   }
 
@@ -2399,7 +2406,7 @@ export function applyAllSettings(settings) {
   assetReplacers.applyProfileBgTransparent(merged.profileBgTransparent);
   const _iconUrl = merged.iconUrl || "";
   const _iconAll = merged.iconAllPlayers || false;
-  applyIcon(_iconUrl, _iconAll, merged.iconSyncNavbar);
+  applyIcon(_iconUrl, _iconAll, merged.iconSyncNavbar, merged.iconSwapMastery);
   assetReplacers.applyProfileIcon(_iconUrl);
   assetReplacers.applyLoadingScreen({
     bgUrl: resolveAsset("loadingBg", merged),
@@ -3145,7 +3152,7 @@ async function buildSettingsPanel() {
         applyTopNavbarHiddenState(s.navbarHidden, s.showBlueEssenceOnHide);
       } else if (key === "iconSyncNavbar") {
         const u = s.iconUrl || "";
-        applyIcon(u, s.iconAllPlayers || false, s.iconSyncNavbar);
+        applyIcon(u, s.iconAllPlayers || false, s.iconSyncNavbar, s.iconSwapMastery);
       } else if (key === "bannerHidden") {
         assetReplacers.applyBannerVisibility(s.bannerHidden);
       } else if (key === "profileBgTransparent") {
@@ -3864,7 +3871,7 @@ async function buildAssetsPanel() {
       const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
       const s = { ...DEFAULTS, ...loadSettings(), iconUrl: dataUrl, iconAllPlayers: allPlayers };
       saveSettings(s);
-      applyIcon(dataUrl, allPlayers);
+      applyIcon(dataUrl, allPlayers, s.iconSyncNavbar, s.iconSwapMastery);
       assetReplacers.applyProfileIcon(dataUrl);
       showFeedback(panel, t("iconApplied"));
     });
@@ -3875,7 +3882,7 @@ async function buildAssetsPanel() {
     const allPlayers = iconAllPlayersChk ? iconAllPlayersChk.checked : false;
     const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
     saveSettings(s);
-    applyIcon(url, allPlayers);
+    applyIcon(url, allPlayers, s.iconSyncNavbar, s.iconSwapMastery);
     assetReplacers.applyProfileIcon(url);
     showFeedback(panel, t("iconApplied"));
   });
@@ -3899,7 +3906,7 @@ async function buildAssetsPanel() {
       const allPlayers = iconAllPlayersChk.checked;
       const s = { ...DEFAULTS, ...loadSettings(), iconUrl: url, iconAllPlayers: allPlayers };
       saveSettings(s);
-      applyIcon(url, allPlayers);
+      applyIcon(url, allPlayers, s.iconSyncNavbar, s.iconSwapMastery);
     });
   }
 
@@ -4083,7 +4090,7 @@ function buildUIEditorPanel() {
   };
 
   // ── Interface ──
-  bindToggle("#kyso-ue-icon-navbar", "iconSyncNavbar", (s) => applyIcon(s.iconUrl || "", s.iconAllPlayers || false, s.iconSyncNavbar));
+  bindToggle("#kyso-ue-icon-navbar", "iconSyncNavbar", (s) => applyIcon(s.iconUrl || "", s.iconAllPlayers || false, s.iconSyncNavbar, s.iconSwapMastery));
   bindToggle("#kyso-ue-play-vanilla", "playVanilla", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-play-opacity", "playBgOpacity", "%", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-play-blur", "playBgBlur", "px", (s) => applyInterfaceToggles(s));
