@@ -450,6 +450,9 @@ function _updateCrestRankDom() {
   const hasLP = lp !== "" && lp != null;
   if (!tier && !hasLP) return;
 
+  // Profile-page surfaces (.style-profile-*, tooltip queues, emblem) are painted
+  // only on our own profile. Hovercard crests use their own _crestAllowed guard.
+  const selfProfile = _profileIsSelf();
   const div = _APEX_TIERS.includes(tier) ? "O" : (division || "I");
   const tierLower = tier ? tier.toLowerCase() : "";
   const title = _RANK_TITLE(tier);
@@ -466,7 +469,7 @@ function _updateCrestRankDom() {
     // are limited to the local player via _crestAllowed.
     const dvText = _APEX_TIERS.includes(tier) ? "" : div;
     _findAllDeep("lol-regalia-crest-v2-element").forEach((el) => {
-      if (!_crestAllowed(el)) return;
+      if (!_crestImgAllowed(el)) return;
       setAttrs(el, tier);
       // Hovercard crest won't re-render from the attrs → paint art directly and
       // keep it painted across the component's async re-renders.
@@ -479,14 +482,16 @@ function _updateCrestRankDom() {
         if (proot) _applyHovercardRank(proot, tier, eloLabel);
       }
     });
-    // Emblem subheader text → the chosen tier label.
-    document
-      .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
-      .forEach((el) => { if (el.textContent !== title) el.textContent = title; });
+    // Emblem subheader text → the chosen tier label (self profile page only).
+    if (selfProfile) {
+      document
+        .querySelectorAll(".style-profile-emblem-subheader-ranked > div")
+        .forEach((el) => { if (el.textContent !== title) el.textContent = title; });
+    }
   }
 
-  // Profile emblem header mastery-score → show the chosen LP (self profile page).
-  if (hasLP) {
+  // Profile emblem header mastery-score → show the chosen LP (self profile page only).
+  if (hasLP && selfProfile) {
     _findAllDeep(".style-profile-champion-mastery-score").forEach((el) => {
       if (el.textContent !== String(lp)) el.textContent = String(lp);
     });
@@ -507,32 +512,34 @@ function _updateCrestRankDom() {
     activeQueue = headers.find((h) => names.includes(h)) || names[0];
   }
 
-  queues.forEach((q) => {
-    if (!changeAll && qName(q) !== activeQueue) return;
-    if (tier) {
-      const em = q.querySelector("lol-regalia-emblem-element");
-      if (em) {
-        setAttrs(em, tierLower); // emblem renders from a LOWERCASE ranked-tier
-        if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+  if (selfProfile) {
+    queues.forEach((q) => {
+      if (!changeAll && qName(q) !== activeQueue) return;
+      if (tier) {
+        const em = q.querySelector("lol-regalia-emblem-element");
+        if (em) {
+          setAttrs(em, tierLower); // emblem renders from a LOWERCASE ranked-tier
+          if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+        }
+        const tEl = q.querySelector(".ranked-tooltip-queue-tier");
+        if (tEl && tEl.textContent !== eloLabel) tEl.textContent = eloLabel;
       }
-      const tEl = q.querySelector(".ranked-tooltip-queue-tier");
-      if (tEl && tEl.textContent !== eloLabel) tEl.textContent = eloLabel;
-    }
-    if (hasLP) {
-      const lpEl = q.querySelector(".style-profile-ranked-crest-tooltip-lp");
-      const spans = lpEl ? lpEl.querySelectorAll("span") : [];
-      if (spans[1] && spans[1].textContent !== String(lp)) spans[1].textContent = String(lp);
-    }
-  });
-
-  // Emblem elements outside tooltip queues (e.g. the main profile emblem) get
-  // only the crest override.
-  if (tier) {
-    _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
-      if (em.closest && em.closest(".ranked-tooltip-queue")) return; // handled above
-      setAttrs(em, tierLower);
-      if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+      if (hasLP) {
+        const lpEl = q.querySelector(".style-profile-ranked-crest-tooltip-lp");
+        const spans = lpEl ? lpEl.querySelectorAll("span") : [];
+        if (spans[1] && spans[1].textContent !== String(lp)) spans[1].textContent = String(lp);
+      }
     });
+
+    // Emblem elements outside tooltip queues (e.g. the main profile emblem) get
+    // only the crest override.
+    if (tier) {
+      _findAllDeep("lol-regalia-emblem-element").forEach((em) => {
+        if (em.closest && em.closest(".ranked-tooltip-queue")) return; // handled above
+        setAttrs(em, tierLower);
+        if (em.shadowRoot) setAttrs(em.shadowRoot.querySelector("div > div"), tierLower);
+      });
+    }
   }
 }
 
@@ -681,8 +688,10 @@ export function applyLoadingScreen({ bgUrl, iconUrl }) {
 // document-level <style> rule covers current and future profile mounts — no
 // shadow-root walking or MutationObserver needed.
 let _profileBgStyle = null;
+let _profileBgObserver = null;
+let _profileBgHidden = false;
 
-export function applyProfileBgTransparent(hidden) {
+function _updateProfileBgStyle() {
   if (!_profileBgStyle || !_profileBgStyle.isConnected) {
     _profileBgStyle =
       document.getElementById("kyso-profilebg-style") ||
@@ -693,13 +702,26 @@ export function applyProfileBgTransparent(hidden) {
         return s;
       })();
   }
-  _profileBgStyle.textContent = hidden
+  // Self-only: a plain CSS rule can't tell whose profile is open, so toggle the
+  // rule on/off as the local player's profile mounts/unmounts.
+  _profileBgStyle.textContent = (_profileBgHidden && _profileIsSelf())
     ? `.style-profile-backdrop-component .style-profile-backdrop-container .uikit-background-switcher {
          background: transparent !important;
          background-image: none !important;
          opacity: 0 !important;
        }`
     : "";
+}
+
+export function applyProfileBgTransparent(hidden) {
+  _profileBgHidden = !!hidden;
+  _updateProfileBgStyle();
+  // Resolve self-id so the name compare can succeed once known.
+  ensureSelfSummonerId(() => _updateProfileBgStyle());
+  if (_profileBgObserver) { _profileBgObserver.disconnect(); _profileBgObserver = null; }
+  if (!_profileBgHidden) return; // off → nothing to maintain
+  _profileBgObserver = new MutationObserver(_crestDebounce(_updateProfileBgStyle, 120));
+  _profileBgObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 const _SCREENBG_BASE = "//plugins/KysoTheme/assets/";
