@@ -175,6 +175,7 @@ const TRANSLATIONS = {
     interfaceSection: "Interface",
     iconSyncNavbar: "Profile icon in top bar",
     iconSwapMastery: "Swap mastery icon with profile icon",
+    lolColorScheme: "League color scheme",
     bannerHidden: "Hide profile banner",
     profileBgTransparent: "Transparent profile background",
     gearAlwaysVisible: "Always show settings button (profile page)",
@@ -364,6 +365,7 @@ const TRANSLATIONS = {
     interfaceSection: "Interface",
     iconSyncNavbar: "Ícone de perfil na barra superior",
     iconSwapMastery: "Trocar ícone de maestria pelo ícone de perfil",
+    lolColorScheme: "Esquema de cores do League",
     bannerHidden: "Ocultar banner do perfil",
     profileBgTransparent: "Fundo do perfil transparente",
     gearAlwaysVisible: "Sempre mostrar botão de config. (página de perfil)",
@@ -501,6 +503,7 @@ const TRANSLATIONS = {
     interfaceSection: "Interfaz",
     iconSyncNavbar: "Icono de perfil en barra superior",
     iconSwapMastery: "Cambiar icono de maestría por el de perfil",
+    lolColorScheme: "Esquema de colores de League",
     bannerHidden: "Ocultar banner de perfil",
     profileBgTransparent: "Fondo de perfil transparente",
     gearAlwaysVisible: "Mostrar siempre botón de ajustes",
@@ -639,6 +642,7 @@ const TRANSLATIONS = {
     interfaceSection: "Oberfläche",
     iconSyncNavbar: "Profilsymbol in oberer Leiste",
     iconSwapMastery: "Meisterschaftssymbol durch Profilsymbol ersetzen",
+    lolColorScheme: "League-Farbschema",
     bannerHidden: "Profilbanner ausblenden",
     profileBgTransparent: "Profilhintergrund transparent",
     gearAlwaysVisible: "Einstellungsknopf immer zeigen",
@@ -773,6 +777,7 @@ const TRANSLATIONS = {
     interfaceSection: "インターフェース",
     iconSyncNavbar: "トップバーにプロフィールアイコン",
     iconSwapMastery: "マスタリーアイコンをプロフィールアイコンに置換",
+    lolColorScheme: "Leagueのカラースキーム",
     bannerHidden: "プロフィールバナーを隠す",
     profileBgTransparent: "プロフィール背景を透明に",
     gearAlwaysVisible: "設定ボタンを常に表示",
@@ -908,6 +913,7 @@ const TRANSLATIONS = {
     interfaceSection: "인터페이스",
     iconSyncNavbar: "상단 바에 프로필 아이콘",
     iconSwapMastery: "프로필 아이콘으로 숙련도 아이콘 교체",
+    lolColorScheme: "리그 색상 구성",
     bannerHidden: "프로필 배너 숨기기",
     profileBgTransparent: "프로필 배경 투명하게",
     gearAlwaysVisible: "설정 버튼 항상 표시",
@@ -1128,6 +1134,7 @@ const DEFAULTS = {
   // Color accent
   accentColor: "",
   accentAuto: false,
+  lolColorScheme: false,       // force League's native gold accent (themed buttons kept)
   // Background filters (CSS filter on #kyso-global-bg)
   filterBlur: 0,        // px (0-20)
   filterBrightness: 100, // % (50-200)
@@ -1402,6 +1409,10 @@ function applyBgFilters(settings) {
   if (cont !== 100) parts.push(`contrast(${cont}%)`);
   container.style.filter = parts.length ? parts.join(" ") : "";
 }
+
+// League's canonical border gold. Used by the "League color scheme" switch to
+// recolor the themed UI to vanilla LoL gold without touching button shapes.
+const LOL_GOLD = "#C8AA6E";
 
 /** Aplica a cor de acento nas CSS custom properties de :root */
 function applyAccentColor(hex) {
@@ -2422,8 +2433,12 @@ export function applyAllSettings(settings) {
   applyHideNavbarBtnSetting(merged);
   applyHideSocialBtnSetting(merged);
   applyBgFilters(merged);
-  // Color accent — still uses resolved bgUrl for auto-extraction
-  if (merged.accentAuto) {
+  // Color accent — "League color scheme" forces LoL gold + no RGB and wins over
+  // both auto-extraction and the custom accent.
+  if (merged.lolColorScheme) {
+    applyAccentColor(LOL_GOLD);
+    applyRgbEffect("none", merged.rgbSpeed || 3, LOL_GOLD);
+  } else if (merged.accentAuto) {
     const _gen = ++_accentAutoGen;
     extractAccentFromBackground(bgUrl).then((hex) => {
       if (_gen !== _accentAutoGen) return; // discard stale async result
@@ -4016,6 +4031,7 @@ function buildUIEditorPanel() {
       <h3 class="kyso-settings-section-title"><span>${t("interfaceSection")}</span></h3>
       ${tog("kyso-ue-icon-navbar", "iconSyncNavbar")}
       ${tog("kyso-ue-icon-swap-mastery", "iconSwapMastery")}
+      ${tog("kyso-ue-lol-colors", "lolColorScheme")}
       ${tog("kyso-ue-play-vanilla", "playVanilla")}
       ${rng("kyso-ue-play-opacity", "playBgOpacity", 100, "%")}
       ${rng("kyso-ue-play-blur", "playBgBlur", 20, "px")}
@@ -4099,6 +4115,15 @@ function buildUIEditorPanel() {
   // ── Interface ──
   bindToggle("#kyso-ue-icon-navbar", "iconSyncNavbar", (s) => applyIcon(s.iconUrl || "", s.iconAllPlayers || false, s.iconSyncNavbar, s.iconSwapMastery));
   bindToggle("#kyso-ue-icon-swap-mastery", "iconSwapMastery", (s) => applyIcon(s.iconUrl || "", s.iconAllPlayers || false, s.iconSyncNavbar, s.iconSwapMastery));
+  bindToggle("#kyso-ue-lol-colors", "lolColorScheme", (s) => {
+    if (s.lolColorScheme) {
+      applyAccentColor(LOL_GOLD);
+      applyRgbEffect("none", s.rgbSpeed || 3, LOL_GOLD);
+    } else {
+      applyAccentColor(s.accentColor || "");
+      applyRgbEffect(s.rgbMode || "none", s.rgbSpeed || 3, s.accentColor || "");
+    }
+  });
   bindToggle("#kyso-ue-play-vanilla", "playVanilla", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-play-opacity", "playBgOpacity", "%", (s) => applyInterfaceToggles(s));
   bindRange("#kyso-ue-play-blur", "playBgBlur", "px", (s) => applyInterfaceToggles(s));
