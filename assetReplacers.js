@@ -684,9 +684,10 @@ export function applyLoadingScreen({ bgUrl, iconUrl }) {
 
 // applyProfileBgTransparent — zeroes the profile-page background switcher so a
 // custom #kyso-global-bg shows through. The backdrop lives in the LIGHT DOM
-// (.style-profile-backdrop-component … .uikit-background-switcher), so a single
-// document-level <style> rule covers current and future profile mounts — no
-// shadow-root walking or MutationObserver needed.
+// (.style-profile-backdrop-component … .uikit-background-switcher). Self-only: a
+// plain CSS rule can't tell whose profile is open, so a single document-level
+// <style> rule is toggled on/off by a body MutationObserver keyed to
+// _profileIsSelf() — applied only while the local player's own profile is mounted.
 let _profileBgStyle = null;
 let _profileBgObserver = null;
 let _profileBgHidden = false;
