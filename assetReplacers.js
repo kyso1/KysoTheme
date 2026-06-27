@@ -288,6 +288,19 @@ function _applyHovercardCrestArt(rootShadow, tier, dvText) {
   });
 }
 
+// The hovercard popup also shows a mini rank emblem per queue:
+// <img class="hover-card-rank-image" src=".../<tier>.svg">. Swap the tier name in
+// the src to the chosen tier (preserves the full path + any query string).
+function _applyHovercardRankImages(root, tier) {
+  const tl = tier.toLowerCase();
+  root.querySelectorAll(".hover-card-rank-image").forEach((img) => {
+    const cur = img.getAttribute("src") || "";
+    if (!/\.svg/i.test(cur)) return;
+    const next = cur.replace(/[a-z-]+\.svg(\?[^#]*)?$/i, (m, q) => tl + ".svg" + (q || ""));
+    if (cur !== next) img.setAttribute("src", next);
+  });
+}
+
 // The crest component re-renders the division subtree (wrapper > plate > text)
 // asynchronously after load — a shadow mutation the document.body observer never
 // sees, so the override gets reverted. Watch the crest's OWN shadow root and
@@ -342,10 +355,13 @@ function _updateCrestRankDom() {
       setAttrs(el, tier);
       // Hovercard crest won't re-render from the attrs → paint art directly and
       // keep it painted across the component's async re-renders.
-      if (el.shadowRoot && _hovercardHost(el)) {
+      const host = _hovercardHost(el);
+      if (host && el.shadowRoot) {
         el.__kysoCrestArt = { tier, dvText };
         _applyHovercardCrestArt(el.shadowRoot, tier, dvText);
         _watchHovercardCrest(el);
+        const proot = _hovercardPopupRoot(host);
+        if (proot) _applyHovercardRankImages(proot, tier);
       }
     });
     // Emblem subheader text → the chosen tier label.
